@@ -10,7 +10,7 @@
 </head>
 <body><main class="app">
 <section class="controls">
-<header><h1>Pond geometry calculator</h1><p>Calculate excavation capacity, footprint area or depth from a sloping-sided pond.</p></header>
+<header><h1>Pond geometry calculator</h1><p>Calculate pond capacity, footprint area or depth, including freeboard and usable storage.</p></header>
 <h2>01 — Plan shape</h2>
 <div class="shape-grid" role="group" aria-label="Plan shape">
 <button type="button" class="shape-btn active" data-shape="circle" aria-pressed="true"><svg viewBox="0 0 44 32" fill="none"><ellipse cx="22" cy="16" rx="14" ry="11" stroke="currentColor" stroke-width="2"/><ellipse cx="22" cy="16" rx="7" ry="5" stroke="currentColor" opacity=".55"/></svg>Circle</button>
@@ -21,20 +21,25 @@
 <h2>02 — Side slope</h2>
 <div class="row"><div class="field"><label for="slopeFormat">Slope format</label><select id="slopeFormat"><option value="ratio">1 vertical : x horizontal</option><option value="percent">Grade (%)</option></select></div><div class="field"><label for="slope" id="slopeLabel">Horizontal run per 1 m rise</label><div class="input-shell"><input id="slope" type="number" min="0" max="100000" step="0.1" value="3"><span id="slopeUnit" class="unit">H : 1V</span></div></div></div>
 <p class="help" id="slopeHint">1V:3H means 3 m horizontal run per 1 m of depth (33.33% grade).</p>
-<h2>03 — Known quantities</h2>
-<p class="help" style="margin:-3px 0 12px">Select the quantity to calculate. Enter the other two.</p>
+<h2>03 — Freeboard and capacity basis</h2>
+<div class="row"><div class="field"><label for="freeboard">Freeboard depth</label><div class="input-shell"><input id="freeboard" type="number" min="0" step="any" value="0.3"><span class="unit">m</span></div></div><div class="field"><label for="volumeBasis">Volume input refers to</label><select id="volumeBasis"><option value="usable" selected>Usable storage (below freeboard)</option><option value="total">Total to top of rim</option></select></div></div>
+<p class="help">Freeboard is the vertical distance from the top rim down to the design water level. Usable storage is the capacity below that level.</p>
+<h2>04 — Known quantities</h2>
+<p class="help" style="margin:-3px 0 12px">The selected radio button marks the calculated (locked) field. To type a target volume, select <strong>Area</strong> or <strong>Depth</strong>; then enter the volume and choose usable or total capacity above.</p>
 <div class="metric-grid">
-<label class="metric target" data-target="volume"><input type="radio" name="solve" value="volume" checked><span><strong>Volume</strong><small>Excavation capacity</small></span><span class="input-shell"><input type="number" id="volume" min="0" step="any" value="" disabled aria-label="Volume"><span class="unit">m³</span></span></label>
+<label class="metric target" data-target="volume"><input type="radio" name="solve" value="volume" checked><span><strong>Volume</strong><small id="volumeDescription">Usable storage below freeboard</small></span><span class="input-shell"><input type="number" id="volume" min="0" step="any" value="" disabled aria-label="Volume"><span class="unit">m³</span></span></label>
 <label class="metric" data-target="area"><input type="radio" name="solve" value="area"><span><strong>Area</strong><small>Top / waterline footprint</small></span><span class="input-shell"><input type="number" id="area" min="0" step="any" value="200" aria-label="Top area"><span class="unit">m²</span></span></label>
 <label class="metric" data-target="depth"><input type="radio" name="solve" value="depth"><span><strong>Depth</strong><small>Vertical excavation depth</small></span><span class="input-shell"><input type="number" id="depth" min="0" step="any" value="2" aria-label="Depth"><span class="unit">m</span></span></label>
 </div>
 <div id="error" class="error" role="alert"></div>
-<h2>04 — Calculated geometry</h2>
+<h2>05 — Calculated results</h2>
+<div class="result-grid" style="margin-bottom:10px"><div class="result"><div class="caption">Total rim capacity</div><div class="value" id="totalCapacity">—</div></div><div class="result"><div class="caption">Usable capacity</div><div class="value" id="usableCapacity">—</div></div><div class="result"><div class="caption">Freeboard volume</div><div class="value" id="freeboardVolume">—</div></div><div class="result"><div class="caption">Design water area</div><div class="value" id="waterArea">—</div></div></div>
+<h2>06 — Calculated geometry</h2>
 <div class="result-grid"><div class="result"><div class="caption">Bottom area</div><div class="value" id="bottomArea">—</div></div><div class="result"><div class="caption">Top dimensions</div><div class="value" id="topDims">—</div></div><div class="result"><div class="caption">Bottom dimensions</div><div class="value" id="bottomDims">—</div></div><div class="result"><div class="caption">Side run (each side)</div><div class="value" id="sideRun">—</div></div></div>
-<label class="toggle"><input type="checkbox" id="waterToggle" checked> Show illustrative water level at 65% depth</label>
-<p class="footer-note">Assumptions: level top rim and base; constant inward side slope; uniform excavation depth; no freeboard, irregular ground, benching or curved batter transitions. Area means the <strong>top plan area</strong>, not wetted surface or land area. Volume is the total geometric capacity to the rim, not the volume at the illustrative water level. Circular sides are conical; square/rectangular sides are planar. This is a conceptual sizing tool, not an earthworks design check.</p>
+<label class="toggle"><input type="checkbox" id="waterToggle" checked> Show design water level (pond depth − freeboard)</label>
+<p class="footer-note">Assumptions: level top rim and base; constant inward side slope; uniform excavation depth; no irregular ground, benching or curved batter transitions. Area means the <strong>top plan area</strong>, not wetted surface or land area. Total volume is the geometric capacity to the rim. Usable volume is the pond capacity below the freeboard level (does not account for sediment, permanent dead storage, or operational allowances). Circular sides are conical; square/rectangular sides are planar. This is a conceptual sizing tool, not an earthworks design check.</p>
 </section>
-<section class="viz" id="viz"><div class="viz-header"><h2>Interactive 3D preview</h2><p>Drag to rotate · Scroll to zoom · Shift + drag to pan</p></div><div class="viz-toolbar"><button class="tool" id="resetView">Reset view</button></div><canvas id="canvas" aria-label="Interactive three-dimensional preview of pond geometry"></canvas><div class="legend"><span><i class="swatch" style="background:#92b098"></i>Ground / rim</span><span><i class="swatch" style="background:#b78f69"></i>Excavated sides</span><span><i class="swatch" style="background:#54b8e7"></i>Illustrative water</span><span class="pill" id="vizCaption">—</span></div></section>
+<section class="viz" id="viz"><div class="viz-header"><h2>Interactive 3D preview</h2><p>Drag to rotate · Scroll to zoom · Shift + drag to pan</p></div><div class="viz-toolbar"><button class="tool" id="resetView">Reset view</button></div><canvas id="canvas" aria-label="Interactive three-dimensional preview of pond geometry"></canvas><div class="legend"><span><i class="swatch" style="background:#92b098"></i>Ground / rim</span><span><i class="swatch" style="background:#b78f69"></i>Excavated sides</span><span><i class="swatch" style="background:#54b8e7"></i>Design water level</span><span class="pill" id="vizCaption">—</span></div></section>
 </main>
 <script>
 (()=>{'use strict';
@@ -50,32 +55,77 @@ function calcV(A,D,m){const g=dimFromArea(A);if(shape==='circle'){const R=g.r;re
 function bottomA(A,D,m){const d=dimFromArea(A);return shape==='circle'?Math.PI*Math.max(0,d.r-m*D)**2:Math.max(0,d.w-2*m*D)*Math.max(0,d.l-2*m*D);}
 function bisect(fn,lo,hi){for(let i=0;i<90;i++){let md=(lo+hi)/2;if(fn(md)>0)hi=md;else lo=md}return (lo+hi)/2;}
 function error(t){$('error').textContent=t;$('error').classList.toggle('show',!!t);}
-function clearResults(){['bottomArea','topDims','bottomDims','sideRun'].forEach(id=>$(id).textContent='—');$('vizCaption').textContent='No valid geometry';geometry=null;draw();}
-function update(){error('');let m=getSlope();if(!Number.isFinite(m)){error('Slope must be a finite positive grade, or use 1V:xH for vertical sides (x = 0).');clearResults();return}
-let A=Number(vals.area.value),D=Number(vals.depth.value),V=Number(vals.volume.value);const known=Object.keys(vals).filter(k=>k!==solve);if(known.some(k=>vals[k].value.trim()===''||!Number.isFinite(Number(vals[k].value))||Number(vals[k].value)<=0)){error('Enter positive values for both known quantities.');vals[solve].value='';clearResults();return}
-if(shape==='rectangle'&&(!Number.isFinite(getNum('aspect'))||getNum('aspect')<1||getNum('aspect')>20)){error('Rectangle length : width must be between 1 and 20.');clearResults();return}
-try{
-if(solve==='volume'){if(D>maxDepth(A,m)*(1+1e-10))throw Error('Depth is too great for this top area and side slope: the sides would intersect before reaching the base. Increase the area, reduce the depth or steepen the sides.');V=calcV(A,D,m)}
-else if(solve==='area'){const ar=shape==='rectangle'?getNum('aspect'):1;const minA=m===0?0:shape==='circle'?Math.PI*(m*D)**2:4*(m*D)**2*ar;const minV=calcV(minA,D,m);if(V<minV*(1-1e-10))throw Error('This volume is too small for the specified depth and side slope. The smallest possible top footprint at this depth already holds '+fmt(minV,'m³')+'. Reduce the depth or steepen the sides.');let lo=1e-12,hi=Math.max(1,V/D*5);const ok=x=>D<=maxDepth(x,m)*(1+1e-12)&&calcV(x,D,m)>=V;let k=0;while(!ok(hi)&&k++<100)hi*=2;if(!ok(hi))throw Error('Unable to find a feasible top area.');A=bisect(x=>ok(x)?calcV(x,D,m)-V:-V,lo,hi)}
-else {const md=maxDepth(A,m);const mv=Number.isFinite(md)?calcV(A,md,m):Infinity;if(V>mv*(1+1e-10))throw Error('Required volume exceeds the maximum capacity for this plan area and side slope ('+fmt(mv,'m³')+'). Increase the top area or use steeper sides.');let hi=Number.isFinite(md)?md:Math.max(1,V/A*2);if(!Number.isFinite(md)){while(calcV(A,hi,m)<V)hi*=2}D=bisect(d=>calcV(A,d,m)-V,0,hi)}
-if(!(A>0&&D>0&&V>0)||![A,D,V].every(Number.isFinite))throw Error('The entered geometry gives invalid dimensions.');
-const dim=dimFromArea(A),run=m*D,BA=bottomA(A,D,m),bw=Math.max(0,dim.w-2*run),bl=Math.max(0,dim.l-2*run);
-vals[solve].value=(solve==='volume'?V:solve==='area'?A:D).toFixed(4).replace(/\.?0+$/,'');
-$('bottomArea').textContent=fmt(BA,'m²');$('topDims').textContent=shape==='circle'?'Ø '+fmt(dim.w,'m'):fmt(dim.w,'m')+' × '+fmt(dim.l,'m');$('bottomDims').textContent=shape==='circle'?'Ø '+fmt(bw,'m'):fmt(bw,'m')+' × '+fmt(bl,'m');$('sideRun').textContent=fmt(run,'m');$('vizCaption').textContent=fmt(V,'m³')+' capacity · '+fmt(D,'m')+' deep';
-geometry={A,D,V,m,shape,dim,run,BA,bw,bl};draw();
-}catch(e){error(e.message);vals[solve].value='';clearResults()}
+function clearResults(){['totalCapacity','usableCapacity','freeboardVolume','waterArea','bottomArea','topDims','bottomDims','sideRun'].forEach(id=>$(id).textContent='—');$('vizCaption').textContent='No valid geometry';geometry=null;draw();}
+function update(){
+ error('');
+ const m=getSlope(), f=getNum('freeboard'), basis=$('volumeBasis').value;
+ $('volumeDescription').textContent=basis==='usable'?'Capacity below design water level':'Full capacity up to rim';
+ if(!Number.isFinite(m)){error('Enter a valid slope. In percent mode, grade must be greater than zero.');clearResults();return}
+ if($('freeboard').value.trim()===''||!Number.isFinite(f)||f<0){error('Freeboard must be zero or a positive finite number.');clearResults();return}
+ let A=Number(vals.area.value),D=Number(vals.depth.value),V=Number(vals.volume.value);
+ const known=Object.keys(vals).filter(k=>k!==solve);
+ if(known.some(k=>vals[k].value.trim()===''||!Number.isFinite(Number(vals[k].value))||Number(vals[k].value)<=0)){
+  error('Enter positive values for both known quantities.'); vals[solve].value='';clearResults();return;
+ }
+ if(shape==='rectangle'&&(!Number.isFinite(getNum('aspect'))||getNum('aspect')<1||getNum('aspect')>20)){
+  error('Rectangle length : width must be between 1 and 20.');clearResults();return;
+ }
+ try{
+  const valid=(a,d)=>d>=f-1e-10 && d<=maxDepth(a,m)*(1+1e-10) && f<=maxDepth(a,m)*(1+1e-10);
+  const capacity=(a,d)=>calcV(a,d,m)-(basis==='usable'?calcV(a,f,m):0);
+  if(solve==='volume'){
+   if(!valid(A,D))throw Error('Depth must be at least the freeboard and must fit inside the top footprint at the selected side slope.');
+   V=capacity(A,D);
+  }else if(solve==='area'){
+   if(D<f)throw Error('Pond depth must be at least as deep as the freeboard.');
+   if(basis==='usable'&&D===f)throw Error('Usable capacity is zero when freeboard equals pond depth.');
+   const ar=shape==='rectangle'?getNum('aspect'):1;
+   const minA=m===0?0:shape==='circle'?Math.PI*(m*D)**2:4*(m*D)**2*ar;
+   const minV=capacity(minA,D);
+   if(V<minV*(1-1e-9))throw Error('Specified volume is smaller than the minimum feasible capacity for this depth and side slope ('+fmt(minV,'m³')+').');
+   let lo=Math.max(1e-14,minA),hi=Math.max(1,minA*2,V/Math.max(0.001,D-f)*5);
+   let tries=0;
+   while((!valid(hi,D)||capacity(hi,D)<V)&&tries++<100)hi*=2;
+   if(tries>=100)throw Error('Unable to solve for the top area.');
+   for(let i=0;i<100;i++){let mid=(lo+hi)/2;if(!valid(mid,D)||capacity(mid,D)<V)lo=mid;else hi=mid}
+   A=(lo+hi)/2;
+  }else{
+   const md=maxDepth(A,m);
+   if(f>md)throw Error('Freeboard alone exceeds the maximum depth possible for this area and slope.');
+   const mv=Number.isFinite(md)?capacity(A,md):Infinity;
+   if(V>mv*(1+1e-9))throw Error('Required volume exceeds the maximum capacity for this footprint and side slope ('+fmt(mv,'m³')+').');
+   let lo=f,hi=Number.isFinite(md)?md:Math.max(f+1,V/A*3+f);
+   if(!Number.isFinite(md)){while(capacity(A,hi)<V)hi*=2}
+   for(let i=0;i<100;i++){let mid=(lo+hi)/2;if(capacity(A,mid)<V)lo=mid;else hi=mid}
+   D=(lo+hi)/2;
+  }
+  if(!(A>0&&D>0)||![A,D,V].every(Number.isFinite)||!valid(A,D))throw Error('The values create invalid pond geometry.');
+  const total=calcV(A,D,m),freeVol=calcV(A,f,m),usable=total-freeVol;
+  if(usable<-1e-8)throw Error('Freeboard exceeds the pond depth.');
+  const dim=dimFromArea(A),run=m*D,BA=bottomA(A,D,m),bw=Math.max(0,dim.w-2*run),bl=Math.max(0,dim.l-2*run);
+  const waterWidth=Math.max(0,dim.w-2*m*f),waterLength=Math.max(0,dim.l-2*m*f);
+  const wa=shape==='circle'?Math.PI*(waterWidth/2)**2:waterWidth*waterLength;
+  vals[solve].value=Number((solve==='volume'?V:solve==='area'?A:D).toPrecision(10)).toString();
+  $('totalCapacity').textContent=fmt(total,'m³');$('usableCapacity').textContent=fmt(usable,'m³');
+  $('freeboardVolume').textContent=fmt(freeVol,'m³');$('waterArea').textContent=fmt(wa,'m²');
+  $('bottomArea').textContent=fmt(BA,'m²');$('topDims').textContent=shape==='circle'?'Ø '+fmt(dim.w,'m'):fmt(dim.w,'m')+' × '+fmt(dim.l,'m');
+  $('bottomDims').textContent=shape==='circle'?'Ø '+fmt(bw,'m'):fmt(bw,'m')+' × '+fmt(bl,'m');
+  $('sideRun').textContent=fmt(run,'m');
+  $('vizCaption').textContent=fmt(usable,'m³')+' usable · '+fmt(D,'m')+' deep · '+fmt(f,'m')+' freeboard';
+  geometry={A,D,V,total,usable,freeVol,f,m,shape,dim,run,BA,bw,bl};draw();
+ }catch(e){error(e.message);vals[solve].value='';clearResults()}
 }
 for(const k of Object.keys(vals))vals[k].addEventListener('input',()=>{if(k!==solve)update()});
 document.querySelectorAll('input[name=solve]').forEach(r=>r.addEventListener('change',()=>{solve=r.value;document.querySelectorAll('.metric').forEach(el=>el.classList.toggle('target',el.dataset.target===solve));for(const k in vals)vals[k].disabled=k===solve;update()}));
 document.querySelectorAll('.shape-btn').forEach(b=>b.addEventListener('click',()=>{shape=b.dataset.shape;document.querySelectorAll('.shape-btn').forEach(x=>{x.classList.toggle('active',x===b);x.setAttribute('aria-pressed',x===b?'true':'false')});$('aspectWrap').style.display=shape==='rectangle'?'block':'none';update()}));
-$('aspect').addEventListener('input',update);
+$('aspect').addEventListener('input',update);$('freeboard').addEventListener('input',update);$('volumeBasis').addEventListener('change',()=>{if(solve!=='volume' && geometry){vals.volume.value=Number(($('volumeBasis').value==='usable'?geometry.usable:geometry.total).toPrecision(10));}update()});
 $('slopeFormat').addEventListener('change',()=>{const n=getNum('slope');if($('slopeFormat').value==='percent'){$('slope').value=n===0?'':round(100/n,6);$('slopeLabel').textContent='Vertical grade';$('slopeUnit').textContent='%'}else{$('slope').value=n===0?'':round(100/n,6);$('slopeLabel').textContent='Horizontal run per 1 m rise';$('slopeUnit').textContent='H : 1V'}updateHint();update()});
 $('slope').addEventListener('input',()=>{updateHint();update()});$('waterToggle').addEventListener('change',draw);
 function updateHint(){let m=getSlope();$('slopeHint').textContent=Number.isFinite(m)?(m===0?'Vertical sides (no horizontal run).':'1V:'+round(m,3)+'H → '+round(100/m,2)+'% grade. The sides slope inward towards the bottom.'):'Use a grade greater than 0%, or switch to ratio mode for vertical walls.'}
 // Standalone 3D canvas renderer (no external dependencies).
 const canvas=$('canvas'),ctx=canvas.getContext('2d');let yaw=-.65,pitch=.61,zoom=1,panX=0,panY=0;
 function P(x,y,z){return [x,y,z]};
-function project(p,scale,cx,cy){let [x,y,z]=p;const a=yaw,b=pitch;const X=x*Math.cos(a)-y*Math.sin(a);const Y=x*Math.sin(a)+y*Math.cos(a);return {x:cx+(X*scale)+panX,y:cy+(Y*Math.sin(b)-z*Math.cos(b))*scale+panY,depth:Y*Math.cos(b)+z*Math.sin(b}}
+function project(p,scale,cx,cy){let [x,y,z]=p;const a=yaw,b=pitch;const X=x*Math.cos(a)-y*Math.sin(a);const Y=x*Math.sin(a)+y*Math.cos(a);return {x:cx+(X*scale)+panX,y:cy+(Y*Math.sin(b)-z*Math.cos(b))*scale+panY,depth:Y*Math.cos(b)+z*Math.sin(b)}}
 const mix=(a,b,t)=>a.map((v,i)=>v*(1-t)+b[i]*t);
 function polygon(points,fill,stroke,alpha=1,width=1){ctx.save();ctx.globalAlpha=alpha;ctx.beginPath();ctx.moveTo(points[0].x,points[0].y);for(let i=1;i<points.length;i++)ctx.lineTo(points[i].x,points[i].y);ctx.closePath();if(fill){ctx.fillStyle=fill;ctx.fill()}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=width;ctx.stroke()}ctx.restore()}
 function line(points,color,width=1,dash=[]){ctx.save();ctx.beginPath();ctx.setLineDash(dash);ctx.moveTo(points[0].x,points[0].y);for(let i=1;i<points.length;i++)ctx.lineTo(points[i].x,points[i].y);ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();ctx.restore()}
@@ -90,8 +140,8 @@ let top=ring(W,L,0),bottom=ring(bw,bl,-D),N=top.length;
 let facets=[];for(let i=0;i<N;i++){const j=(i+1)%N;const ps=[top[i],top[j],bottom[j],bottom[i]];const depth=ps.reduce((acc,p)=>acc+proj(p).depth,0)/4;const nx=top[j][1]-top[i][1],ny=top[i][0]-top[j][0];const shade=Math.max(0,Math.min(1,(nx*.8+ny*.6)/Math.max(.001,Math.hypot(nx,ny))*.5+.5));facets.push({ps,depth,fill:`hsl(29, ${24+Math.round(8*shade)}%, ${34+Math.round(19*shade)}%)`})}
 facets.sort((a,b)=>a.depth-b.depth);for(const f of facets)polygon(f.ps.map(proj),f.fill,'#987451',1,.6);
 polygon(bottom.map(proj),'#537b82','#78a4a2',.88,1);
-// Translucent water level, for context only; excluded from capacity.
-if($('waterToggle').checked){const waterDepth=.35*D;let wr=ring(Math.max(0,W-2*m*waterDepth),Math.max(0,L-2*m*waterDepth),-waterDepth);polygon(wr.map(proj),'#41b5ea','#83d7fb',.56,1.3);for(let k=0;k<5;k++){let t=(k+1)/6;let rad=Math.max(0,Math.min(W,L)/2-m*waterDepth)*t; if(shape==='circle'){let rp=ring(rad*2,rad*2,-waterDepth+.002);line([...rp.map(proj),proj(rp[0])],'#b4efff',.6)}}}
+// Water level at the design freeboard height; capacity is below this surface.
+if($('waterToggle').checked){const waterDepth=geometry.f;let wr=ring(Math.max(0,W-2*m*waterDepth),Math.max(0,L-2*m*waterDepth),-waterDepth);polygon(wr.map(proj),'#41b5ea','#83d7fb',.56,1.3);for(let k=0;k<5;k++){let t=(k+1)/6;let rad=Math.max(0,Math.min(W,L)/2-m*waterDepth)*t; if(shape==='circle'){let rp=ring(rad*2,rad*2,-waterDepth+.002);line([...rp.map(proj),proj(rp[0])],'#b4efff',.6)}}}
 line([...top.map(proj),proj(top[0])],'#b7d8ba',2.4);line([...bottom.map(proj),proj(bottom[0])],'#88b5aa',.9);
 for(let i=0;i<N;i+=Math.max(1,Math.floor(N/(shape==='circle'?12:4))))line([proj(top[i]),proj(bottom[i])],'#e0b48a',.8);
 // Depth indicator at far right; consistent actual units.
