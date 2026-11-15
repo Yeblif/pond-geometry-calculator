@@ -29,10 +29,16 @@
 <h2>02 — Side slope</h2>
 <div class="row"><div class="field"><label for="slopeFormat">Slope format</label><select id="slopeFormat"><option value="ratio">1 vertical : x horizontal</option><option value="percent">Grade (%)</option></select></div><div class="field"><label for="slope" id="slopeLabel">Horizontal run per 1 m rise</label><div class="input-shell"><input id="slope" type="number" min="0" max="100000" step="0.1" value="3"><span id="slopeUnit" class="unit">H : 1V</span></div></div></div>
 <p class="help" id="slopeHint">1V:3H means 3 m horizontal run per 1 m of depth (33.33% grade).</p>
-<h2>03 — Freeboard and capacity basis</h2>
+<h2>03 — Existing ground gradients</h2>
+<p class="help" style="margin:-3px 0 12px">Ground is a planar surface. Positive gradients mean ground rises towards <strong>+X (length)</strong> or <strong>+Y (width)</strong>, shown in the 3D preview.</p>
+<div class="row"><div class="field"><label for="groundLong">Longitudinal ground gradient (+X)</label><div class="input-shell"><input id="groundLong" type="number" step="any" value="0"><span class="unit">%</span></div></div><div class="field"><label for="groundCross">Crossfall of ground (+Y)</label><div class="input-shell"><input id="groundCross" type="number" step="any" value="0"><span class="unit">%</span></div></div></div>
+<h2>04 — Pond base gradients</h2>
+<p class="help" style="margin:-3px 0 12px">Pond base is another plane. Its elevation at the footprint centre is <strong>ground centre − depth</strong>. The base rises with positive gradients. Both grades are independent of ground.</p>
+<div class="row"><div class="field"><label for="baseLong">Longitudinal base gradient (+X)</label><div class="input-shell"><input id="baseLong" type="number" step="any" value="0"><span class="unit">%</span></div></div><div class="field"><label for="baseCross">Crossfall of base (+Y)</label><div class="input-shell"><input id="baseCross" type="number" step="any" value="0"><span class="unit">%</span></div></div></div>
+<h2>05 — Freeboard and capacity basis</h2>
 <div class="row"><div class="field"><label for="freeboard">Freeboard depth</label><div class="input-shell"><input id="freeboard" type="number" min="0" step="any" value="0.3"><span class="unit">m</span></div></div><div class="field"><label for="volumeBasis">Volume input refers to</label><select id="volumeBasis"><option value="usable" selected>Usable storage (below freeboard)</option><option value="total">Total to top of rim</option></select></div></div>
-<p class="help">Freeboard is the vertical distance from the top rim down to the design water level. Usable storage is the capacity below that level.</p>
-<h2>04 — Known quantities</h2>
+<p class="help">Freeboard is measured vertically below the <strong>lowest rim elevation (overflow point)</strong>, not the highest rim. Water is always horizontal. Where the base or pond sides rise above the water level, they store no water.</p>
+<h2>06 — Known quantities</h2>
 <p class="help" style="margin:-3px 0 12px">The selected radio button marks the calculated (locked) field. To type a target volume, select <strong>Area</strong> or <strong>Depth</strong>; then enter the volume and choose usable or total capacity above.</p>
 <div class="metric-grid">
 <label class="metric target" data-target="volume"><input type="radio" name="solve" value="volume" checked><span><strong>Volume</strong><small id="volumeDescription">Usable storage below freeboard</small></span><span class="input-shell"><input type="number" id="volume" min="0" step="any" value="" disabled aria-label="Volume"><span class="unit">m³</span></span></label>
@@ -40,162 +46,157 @@
 <label class="metric" data-target="depth"><input type="radio" name="solve" value="depth"><span><strong>Depth</strong><small>Vertical excavation depth</small></span><span class="input-shell"><input type="number" id="depth" min="0" step="any" value="2" aria-label="Depth"><span class="unit">m</span></span></label>
 </div>
 <div id="error" class="error" role="alert"></div>
-<h2>05 — Calculated results</h2>
-<div class="result-grid" style="margin-bottom:10px"><div class="result"><div class="caption">Total rim capacity</div><div class="value" id="totalCapacity">—</div></div><div class="result"><div class="caption">Usable capacity</div><div class="value" id="usableCapacity">—</div></div><div class="result"><div class="caption">Freeboard volume</div><div class="value" id="freeboardVolume">—</div></div><div class="result"><div class="caption">Design water area</div><div class="value" id="waterArea">—</div></div></div>
-<h2>06 — Calculated geometry</h2>
+<h2>07 — Storage capacity</h2>
+<div class="result-grid" style="margin-bottom:10px"><div class="result"><div class="caption">Maximum storage (before spill)</div><div class="value" id="totalCapacity">—</div></div><div class="result"><div class="caption">Usable capacity</div><div class="value" id="usableCapacity">—</div></div><div class="result"><div class="caption">Storage reserved by freeboard</div><div class="value" id="freeboardVolume">—</div></div><div class="result"><div class="caption">Design water area</div><div class="value" id="waterArea">—</div></div></div>
+<h2>08 — Calculated geometry</h2>
+<div class="result-grid" style="margin-bottom:10px"><div class="result"><div class="caption">Lowest rim level (relative)</div><div class="value" id="spillElevation">—</div></div><div class="result"><div class="caption">Design water level (relative)</div><div class="value" id="waterElevation">—</div></div><div class="result"><div class="caption">Exposed/dry pond footprint</div><div class="value" id="dryArea">—</div></div><div class="result"><div class="caption">Base elevation range</div><div class="value" id="baseRange">—</div></div></div>
 <div class="result-grid"><div class="result"><div class="caption">Bottom area</div><div class="value" id="bottomArea">—</div></div><div class="result"><div class="caption">Top dimensions</div><div class="value" id="topDims">—</div></div><div class="result"><div class="caption">Bottom dimensions</div><div class="value" id="bottomDims">—</div></div><div class="result"><div class="caption">Side run (each side)</div><div class="value" id="sideRun">—</div></div></div>
-<label class="toggle"><input type="checkbox" id="waterToggle" checked> Show design water level (pond depth − freeboard)</label>
-<p class="footer-note">Assumptions: level top rim and base; constant inward side slope; uniform excavation depth; no irregular ground, benching or curved batter transitions. Area means the <strong>top plan area</strong>, not wetted surface or land area. Total volume is the geometric capacity to the rim. Usable volume is the pond capacity below the freeboard level (does not account for sediment, permanent dead storage, or operational allowances). Circular sides are conical; square/rectangular sides are planar. Custom outlines use a numerical distance-to-rim model; results are approximate and narrow areas can taper to zero before reaching the design base. This is a conceptual sizing tool, not an earthworks design check.</p>
+<label class="toggle"><input type="checkbox" id="waterToggle" checked> Show horizontal design water surface</label>
+<p class="footer-note">Model: a planar ground (rim) surface and planar base with independent X/Y grades. Depth is measured at plan centre. Sides drop from their closest top-rim point at the specified inward slope, meeting the base where possible. The pond cannot store water above its <strong>lowest rim point</strong>; freeboard is below that controlling spill elevation. Maximum storage is not an earthworks excavation quantity. Numerical grid integration and rendered meshes are approximate; finite sampling can affect narrow shapes and steep slopes. Flat zero-gradient results correspond to a conventional level-rim pond. No outfall, berm/retaining-wall design, ground-condition, hydraulic routing, sediment or operational storage allowance is included. <strong>Concept sizing only; verify detailed levels, stability, and volumes in CAD.</strong></p>
 </section>
-<section class="viz" id="viz"><div class="viz-header"><h2>Interactive 3D preview</h2><p>Drag to rotate · Scroll to zoom · Shift + drag to pan</p></div><div class="viz-toolbar"><button class="tool" id="resetView">Reset view</button></div><canvas id="canvas" aria-label="Interactive three-dimensional preview of pond geometry"></canvas><div class="legend"><span><i class="swatch" style="background:#92b098"></i>Ground / rim</span><span><i class="swatch" style="background:#b78f69"></i>Excavated sides</span><span><i class="swatch" style="background:#54b8e7"></i>Design water level</span><span class="pill" id="vizCaption">—</span></div></section>
+<section class="viz" id="viz"><div class="viz-header"><h2>Interactive 3D preview</h2><p>Drag to rotate · Scroll to zoom · Shift + drag to pan</p></div><div class="viz-toolbar"><button class="tool" id="resetView">Reset view</button></div><canvas id="canvas" aria-label="Interactive three-dimensional preview of pond geometry"></canvas><div class="legend"><span><i class="swatch" style="background:#92b098"></i>Sloping ground / rim</span><span><i class="swatch" style="background:#b78f69"></i>Excavated sides</span><span><i class="swatch" style="background:#54b8e7"></i>Horizontal water</span><span class="pill" id="vizCaption">—</span></div></section>
 </main>
 <script>
 (()=>{'use strict';
-const $=id=>document.getElementById(id);let shape='circle',solve='volume',geometry=null;
+const $=id=>document.getElementById(id);
+let shape='circle',solve='volume',geometry=null,points=[],closed=false,polygonData=null,dragVertex=-1;
 const vals={volume:$('volume'),area:$('area'),depth:$('depth')};
-let points=[],closed=false,polygonData=null,dragVertex=-1;
-const round=(n,d=2)=>Number.isFinite(n)?new Intl.NumberFormat('en-GB',{maximumFractionDigits:d}).format(n):'—';
-const fmt=(v,u,d=2)=>Number.isFinite(v)?round(v,d)+' '+u:'—';
-const getNum=(id)=>Number($(id).value);
-function getSlope(){const n=getNum('slope');if(!Number.isFinite(n)||n<0)return NaN;if($('slopeFormat').value==='percent')return n===0?Infinity:100/n;return n;}
-function dimFromArea(A){if(shape==='custom'){const r=polygonData?.bounds;if(!r)return {w:0,l:0};const k=Math.sqrt(A/polygonData.area);return {w:r.w*k,l:r.h*k};}if(shape==='circle'){let r=Math.sqrt(A/Math.PI);return {r,w:2*r,l:2*r}}const ar=shape==='square'?1:getNum('aspect');const w=Math.sqrt(A/ar);return {w,l:w*ar};}
-function maxDepth(A,m){if(shape==='custom')return Infinity;if(m===0)return Infinity;const dim=dimFromArea(A);return (shape==='circle'?dim.r:dim.w/2)/m;}
-function calcV(A,D,m){if(shape==='custom')return customCapacity(A,D,m,0);const g=dimFromArea(A);if(shape==='circle'){const R=g.r;return Math.PI*(R*R*D-R*m*D*D+m*m*D*D*D/3)}return A*D-m*(g.w+g.l)*D*D+4*m*m*D*D*D/3;}
-function bottomA(A,D,m){if(shape==='custom')return customAreaAt(A,m*D);const d=dimFromArea(A);return shape==='circle'?Math.PI*Math.max(0,d.r-m*D)**2:Math.max(0,d.w-2*m*D)*Math.max(0,d.l-2*m*D);}
-function bisect(fn,lo,hi){for(let i=0;i<90;i++){let md=(lo+hi)/2;if(fn(md)>0)hi=md;else lo=md}return (lo+hi)/2;}
-function error(t){$('error').textContent=t;$('error').classList.toggle('show',!!t);}
-function clearResults(){['totalCapacity','usableCapacity','freeboardVolume','waterArea','bottomArea','topDims','bottomDims','sideRun'].forEach(id=>$(id).textContent='—');$('vizCaption').textContent='No valid geometry';geometry=null;draw();}
-function update(){
- error('');
- const m=getSlope(), f=getNum('freeboard'), basis=$('volumeBasis').value;
- $('volumeDescription').textContent=basis==='usable'?'Capacity below design water level':'Full capacity up to rim';
- if(!Number.isFinite(m)){error('Enter a valid slope. In percent mode, grade must be greater than zero.');clearResults();return}
- if($('freeboard').value.trim()===''||!Number.isFinite(f)||f<0){error('Freeboard must be zero or a positive finite number.');clearResults();return}
- let A=Number(vals.area.value),D=Number(vals.depth.value),V=Number(vals.volume.value);
- const known=Object.keys(vals).filter(k=>k!==solve);
- if(known.some(k=>vals[k].value.trim()===''||!Number.isFinite(Number(vals[k].value))||Number(vals[k].value)<=0)){
-  error('Enter positive values for both known quantities.'); vals[solve].value='';clearResults();return;
+const fmt=(n,u='',digits=2)=>Number.isFinite(n)?new Intl.NumberFormat('en-GB',{maximumFractionDigits:digits}).format(n)+(u?' '+u:''):'—';
+const num=id=>Number($(id).value);
+const validNum=id=>$(id).value.trim()!==''&&Number.isFinite(Number($(id).value));
+function getSlope(){let a=num('slope');return $('slopeFormat').value==='percent'?(a>0?100/a:NaN):a;}
+function error(t){$('error').textContent=t;$('error').classList.toggle('show',!!t)}
+function clearResults(){for(const id of ['totalCapacity','usableCapacity','freeboardVolume','waterArea','bottomArea','topDims','bottomDims','sideRun','spillElevation','waterElevation','dryArea','baseRange'])$(id).textContent='—';$('vizCaption').textContent='No valid geometry';geometry=null;draw()}
+function polyArea(ps){let v=0;for(let i=0;i<ps.length;i++){const a=ps[i],b=ps[(i+1)%ps.length];v+=a[0]*b[1]-b[0]*a[1]}return Math.abs(v)/2}
+function insidePoly(x,y,ps){let inside=false;for(let i=0,j=ps.length-1;i<ps.length;j=i++){const a=ps[i],b=ps[j];if((a[1]>y)!==(b[1]>y)&&x<(b[0]-a[0])*(y-a[1])/(b[1]-a[1])+a[0])inside=!inside;}return inside}
+function intersect(a,b,c,d){const cross=(u,v,w)=>(v[0]-u[0])*(w[1]-u[1])-(v[1]-u[1])*(w[0]-u[0]);return cross(a,b,c)*cross(a,b,d)<0&&cross(c,d,a)*cross(c,d,b)<0}
+function buildPolygon(){polygonData=null;if(!closed||points.length<3)return;for(let i=0;i<points.length;i++)for(let j=i+1;j<points.length;j++){if(Math.abs(i-j)<=1||(i===0&&j===points.length-1))continue;if(intersect(points[i],points[(i+1)%points.length],points[j],points[(j+1)%points.length]))return}const area=polyArea(points);if(area<100)return;const xs=points.map(p=>p[0]),ys=points.map(p=>p[1]);polygonData={area,bounds:{x:Math.min(...xs),y:Math.min(...ys),w:Math.max(...xs)-Math.min(...xs),h:Math.max(...ys)-Math.min(...ys)}}}
+function dimFromArea(A){if(shape==='custom'){const b=polygonData.bounds,k=Math.sqrt(A/polygonData.area);return {w:b.w*k,l:b.h*k}}if(shape==='circle'){const r=Math.sqrt(A/Math.PI);return {w:r*2,l:r*2,r}}const ratio=shape==='square'?1:num('aspect'),w=Math.sqrt(A/ratio);return {w,l:w*ratio}}
+// Shape coordinates normalised to exactly 1 square metre, centred on bbox midpoint.
+let cachedKey='',sampleCache=null;
+function makeShape(){const key=shape+'|'+(shape==='rectangle'?num('aspect'):'')+'|'+(shape==='custom'?points.map(p=>p.join(',')).join('|'):'');if(key===cachedKey&&sampleCache)return sampleCache;
+ let vertices=[],dim=dimFromArea(1),w=dim.w,l=dim.l;
+ if(shape==='circle'){for(let i=0;i<100;i++){let t=2*Math.PI*i/100;vertices.push([w/2*Math.cos(t),l/2*Math.sin(t)])}}
+ else if(shape==='custom'){let b=polygonData.bounds,k=Math.sqrt(1/polygonData.area);vertices=points.map(p=>[(p[0]-b.x-b.w/2)*k,(p[1]-b.y-b.h/2)*k])}
+ else vertices=[[-w/2,-l/2],[w/2,-l/2],[w/2,l/2],[-w/2,l/2]];
+ function nearest(x,y){if(shape==='circle'){let d=Math.hypot(x,y),r=w/2;return {distance:r-d,px:d>1e-12?x*r/d:r,py:d>1e-12?y*r/d:0}}
+ let best=Infinity,px=0,py=0;for(let i=0;i<vertices.length;i++){const a=vertices[i],b=vertices[(i+1)%vertices.length],vx=b[0]-a[0],vy=b[1]-a[1];let t=Math.max(0,Math.min(1,((x-a[0])*vx+(y-a[1])*vy)/(vx*vx+vy*vy||1)));let qx=a[0]+t*vx,qy=a[1]+t*vy,ds=(x-qx)**2+(y-qy)**2;if(ds<best){best=ds;px=qx;py=qy}}return {distance:Math.sqrt(best),px,py}}
+ function inside(x,y){return shape==='circle'?x*x+y*y<=(w/2)**2:shape==='custom'?insidePoly(x,y,vertices):Math.abs(x)<=w/2&&Math.abs(y)<=l/2}
+ const samples=[],N=96,nx=N,ny=Math.max(12,Math.round(N*l/w));let dx=w/nx,dy=l/ny;
+ for(let j=0;j<ny;j++)for(let i=0;i<nx;i++){let x=-w/2+(i+.5)*dx,y=-l/2+(j+.5)*dy;if(inside(x,y)){const n=nearest(x,y);samples.push({x,y,...n})}}
+ if(!samples.length)throw Error('Cannot sample this footprint. Draw a wider outline.');
+ sampleCache={vertices,dim,samples,inside,nearest};cachedKey=key;return sampleCache;
+}
+function inputs(){return {m:getSlope(),f:num('freeboard'),gl:num('groundLong')/100,gc:num('groundCross')/100,bl:num('baseLong')/100,bc:num('baseCross')/100}}
+function rimMin(g,shapeData,A){const k=Math.sqrt(A);if(shape==='circle')return -Math.hypot(g.gl,g.gc)*shapeData.dim.w*k/2;return Math.min(...shapeData.vertices.map(p=>g.gl*p[0]*k+g.gc*p[1]*k))}
+function surface(p,k,D,g){const x=p.x*k,y=p.y*k;const rimAtEdge=g.gl*p.px*k+g.gc*p.py*k;
+ const side=g.m===0?-Infinity:rimAtEdge-p.distance*k/g.m;
+ const base=-D+g.bl*x+g.bc*y;
+ const ground=g.gl*x+g.gc*y;
+ // Clamp to existing terrain: a non-excavated location stores no water.
+ return {z:Math.min(ground,Math.max(base,side)),base,ground,side};}
+// The two storage quantities are measured from a single LEVEL water surface.
+// "Maximum" means just below the lowest (spill-controlling) rim point.
+function compute(A,D,g,shapeData,details=false){const k=Math.sqrt(A),spill=rimMin(g,shapeData,A),wl=spill-g.f,ss=shapeData.samples;let vMax=0,vUse=0,wet=0,baseN=0,dry=0;
+ for(let i=0;i<ss.length;i++){const s=surface(ss[i],k,D,g);vMax+=Math.max(0,spill-s.z);vUse+=Math.max(0,wl-s.z);if(s.z<wl)wet++;else dry++;if(s.base>=s.side&&s.base<s.ground)baseN++}
+ const unit=A/ss.length,total=vMax*unit,usable=vUse*unit;
+ if(!details)return {total,usable,spill,wl};
+ const vals=shapeData.vertices.map(p=>-D+(g.bl*p[0]+g.bc*p[1])*k);
+ return {total,usable,spill,wl,wetArea:wet*unit,dryArea:dry*unit,baseArea:baseN*unit,baseMin:Math.min(...vals),baseMax:Math.max(...vals)};
+}
+function bisectIncreasing(fn,lo,hi,target){for(let i=0;i<54;i++){let m=(lo+hi)/2;if(fn(m)<target)lo=m;else hi=m}return (lo+hi)/2}
+function update(){error('');const g=inputs(),basis=$('volumeBasis').value;
+ $('volumeDescription').textContent=basis==='usable'?'Capacity under horizontal freeboard level':'Maximum capacity up to lowest rim';
+ if(!['slope','freeboard','groundLong','groundCross','baseLong','baseCross'].every(validNum)||!Number.isFinite(g.m)||g.m<0||g.f<0||[g.gl,g.gc,g.bl,g.bc].some(v=>Math.abs(v)>2)){error('Enter valid grades (between −200% and +200%), a non-negative freeboard and a valid side slope.');clearResults();return}
+ if(shape==='custom'&&!polygonData){error('Draw and close a non-self-intersecting custom outline first.');clearResults();return}
+ if(shape==='rectangle'&&(!validNum('aspect')||num('aspect')<1||num('aspect')>20)){error('Rectangle length:width ratio must be between 1 and 20.');clearResults();return}
+ const known=Object.keys(vals).filter(x=>x!==solve);
+ if(known.some(x=>vals[x].value.trim()===''||!Number.isFinite(Number(vals[x].value))||Number(vals[x].value)<=0)){error('Enter positive values for both known quantities.');vals[solve].value='';clearResults();return}
+ try{const shapeData=makeShape();let A=num('area'),D=num('depth'),V=num('volume');
+ const cap=(a,d)=>{const r=compute(a,d,g,shapeData);return basis==='usable'?r.usable:r.total};
+ if(solve==='volume')V=cap(A,D);
+ else if(solve==='area'){
+  const target=V;let lo=1e-7,hi=Math.max(1,A||100);let vLo=cap(lo,D),vHi=cap(hi,D);
+  // Since the ground and base may be differently inclined, a solution need not exist.
+  let attempts=0;while(vHi<target&&attempts++<45){hi*=1.8;vHi=cap(hi,D)}
+  if(vHi<target)throw Error('Target volume could not be reached by enlarging this outline. Check ground/base gradients or increase centre depth.');
+  A=bisectIncreasing(a=>cap(a,D),lo,hi,target);
+ }else{
+  const target=V;let lo=.000001,hi=Math.max(1,D||2),vHi=cap(A,hi),attempts=0;
+  while(vHi<target&&attempts++<28){hi*=1.65;vHi=cap(A,hi)}
+  if(vHi<target)throw Error('Target volume cannot be stored in this footprint: steep sides, ground levels or freeboard limit the capacity.');
+  D=bisectIncreasing(d=>cap(A,d),lo,hi,target);
  }
- if(shape==='custom'&&!polygonData){error('Draw and close a valid, non-self-intersecting custom outline first.');clearResults();return;}
- if(shape==='rectangle'&&(!Number.isFinite(getNum('aspect'))||getNum('aspect')<1||getNum('aspect')>20)){
-  error('Rectangle length : width must be between 1 and 20.');clearResults();return;
- }
- try{
-  const valid=(a,d)=>d>=f-1e-10 && d<=maxDepth(a,m)*(1+1e-10) && f<=maxDepth(a,m)*(1+1e-10);
-  const capacity=(a,d)=>shape==='custom'?customCapacity(a,d,m,basis==='usable'?f:0):calcV(a,d,m)-(basis==='usable'?calcV(a,f,m):0);
-  if(solve==='volume'){
-   if(!valid(A,D))throw Error('Depth must be at least the freeboard and must fit inside the top footprint at the selected side slope.');
-   V=capacity(A,D);
-  }else if(solve==='area'){
-   if(D<f)throw Error('Pond depth must be at least as deep as the freeboard.');
-   if(basis==='usable'&&D===f)throw Error('Usable capacity is zero when freeboard equals pond depth.');
-   const ar=shape==='rectangle'?getNum('aspect'):1;
-   const minA=shape==='custom'?1e-12:m===0?0:shape==='circle'?Math.PI*(m*D)**2:4*(m*D)**2*ar;
-   const minV=capacity(minA,D);
-   if(V<minV*(1-1e-9))throw Error('Specified volume is smaller than the minimum feasible capacity for this depth and side slope ('+fmt(minV,'m³')+').');
-   let lo=Math.max(1e-14,minA),hi=Math.max(1,minA*2,V/Math.max(0.001,D-f)*5);
-   let tries=0;
-   while((!valid(hi,D)||capacity(hi,D)<V)&&tries++<100)hi*=2;
-   if(tries>=100)throw Error('Unable to solve for the top area.');
-   for(let i=0;i<100;i++){let mid=(lo+hi)/2;if(!valid(mid,D)||capacity(mid,D)<V)lo=mid;else hi=mid}
-   A=(lo+hi)/2;
-  }else{
-   const md=maxDepth(A,m);
-   if(f>md)throw Error('Freeboard alone exceeds the maximum depth possible for this area and slope.');
-   const mv=shape==='custom'?customMaxCapacity(A,m,basis==='usable'?f:0):Number.isFinite(md)?capacity(A,md):Infinity;
-   if(V>mv*(1+1e-9))throw Error('Required volume exceeds the maximum capacity for this footprint and side slope ('+fmt(mv,'m³')+').');
-   let lo=f,hi=Number.isFinite(md)?md:Math.max(f+1,V/A*3+f);
-   if(!Number.isFinite(md)){let attempts=0;while(capacity(A,hi)<V&&attempts++<80)hi*=2;}
-   for(let i=0;i<100;i++){let mid=(lo+hi)/2;if(capacity(A,mid)<V)lo=mid;else hi=mid}
-   D=(lo+hi)/2;
-  }
-  if(!(A>0&&D>0)||![A,D,V].every(Number.isFinite)||!valid(A,D))throw Error('The values create invalid pond geometry.');
-  const total=calcV(A,D,m),freeVol=shape==='custom'?total-customCapacity(A,D,m,f):calcV(A,f,m),usable=total-freeVol;
-  if(usable<-1e-8)throw Error('Freeboard exceeds the pond depth.');
-  const dim=dimFromArea(A),run=m*D,BA=bottomA(A,D,m),bw=Math.max(0,dim.w-2*run),bl=Math.max(0,dim.l-2*run);
-  const waterWidth=Math.max(0,dim.w-2*m*f),waterLength=Math.max(0,dim.l-2*m*f);
-  const wa=shape==='custom'?customAreaAt(A,m*f):shape==='circle'?Math.PI*(waterWidth/2)**2:waterWidth*waterLength;
-  vals[solve].value=Number((solve==='volume'?V:solve==='area'?A:D).toPrecision(10)).toString();
-  $('totalCapacity').textContent=fmt(total,'m³');$('usableCapacity').textContent=fmt(usable,'m³');
-  $('freeboardVolume').textContent=fmt(freeVol,'m³');$('waterArea').textContent=fmt(wa,'m²');
-  $('bottomArea').textContent=fmt(BA,'m²');$('topDims').textContent=shape==='circle'?'Ø '+fmt(dim.w,'m'):fmt(dim.w,'m')+' × '+fmt(dim.l,'m');
-  $('bottomDims').textContent=shape==='custom'?'Irregular footprint':shape==='circle'?'Ø '+fmt(bw,'m'):fmt(bw,'m')+' × '+fmt(bl,'m');
-  if(shape==='custom')$('customScaleInfo').textContent='Top outline: '+fmt(A,'m²')+' · bounding box '+fmt(dim.w,'m')+' × '+fmt(dim.l,'m')+' · scaled uniformly';
-  $('sideRun').textContent=fmt(run,'m');
-  $('vizCaption').textContent=fmt(usable,'m³')+' usable · '+fmt(D,'m')+' deep · '+fmt(f,'m')+' freeboard';
-  geometry={A,D,V,total,usable,freeVol,f,m,shape,dim,run,BA,bw,bl};draw();
+ if(!Number.isFinite(A)||!Number.isFinite(D)||A<=0||D<=0)throw Error('Calculated geometry is invalid.');
+ const r=compute(A,D,g,shapeData,true),dim=dimFromArea(A),run=g.m*D;
+ vals[solve].value=Number((solve==='volume'?V:solve==='area'?A:D).toPrecision(10)).toString();
+ $('totalCapacity').textContent=fmt(r.total,'m³');$('usableCapacity').textContent=fmt(r.usable,'m³');
+ $('freeboardVolume').textContent=fmt(r.total-r.usable,'m³');$('waterArea').textContent=fmt(r.wetArea,'m²');
+ $('spillElevation').textContent=fmt(r.spill,'m');$('waterElevation').textContent=fmt(r.wl,'m');
+ $('dryArea').textContent=fmt(r.dryArea,'m²');$('baseRange').textContent=fmt(r.baseMin,'m')+' to '+fmt(r.baseMax,'m');
+ $('bottomArea').textContent=fmt(r.baseArea,'m²');$('topDims').textContent=shape==='circle'?'Ø '+fmt(dim.w,'m'):fmt(dim.w,'m')+' × '+fmt(dim.l,'m');
+ $('bottomDims').textContent='Sloping base (see 3D)';$('sideRun').textContent=fmt(run,'m')+' nominal';
+ if(shape==='custom')$('customScaleInfo').textContent='Top outline '+fmt(A,'m²')+' · bounding box '+fmt(dim.w,'m')+' × '+fmt(dim.l,'m')+' · uniformly scaled';
+ $('vizCaption').textContent=fmt(r.usable,'m³')+' usable · '+fmt(r.total,'m³')+' max';
+ geometry={A,D,V,g,dim,shapeData,...r};draw();
  }catch(e){error(e.message);vals[solve].value='';clearResults()}
 }
-for(const k of Object.keys(vals))vals[k].addEventListener('input',()=>{if(k!==solve)update()});
-document.querySelectorAll('input[name=solve]').forEach(r=>r.addEventListener('change',()=>{solve=r.value;document.querySelectorAll('.metric').forEach(el=>el.classList.toggle('target',el.dataset.target===solve));for(const k in vals)vals[k].disabled=k===solve;update()}));
-document.querySelectorAll('.shape-btn').forEach(b=>b.addEventListener('click',()=>{shape=b.dataset.shape;document.querySelectorAll('.shape-btn').forEach(x=>{x.classList.toggle('active',x===b);x.setAttribute('aria-pressed',x===b?'true':'false')});$('aspectWrap').style.display=shape==='rectangle'?'block':'none';$('customWrap').hidden=shape!=='custom';drawSketch();update()}));
-$('aspect').addEventListener('input',update);$('freeboard').addEventListener('input',update);$('volumeBasis').addEventListener('change',()=>{if(solve!=='volume' && geometry){vals.volume.value=Number(($('volumeBasis').value==='usable'?geometry.usable:geometry.total).toPrecision(10));}update()});
-$('slopeFormat').addEventListener('change',()=>{const n=getNum('slope');if($('slopeFormat').value==='percent'){$('slope').value=n===0?'':round(100/n,6);$('slopeLabel').textContent='Vertical grade';$('slopeUnit').textContent='%'}else{$('slope').value=n===0?'':round(100/n,6);$('slopeLabel').textContent='Horizontal run per 1 m rise';$('slopeUnit').textContent='H : 1V'}updateHint();update()});
+for(const k in vals)vals[k].addEventListener('input',()=>{if(k!==solve)update()});
+document.querySelectorAll('input[name=solve]').forEach(el=>el.addEventListener('change',()=>{solve=el.value;document.querySelectorAll('.metric').forEach(m=>m.classList.toggle('target',m.dataset.target===solve));for(const k in vals)vals[k].disabled=k===solve;update()}));
+document.querySelectorAll('.shape-btn').forEach(b=>b.addEventListener('click',()=>{shape=b.dataset.shape;cachedKey='';document.querySelectorAll('.shape-btn').forEach(x=>{x.classList.toggle('active',x===b);x.setAttribute('aria-pressed',String(x===b))});$('aspectWrap').style.display=shape==='rectangle'?'block':'none';$('customWrap').hidden=shape!=='custom';drawSketch();update()}));
+for(const id of ['aspect','freeboard','groundLong','groundCross','baseLong','baseCross'])$(id).addEventListener('input',update);
+$('volumeBasis').addEventListener('change',()=>{if(solve!=='volume'&&geometry)vals.volume.value=Number(($('volumeBasis').value==='usable'?geometry.usable:geometry.total).toPrecision(10));update()});
+$('slopeFormat').addEventListener('change',()=>{let n=num('slope');$('slope').value=n===0?'':(100/n).toPrecision(9);$('slopeLabel').textContent=$('slopeFormat').value==='percent'?'Vertical grade':'Horizontal run per 1 m rise';$('slopeUnit').textContent=$('slopeFormat').value==='percent'?'%':'H : 1V';updateHint();update()});
 $('slope').addEventListener('input',()=>{updateHint();update()});$('waterToggle').addEventListener('change',draw);
-function updateHint(){let m=getSlope();$('slopeHint').textContent=Number.isFinite(m)?(m===0?'Vertical sides (no horizontal run).':'1V:'+round(m,3)+'H → '+round(100/m,2)+'% grade. The sides slope inward towards the bottom.'):'Use a grade greater than 0%, or switch to ratio mode for vertical walls.'}
-// Standalone 3D canvas renderer (no external dependencies).
-const canvas=$('canvas'),ctx=canvas.getContext('2d');let yaw=-.65,pitch=.61,zoom=1,panX=0,panY=0;
-function P(x,y,z){return [x,y,z]};
-function project(p,scale,cx,cy){let [x,y,z]=p;const a=yaw,b=pitch;const X=x*Math.cos(a)-y*Math.sin(a);const Y=x*Math.sin(a)+y*Math.cos(a);return {x:cx+(X*scale)+panX,y:cy+(Y*Math.sin(b)-z*Math.cos(b))*scale+panY,depth:Y*Math.cos(b)+z*Math.sin(b)}}
-const mix=(a,b,t)=>a.map((v,i)=>v*(1-t)+b[i]*t);
-function polygon(points,fill,stroke,alpha=1,width=1){ctx.save();ctx.globalAlpha=alpha;ctx.beginPath();ctx.moveTo(points[0].x,points[0].y);for(let i=1;i<points.length;i++)ctx.lineTo(points[i].x,points[i].y);ctx.closePath();if(fill){ctx.fillStyle=fill;ctx.fill()}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=width;ctx.stroke()}ctx.restore()}
-function line(points,color,width=1,dash=[]){ctx.save();ctx.beginPath();ctx.setLineDash(dash);ctx.moveTo(points[0].x,points[0].y);for(let i=1;i<points.length;i++)ctx.lineTo(points[i].x,points[i].y);ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();ctx.restore()}
-function ring(w,l,z,n=64){let pts=[];if(shape==='circle'){for(let i=0;i<n;i++){const a=2*Math.PI*i/n;pts.push(P(w/2*Math.cos(a),l/2*Math.sin(a),z))}}else{const perSide=8;let corners=[[-w/2,-l/2],[w/2,-l/2],[w/2,l/2],[-w/2,l/2]];for(let j=0;j<4;j++)for(let i=0;i<perSide;i++){let t=i/perSide,a=corners[j],b=corners[(j+1)%4];pts.push(P(a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,z))}}return pts}
-function draw(){const r=canvas.getBoundingClientRect();if(!r.width||!r.height)return;let dpr=Math.min(devicePixelRatio||1,2),cw=Math.round(r.width*dpr),ch=Math.round(r.height*dpr);if(canvas.width!==cw||canvas.height!==ch){canvas.width=cw;canvas.height=ch}ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,r.width,r.height);if(!geometry)return;
-if(shape==='custom'){drawCustom3D(r);return;}
-const {D,m,dim,run,bw,bl}=geometry;const W=dim.w,L=dim.l,maxDim=Math.max(W,L,D*1.5);const scale=Math.min(r.width*.69,r.height*.62)/maxDim*zoom;const cx=r.width*.5,cy=r.height*.52;
-const proj=p=>project(p,scale,cx,cy);
-// Survey-style reference grid on the top plane.
-const extent=Math.max(W,L)*.85,step=Math.pow(10,Math.floor(Math.log10(Math.max(W,L)/6)));const s=[1,2,5,10].map(t=>t*step).find(v=>extent*2/v<=16)||step*10;for(let k=-Math.ceil(extent/s);k<=Math.ceil(extent/s);k++){let t=k*s;line([proj(P(-extent,t,0)),proj(P(extent,t,0))],'#344a57',.7);line([proj(P(t,-extent,0)),proj(P(t,extent,0))],'#344a57',.7)}
-let top=ring(W,L,0),bottom=ring(bw,bl,-D),N=top.length;
-// Reference outside rim: four soft edge quadrants, buried earth with the pond cut-out drawn above.
-let facets=[];for(let i=0;i<N;i++){const j=(i+1)%N;const ps=[top[i],top[j],bottom[j],bottom[i]];const depth=ps.reduce((acc,p)=>acc+proj(p).depth,0)/4;const nx=top[j][1]-top[i][1],ny=top[i][0]-top[j][0];const shade=Math.max(0,Math.min(1,(nx*.8+ny*.6)/Math.max(.001,Math.hypot(nx,ny))*.5+.5));facets.push({ps,depth,fill:`hsl(29, ${24+Math.round(8*shade)}%, ${34+Math.round(19*shade)}%)`})}
-facets.sort((a,b)=>a.depth-b.depth);for(const f of facets)polygon(f.ps.map(proj),f.fill,'#987451',1,.6);
-polygon(bottom.map(proj),'#537b82','#78a4a2',.88,1);
-// Water level at the design freeboard height; capacity is below this surface.
-if($('waterToggle').checked){const waterDepth=geometry.f;let wr=ring(Math.max(0,W-2*m*waterDepth),Math.max(0,L-2*m*waterDepth),-waterDepth);polygon(wr.map(proj),'#41b5ea','#83d7fb',.56,1.3);for(let k=0;k<5;k++){let t=(k+1)/6;let rad=Math.max(0,Math.min(W,L)/2-m*waterDepth)*t; if(shape==='circle'){let rp=ring(rad*2,rad*2,-waterDepth+.002);line([...rp.map(proj),proj(rp[0])],'#b4efff',.6)}}}
-line([...top.map(proj),proj(top[0])],'#b7d8ba',2.4);line([...bottom.map(proj),proj(bottom[0])],'#88b5aa',.9);
-for(let i=0;i<N;i+=Math.max(1,Math.floor(N/(shape==='circle'?12:4))))line([proj(top[i]),proj(bottom[i])],'#e0b48a',.8);
-// Depth indicator at far right; consistent actual units.
-let px=W/2+Math.max(W,L)*.16,py=-L/2;let a=proj(P(px,py,0)),b=proj(P(px,py,-D));line([a,b],'#e8f0f8',1.5,[5,4]);for(const q of [a,b])line([{x:q.x-5,y:q.y},{x:q.x+5,y:q.y}],'#e8f0f8',1.2);ctx.save();ctx.font='12px system-ui';ctx.fillStyle='#ecf5fc';ctx.fillText(round(D,2)+' m',b.x+9,(a.y+b.y)/2);ctx.restore();
-}
-// Custom footprint: sampled signed distance to its edges. Grid sample results are normalized
-// to the exact shoelace footprint area, so the capacity converges with a finer sampling grid.
+function updateHint(){let m=getSlope();$('slopeHint').textContent=Number.isFinite(m)?(m===0?'Vertical sides':'1V:'+fmt(m,'H',3)+' → '+fmt(100/m,'%',2)+' grade. Slope is measured from closest rim point.'):'Enter a positive grade or switch to side ratio.'}
+// Sketch editor; its coordinates define plan SHAPE only, not metres.
 const sketch=$('drawCanvas'),sketchCtx=sketch.getContext('2d');
-function polyArea(ps){let v=0;for(let i=0;i<ps.length;i++){let a=ps[i],b=ps[(i+1)%ps.length];v+=a[0]*b[1]-b[0]*a[1]}return Math.abs(v)/2;}
-function insidePoly(x,y,ps){let inside=false;for(let i=0,j=ps.length-1;i<ps.length;j=i++){const a=ps[i],b=ps[j];if((a[1]>y)!==(b[1]>y)&&x<(b[0]-a[0])*(y-a[1])/(b[1]-a[1])+a[0])inside=!inside;}return inside;}
-function distanceToEdges(x,y,ps){let min=Infinity;for(let i=0;i<ps.length;i++){const a=ps[i],b=ps[(i+1)%ps.length],vx=b[0]-a[0],vy=b[1]-a[1];let t=Math.max(0,Math.min(1,((x-a[0])*vx+(y-a[1])*vy)/(vx*vx+vy*vy||1)));min=Math.min(min,Math.hypot(x-a[0]-vx*t,y-a[1]-vy*t))}return min;}
-function intersect(a,b,c,d){const cross=(u,v,w)=>(v[0]-u[0])*(w[1]-u[1])-(v[1]-u[1])*(w[0]-u[0]);const x=cross(a,b,c),y=cross(a,b,d),z=cross(c,d,a),w=cross(c,d,b);return x*y<0&&z*w<0;}
-function buildPolygon(){polygonData=null;if(!closed||points.length<3)return;for(let i=0;i<points.length;i++)for(let j=i+1;j<points.length;j++){if(Math.abs(i-j)<=1||(i===0&&j===points.length-1))continue;if(intersect(points[i],points[(i+1)%points.length],points[j],points[(j+1)%points.length]))return;}
-const area=polyArea(points);if(area<100)return;
-const xs=points.map(p=>p[0]),ys=points.map(p=>p[1]);const minx=Math.min(...xs),maxx=Math.max(...xs),miny=Math.min(...ys),maxy=Math.max(...ys);const bounds={x:minx,y:miny,w:maxx-minx,h:maxy-miny};
-// 90^2 samples: midpoint sampling weighted to exact area; faster repeat solves.
-let samples=[];const nx=90,ny=Math.max(12,Math.round(nx*bounds.h/bounds.w));for(let j=0;j<ny;j++)for(let i=0;i<nx;i++){let x=minx+(i+.5)*bounds.w/nx,y=miny+(j+.5)*bounds.h/ny;if(insidePoly(x,y,points))samples.push([x,y,distanceToEdges(x,y,points)])}if(!samples.length)return;
-let cx=0,cy=0;for(let i=0;i<points.length;i++){cx+=points[i][0];cy+=points[i][1]}cx/=points.length;cy/=points.length;
-polygonData={area,bounds,samples,centroid:[cx,cy],maxDist:Math.max(...samples.map(p=>p[2]))};}
-function customCapacity(A,D,m,free){if(!polygonData)return NaN;const ss=polygonData.samples,k=Math.sqrt(A/polygonData.area);if(m===0)return A*Math.max(0,D-free);let sum=0;for(const p of ss)sum+=Math.max(0,Math.min(D,p[2]*k/m)-free);return sum*A/ss.length;}
-function customMaxCapacity(A,m,free){if(!polygonData)return NaN;if(m===0)return Infinity;return customCapacity(A,polygonData.maxDist*Math.sqrt(A/polygonData.area)/m,m,free);}
-function customAreaAt(A,run){if(!polygonData)return NaN;const k=Math.sqrt(A/polygonData.area);if(run===0)return A;let count=0;for(const p of polygonData.samples)if(p[2]*k>run)count++;return A*count/polygonData.samples.length;}
 function sketchPos(e){const rc=sketch.getBoundingClientRect();return [(e.clientX-rc.left)*sketch.width/rc.width,(e.clientY-rc.top)*sketch.height/rc.height]}
 function drawSketch(){const w=sketch.width,h=sketch.height;sketchCtx.clearRect(0,0,w,h);sketchCtx.strokeStyle='#284257';sketchCtx.lineWidth=1;for(let x=0;x<w;x+=30){sketchCtx.beginPath();sketchCtx.moveTo(x,0);sketchCtx.lineTo(x,h);sketchCtx.stroke()}for(let y=0;y<h;y+=30){sketchCtx.beginPath();sketchCtx.moveTo(0,y);sketchCtx.lineTo(w,y);sketchCtx.stroke()}
 if(points.length){sketchCtx.beginPath();sketchCtx.moveTo(...points[0]);for(let i=1;i<points.length;i++)sketchCtx.lineTo(...points[i]);if(closed)sketchCtx.closePath();if(closed){sketchCtx.fillStyle='rgba(92,219,191,.14)';sketchCtx.fill()}sketchCtx.strokeStyle=closed?'#5cdbbf':'#67b8f9';sketchCtx.lineWidth=3;sketchCtx.stroke();points.forEach((p,i)=>{sketchCtx.beginPath();sketchCtx.arc(p[0],p[1],i===0?7:5,0,Math.PI*2);sketchCtx.fillStyle=i===0?'#f5cf8d':'#91ccf5';sketchCtx.fill()})}
-$('drawStatus').textContent=closed?(polygonData?'Outline closed · drag points to edit':'Invalid outline'):(points.length+' points · add at least 3');}
-function changeSketch(){buildPolygon();drawSketch();if(shape==='custom')update()}
-sketch.addEventListener('pointerdown',e=>{const p=sketchPos(e);if(closed){let index=points.findIndex(q=>Math.hypot(q[0]-p[0],q[1]-p[1])<15);if(index>=0){dragVertex=index;sketch.setPointerCapture(e.pointerId)}return;}if(points.length>=3&&Math.hypot(p[0]-points[0][0],p[1]-points[0][1])<14){closed=true;changeSketch();return;}if(points.length<70){points.push(p);changeSketch()}});
+$('drawStatus').textContent=closed?(polygonData?'Outline closed · drag points to edit':'Invalid outline'):(points.length+' points · add at least 3')}
+function changeSketch(){buildPolygon();cachedKey='';drawSketch();if(shape==='custom')update()}
+sketch.addEventListener('pointerdown',e=>{const p=sketchPos(e);if(closed){let index=points.findIndex(q=>Math.hypot(q[0]-p[0],q[1]-p[1])<15);if(index>=0){dragVertex=index;sketch.setPointerCapture(e.pointerId)}return}if(points.length>=3&&Math.hypot(p[0]-points[0][0],p[1]-points[0][1])<14){closed=true;changeSketch();return}if(points.length<70){points.push(p);changeSketch()}});
 sketch.addEventListener('pointermove',e=>{if(dragVertex<0)return;const p=sketchPos(e);points[dragVertex]=[Math.max(5,Math.min(sketch.width-5,p[0])),Math.max(5,Math.min(sketch.height-5,p[1]))];changeSketch()});
 for(const ev of ['pointerup','pointercancel','lostpointercapture'])sketch.addEventListener(ev,()=>dragVertex=-1);
 $('undoPoint').addEventListener('click',()=>{closed=false;points.pop();changeSketch()});$('clearPolygon').addEventListener('click',()=>{points=[];closed=false;changeSketch()});$('closePolygon').addEventListener('click',()=>{if(points.length>=3){closed=true;changeSketch()}});
-// For preview only, a tessellated height field approximates the inward side-slope surface.
-// Calculated capacities are based on separate higher-resolution numerical integration.
-function drawCustom3D(r){const g=geometry,pd=polygonData;if(!pd)return;const box=pd.bounds,k=Math.sqrt(g.A/pd.area),W=box.w*k,L=box.h*k,scale=Math.min(r.width*.69,r.height*.62)/Math.max(W,L,g.D*1.5)*zoom,cx=r.width*.5,cy=r.height*.52;
-const pos=(x,y,z)=>project([(x-(box.x+box.w/2))*k,(y-(box.y+box.h/2))*k,z],scale,cx,cy);
-const extent=Math.max(W,L)*.85,step=Math.pow(10,Math.floor(Math.log10(Math.max(W,L)/6)));const st=[1,2,5,10].map(v=>v*step).find(v=>extent*2/v<=16)||step*10;for(let t=-extent;t<=extent;t+=st){line([project([-extent,t,0],scale,cx,cy),project([extent,t,0],scale,cx,cy)],'#344a57',.7);line([project([t,-extent,0],scale,cx,cy),project([t,extent,0],scale,cx,cy)],'#344a57',.7)}
-const n=52,nx=n,ny=Math.max(12,Math.ceil(n*box.h/box.w)),dx=box.w/nx,dy=box.h/ny;let tiles=[];
-for(let j=0;j<ny;j++)for(let i=0;i<nx;i++){let x=box.x+(i+.5)*dx,y=box.y+(j+.5)*dy;if(!insidePoly(x,y,points))continue;let dist=distanceToEdges(x,y,points)*k,z=-Math.min(g.D,g.m===0?g.D:dist/g.m);let a=pos(x-dx/2,y-dy/2,z),b=pos(x+dx/2,y-dy/2,z),c=pos(x+dx/2,y+dy/2,z),d=pos(x-dx/2,y+dy/2,z);let avg=(a.depth+b.depth+c.depth+d.depth)/4;
-let base=z<=-g.D+1e-5?'#537b82':'#906c4b';tiles.push({ps:[a,b,c,d],avg,base,water:false});if($('waterToggle').checked&&z < -g.f){const waterPs=[pos(x-dx/2,y-dy/2,-g.f),pos(x+dx/2,y-dy/2,-g.f),pos(x+dx/2,y+dy/2,-g.f),pos(x-dx/2,y+dy/2,-g.f)];tiles.push({ps:waterPs,avg:waterPs.reduce((s,p)=>s+p.depth,0)/4,base:'#49b7eb',water:true})}}
-tiles.sort((a,b)=>a.avg-b.avg);for(const tile of tiles)polygon(tile.ps,tile.base,null,tile.water?.58:1);
-let rim=points.map(p=>pos(p[0],p[1],0));line([...rim,rim[0]],'#b7d8ba',2.8);
-const px=box.x+box.w*1.2,py=box.y;let a=pos(px,py,0),b=pos(px,py,-g.D);line([a,b],'#e8f0f8',1.5,[5,4]);for(const q of [a,b])line([{x:q.x-5,y:q.y},{x:q.x+5,y:q.y}],'#e8f0f8',1.2);ctx.save();ctx.font='12px system-ui';ctx.fillStyle='#ecf5fc';ctx.fillText(round(g.D,2)+' m',b.x+9,(a.y+b.y)/2);ctx.restore();}
+// Completely offline 2D canvas 3D rendering: terrain, sloping excavation and a level clipped water plane.
+const canvas=$('canvas'),ctx=canvas.getContext('2d');let yaw=-.65,pitch=.61,zoom=1,panX=0,panY=0;
+function project(p,scale,cx,cy){const [x,y,z]=p,X=x*Math.cos(yaw)-y*Math.sin(yaw),Y=x*Math.sin(yaw)+y*Math.cos(yaw);return {x:cx+X*scale+panX,y:cy+(Y*Math.sin(pitch)-z*Math.cos(pitch))*scale+panY,depth:Y*Math.cos(pitch)+z*Math.sin(pitch)}}
+function polygon(ps,fill,stroke=null,alpha=1,width=1){if(!ps.length)return;ctx.save();ctx.globalAlpha=alpha;ctx.beginPath();ctx.moveTo(ps[0].x,ps[0].y);for(let i=1;i<ps.length;i++)ctx.lineTo(ps[i].x,ps[i].y);ctx.closePath();if(fill){ctx.fillStyle=fill;ctx.fill()}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=width;ctx.stroke()}ctx.restore()}
+function line(ps,color,width=1,dash=[]){ctx.save();ctx.beginPath();ctx.setLineDash(dash);ctx.moveTo(ps[0].x,ps[0].y);for(let i=1;i<ps.length;i++)ctx.lineTo(ps[i].x,ps[i].y);ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();ctx.restore()}
+function draw(){const r=canvas.getBoundingClientRect();if(!r.width||!r.height)return;const dpr=Math.min(devicePixelRatio||1,2),cw=Math.round(r.width*dpr),ch=Math.round(r.height*dpr);if(canvas.width!==cw||canvas.height!==ch){canvas.width=cw;canvas.height=ch}ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,r.width,r.height);if(!geometry)return;
+ const {A,D,g,dim,shapeData,wl,spill}=geometry,k=Math.sqrt(A),w=dim.w,l=dim.l;
+ const maxDimension=Math.max(w,l,D*1.5,.1),scale=Math.min(r.width*.72,r.height*.62)/maxDimension*zoom,cx=r.width*.5,cy=r.height*.52;
+ const proj=(x,y,z)=>project([x,y,z],scale,cx,cy);
+ const groundZ=(x,y)=>g.gl*x+g.gc*y;
+ let tiles=[];const edge=Math.max(w,l)*.24,gw=w+2*edge,gl=l+2*edge,N=54,nx=N,ny=Math.max(20,Math.round(N*gl/gw)),dx=gw/nx,dy=gl/ny;
+ for(let j=0;j<ny;j++)for(let i=0;i<nx;i++){
+ const x=-gw/2+(i+.5)*dx,y=-gl/2+(j+.5)*dy,xn=x/k,yn=y/k;
+ const inP=shapeData.inside(xn,yn);
+ const p=inP?{x:xn,y:yn,...shapeData.nearest(xn,yn)}:null;
+ const surf=inP?surface(p,k,D,g):null,z=inP?surf.z:groundZ(x,y);
+ const verts=[[x-dx/2,y-dy/2],[x+dx/2,y-dy/2],[x+dx/2,y+dy/2],[x-dx/2,y+dy/2]];
+ const groundTile=verts.map(q=>proj(q[0],q[1],inP?z:groundZ(q[0],q[1])));
+ const mean=groundTile.reduce((s,q)=>s+q.depth,0)/4;
+ const isBase=inP&&surf.base>=surf.side&&surf.base<surf.ground;
+ const col=inP?(isBase?'#527c82':'#97714f'):'#344d47';
+ tiles.push({ps:groundTile,mean,col,water:false});
+ if(inP&&$('waterToggle').checked&&z<wl){const ps=verts.map(q=>proj(q[0],q[1],wl));tiles.push({ps,mean:ps.reduce((s,q)=>s+q.depth,0)/4,col:'#48b9ef',water:true})}
+ }
+ tiles.sort((a,b)=>a.mean-b.mean);for(const t of tiles)polygon(t.ps,t.col,null,t.water?.72:1);
+ // Wireframe rim: actual elevations of the sloping ground. Green shows physical spill control.
+ const rim=shapeData.vertices.map(v=>proj(v[0]*k,v[1]*k,groundZ(v[0]*k,v[1]*k)));
+ line([...rim,rim[0]],'#d0e6aa',2.7);
+ // Show horizontal spill and water datum markers next to pond.
+ const x=w*.67+edge*.3,y=-l*.46;
+ const a=proj(x,y,spill),b=proj(x,y,wl),c=proj(x,y,-D);
+ line([a,c],'#eaf1f8',1.25,[5,4]);line([{x:a.x-6,y:a.y},{x:a.x+6,y:a.y}],'#f1db9a',2);
+ line([{x:b.x-7,y:b.y},{x:b.x+7,y:b.y}],'#49bfff',2.5);
+ ctx.save();ctx.font='11px system-ui';ctx.fillStyle='#eaf1f8';ctx.fillText('Spill',a.x+9,a.y);ctx.fillText('Water',b.x+9,b.y);ctx.restore();
+ const coord=proj(-w*.60,-l*.60,groundZ(-w*.60,-l*.60));let xArrow=proj(-w*.60+w*.15,-l*.60,groundZ(-w*.60+w*.15,-l*.60)),yArrow=proj(-w*.60,-l*.60+l*.15,groundZ(-w*.60,-l*.60+l*.15));
+ line([coord,xArrow],'#ffb18e',2);line([coord,yArrow],'#91c2ff',2);ctx.save();ctx.font='bold 12px system-ui';ctx.fillStyle='#ffb18e';ctx.fillText('+X',xArrow.x+3,xArrow.y);ctx.fillStyle='#91c2ff';ctx.fillText('+Y',yArrow.x+3,yArrow.y);ctx.restore();
+}
 let dragging=false,lastX=0,lastY=0;canvas.addEventListener('pointerdown',e=>{dragging=true;lastX=e.clientX;lastY=e.clientY;canvas.setPointerCapture(e.pointerId)});canvas.addEventListener('pointerup',()=>dragging=false);canvas.addEventListener('pointercancel',()=>dragging=false);canvas.addEventListener('pointermove',e=>{if(!dragging)return;let dx=e.clientX-lastX,dy=e.clientY-lastY;lastX=e.clientX;lastY=e.clientY;if(e.shiftKey){panX+=dx;panY+=dy}else{yaw+=dx*.008;pitch=Math.max(.14,Math.min(1.48,pitch+dy*.006))}draw()});canvas.addEventListener('wheel',e=>{e.preventDefault();zoom=Math.max(.35,Math.min(4.5,zoom*Math.exp(-e.deltaY*.001)));draw()},{passive:false});$('resetView').addEventListener('click',()=>{yaw=-.65;pitch=.61;zoom=1;panX=panY=0;draw()});new ResizeObserver(draw).observe($('viz'));drawSketch();updateHint();update();
 })();
 </script></body></html>
