@@ -27,7 +27,3 @@ Each version is a commit — see the git log. v5 was never saved separately.
 | v3 | Custom drawn outline |
 | v4 | Ground and base gradients, spill level |
 | v6 | Collapsible gradient panels, minimum depth, global grade format, DXF export |
-
-## Known issues
-
-- Ground and base gradients reported as not calculating correctly; steep grades (e.g. 1 in 0.5) look extreme in the 3D preview.
