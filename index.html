@@ -106,6 +106,8 @@ h2 {
 .feature-panel h3 + .help { margin: 0 0 13px; }
 .feature-panel .sub + .sub { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
 .feature-panel .unit { min-width: 45px; text-align: right; }
+.feature-panel .match-toggle { margin: 0 0 12px; color: var(--text); }
+.feature-panel .match-help { margin: -6px 0 12px; }
 
 /* =========================================================
    Plan shape and sketch
@@ -344,7 +346,9 @@ select { background: #0e1b2b; border: 1px solid #365069; border-radius: 9px; cur
   </div>
   <div class="sub">
     <h3>Pond base gradients</h3>
-    <p class="help">Base gradients are independent of ground. <strong>Depth is always the minimum vertical distance between the ground plane and base plane anywhere in the top footprint.</strong></p>
+    <p class="help">Base gradients are independent of ground unless matched below. <strong>Depth is always the minimum vertical distance between the ground plane and base plane anywhere in the top footprint.</strong></p>
+    <label class="toggle match-toggle"><input type="checkbox" id="baseMatchesGround"> Base matches ground gradients</label>
+    <p class="help match-help" id="baseMatchHelp" hidden>Depth is the same across the pond. Water is still level and limited by the lowest rim point, so on sloping ground the high end stores less usable water.</p>
     <div class="row">
       <div class="field"><label for="baseLong">Longitudinal (+X)</label><div class="input-shell"><input id="baseLong" type="number" step="any" value="0"><span class="unit gradient-unit">1 in x</span></div></div>
       <div class="field"><label for="baseCross">Crossfall (+Y)</label><div class="input-shell"><input id="baseCross" type="number" step="any" value="0"><span class="unit gradient-unit">1 in x</span></div></div>
@@ -757,6 +761,19 @@ const RESULT_IDS = ['totalCapacity', 'usableCapacity', 'freeboardVolume', 'water
 
 function readPondInputs(pond) {
   for (const id of POND_INPUT_IDS) pond.inputs[id] = $(id).value;
+  pond.inputs.baseMatchesGround = $('baseMatchesGround').checked;
+}
+
+/** When "base matches ground" is ticked, copy the ground gradients into the locked base inputs. */
+function syncBaseToGround() {
+  const match = $('baseMatchesGround').checked;
+  if (match) {
+    $('baseLong').value = $('groundLong').value;
+    $('baseCross').value = $('groundCross').value;
+  }
+  $('baseLong').disabled = match;
+  $('baseCross').disabled = match;
+  $('baseMatchHelp').hidden = !match;
 }
 
 function showError(text) {
@@ -795,6 +812,7 @@ function showResults(pond, r) {
 function update() {
   const pond = activePond();
   showError('');
+  syncBaseToGround();
   readPondInputs(pond);
   $('volumeDescription').textContent = pond.inputs.volumeBasis === 'usable'
     ? 'Capacity under horizontal freeboard level'
@@ -894,6 +912,7 @@ $('slopeFormat').addEventListener('change', () => {
 
 $('slope').addEventListener('input', () => { updateSlopeHint(); update(); });
 $('waterToggle').addEventListener('change', draw);
+$('baseMatchesGround').addEventListener('change', update);
 
 /* =========================================================
  * 9. Custom outline sketch editor
