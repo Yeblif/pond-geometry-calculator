@@ -7,6 +7,7 @@ All notable changes to this project are recorded here. The format follows [Keep 
 ### Added
 - Optional feature tick boxes at the top of the page; unticked features are hidden and ignored by the calculation, and choices are remembered in the browser (#2)
 - Changelog, issue templates and pull request template
+- Page description and mobile browser theme colour for the GitHub Pages site
 
 ### Changed
 - Ground & base gradients are now an optional feature (off by default) shown as a plain panel instead of collapsible dropdowns (#2)
