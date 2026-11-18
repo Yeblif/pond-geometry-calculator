@@ -1,298 +1,1239 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Pond Geometry Calculator v6</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pond Geometry Calculator</title>
 <style>
-:root{color-scheme:dark;--bg:#0c1421;--panel:#121f2e;--card:#1a2b3d;--line:#2b4055;--text:#ebf4fb;--muted:#9eafc1;--accent:#5cdbbf;--blue:#67b8f9;--danger:#ffb1a9}
-*{box-sizing:border-box}body{margin:0;font:14px/1.45 system-ui,-apple-system,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text)}.app{display:grid;grid-template-columns:minmax(355px,1fr) minmax(400px,1fr);height:100vh;min-height:650px}.controls{overflow:auto;padding:28px 28px 38px;border-right:1px solid var(--line)}.viz{position:relative;min-height:500px;overflow:hidden;background:radial-gradient(ellipse at 52% 43%,#20394d 0%,#101d2b 67%,#0a1421 100%)}header{margin:0 0 26px}header h1{font-size:25px;letter-spacing:-.7px;margin:0 0 5px}header p{color:var(--muted);margin:0}h2{font-size:12px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);margin:24px 0 12px}.shape-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}.shape-btn{background:var(--card);border:1px solid var(--line);border-radius:11px;color:var(--text);padding:12px 5px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px}.shape-btn svg{width:38px;height:30px}.draw-head,.draw-buttons{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 8px}.draw-head span{color:var(--muted);font-size:11px}.draw-buttons{justify-content:flex-start;flex-wrap:wrap;margin-top:8px}.shape-btn.active{border-color:var(--accent);background:#173e43;box-shadow:inset 0 0 0 1px var(--accent)}.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{min-width:0}.field label{display:block;color:#c5d3e0;font-size:12px;margin-bottom:6px}.input-shell{display:flex;align-items:center;overflow:hidden;background:#0e1b2b;border:1px solid #365069;border-radius:9px}.input-shell:focus-within{border-color:var(--accent)}input[type=number],select{width:100%;min-width:0;padding:11px 12px;background:transparent;color:white;border:0;outline:0;font:inherit}input:disabled{color:#86a5b6;opacity:1}input[type=number]::-webkit-inner-spin-button{opacity:.5}.unit{padding:0 12px;color:var(--muted);white-space:nowrap}select{background:#0e1b2b;border:1px solid #365069;border-radius:9px;cursor:pointer}.metric-grid{display:grid;gap:10px}.metric{border:1px solid var(--line);background:var(--card);border-radius:12px;padding:12px 14px;display:grid;grid-template-columns:25px 1fr 144px;align-items:center;gap:11px}.metric.target{border-color:var(--accent);background:#17333c}.metric input[type=radio]{width:17px;height:17px;accent-color:var(--accent);cursor:pointer}.metric strong{font-weight:600;display:block}.metric small{color:var(--muted);font-size:11px;display:block}.metric .input-shell{background:#0d1b2a}.result-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.result{padding:13px;border:1px solid var(--line);background:var(--card);border-radius:10px}.result .caption{font-size:11px;color:var(--muted)}.result .value{font-weight:650;font-size:19px;margin-top:4px;letter-spacing:-.3px}.help{color:var(--muted);font-size:12px;margin:9px 0 0}.error{border:1px solid #98534d;color:var(--danger);background:#462629;border-radius:9px;padding:11px;margin-top:15px;display:none}.error.show{display:block}.viz-header{position:absolute;top:25px;left:25px;right:25px;z-index:3;pointer-events:none}.viz-header h2{margin:0 0 4px;color:var(--text);font-size:15px;letter-spacing:.15px;text-transform:none}.viz-header p{margin:0;color:#a5c3d5;font-size:12px}.viz-toolbar{position:absolute;top:24px;right:24px;z-index:4;display:flex;gap:7px}.tool{border:1px solid #416077;background:#182d3e;color:var(--text);border-radius:8px;padding:7px 10px;cursor:pointer}.tool:hover{background:#24485c}.viz canvas{width:100%;height:100%;display:block;cursor:grab;touch-action:none}.viz canvas:active{cursor:grabbing}.legend{position:absolute;bottom:22px;left:24px;right:24px;z-index:3;display:flex;align-items:center;gap:16px;flex-wrap:wrap;color:#bfd1e0;font-size:12px;pointer-events:none}.swatch{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px}.pill{background:#152b3b;border:1px solid #355166;border-radius:99px;padding:5px 11px}.toggle{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px;margin-top:14px}.toggle input{accent-color:var(--accent)}.footer-note{font-size:11px;color:#829bb0;margin-top:24px;line-height:1.6}.small{font-size:11px;color:var(--muted)}#ratioWrap{display:none}#aspectWrap{display:none}#percentHelp{white-space:nowrap}@media(max-width:900px){.app{grid-template-columns:1fr;height:auto}.controls{border-right:0;border-bottom:1px solid var(--line);overflow:visible;padding:22px}.viz{height:65vh;min-height:460px}.viz-toolbar{right:15px}.viz-header{left:16px;top:20px}.legend{left:16px;right:16px}}@media(max-width:480px){.metric{grid-template-columns:22px 1fr 128px;gap:5px}.controls{padding:16px}.metric .input-shell input{padding:9px 6px}.unit{padding:0 6px}}
+/* =========================================================
+   Theme
+   ========================================================= */
+:root {
+  color-scheme: dark;
+  --bg: #0c1421;
+  --panel: #121f2e;
+  --card: #1a2b3d;
+  --line: #2b4055;
+  --text: #ebf4fb;
+  --muted: #9eafc1;
+  --accent: #5cdbbf;
+  --blue: #67b8f9;
+  --danger: #ffb1a9;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  margin: 0;
+  font: 14px/1.45 system-ui, -apple-system, Segoe UI, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
 
-/* Compact optional engineering controls */
-details.gradient-group{margin-top:14px;border:1px solid var(--line);border-radius:12px;background:#132335;overflow:hidden}
-details.gradient-group>summary{list-style:none;display:flex;align-items:center;gap:10px;padding:15px 16px;cursor:pointer;user-select:none;font-weight:650;font-size:14px}
-details.gradient-group>summary::-webkit-details-marker{display:none}
-details.gradient-group>summary::before{content:'▸';font-size:16px;color:var(--accent);transition:transform .15s}
-details.gradient-group[open]>summary::before{transform:rotate(90deg)}
-details.gradient-group>summary .summary-value{margin-left:auto;color:var(--muted);font-size:12px;font-weight:400}
-details.gradient-group[open]>summary{border-bottom:1px solid var(--line)}
-.gradient-body{padding:15px 16px 17px}.gradient-body .help{margin:0 0 13px}
-.gradient-body .unit{min-width:45px;text-align:right}
-.gradient-label{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:11px;margin-top:7px}
-@media(max-width:480px){details.gradient-group>summary{padding:13px 12px}.gradient-body{padding:13px 12px}}
+/* =========================================================
+   Layout
+   ========================================================= */
+.app {
+  display: grid;
+  grid-template-columns: minmax(355px, 1fr) minmax(400px, 1fr);
+  height: 100vh;
+  min-height: 650px;
+}
+.controls {
+  overflow: auto;
+  padding: 28px 28px 38px;
+  border-right: 1px solid var(--line);
+}
+.viz {
+  position: relative;
+  min-height: 500px;
+  overflow: hidden;
+  background: radial-gradient(ellipse at 52% 43%, #20394d 0%, #101d2b 67%, #0a1421 100%);
+}
+header { margin: 0 0 22px; }
+header h1 { font-size: 25px; letter-spacing: -.7px; margin: 0 0 5px; }
+header p { color: var(--muted); margin: 0; }
+h2 {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--muted);
+  margin: 24px 0 12px;
+}
+
+/* =========================================================
+   Optional feature tick boxes
+   ========================================================= */
+.features {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+.features-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 9px;
+}
+.features-head strong { font-size: 12px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--muted); }
+.features-head span { font-size: 11px; color: var(--muted); }
+.feature-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.feature-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 11px;
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  background: var(--card);
+  cursor: pointer;
+  user-select: none;
+  font-size: 13px;
+}
+.feature-chip input { accent-color: var(--accent); margin: 0; }
+.feature-chip:has(input:checked) { border-color: var(--accent); background: #173e43; }
+
+/* Panel revealed when its feature is ticked */
+.feature-panel {
+  margin-top: 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #132335;
+  padding: 15px 16px 17px;
+}
+.feature-panel h3 { margin: 0 0 6px; font-size: 14px; font-weight: 650; }
+.feature-panel h3 + .help { margin: 0 0 13px; }
+.feature-panel .sub + .sub { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
+.feature-panel .unit { min-width: 45px; text-align: right; }
+
+/* =========================================================
+   Plan shape and sketch
+   ========================================================= */
+.shape-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 9px; }
+.shape-btn {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  color: var(--text);
+  padding: 12px 5px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.shape-btn svg { width: 38px; height: 30px; }
+.shape-btn.active { border-color: var(--accent); background: #173e43; box-shadow: inset 0 0 0 1px var(--accent); }
+.draw-head, .draw-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0 0 8px;
+}
+.draw-head span { color: var(--muted); font-size: 11px; }
+.draw-buttons { justify-content: flex-start; flex-wrap: wrap; margin-top: 8px; }
+#drawCanvas {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 720 / 390;
+  border: 1px solid #365069;
+  border-radius: 10px;
+  background: #0c1b29;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+/* =========================================================
+   Form fields
+   ========================================================= */
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.field { min-width: 0; }
+.field label { display: block; color: #c5d3e0; font-size: 12px; margin-bottom: 6px; }
+.input-shell {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  background: #0e1b2b;
+  border: 1px solid #365069;
+  border-radius: 9px;
+}
+.input-shell:focus-within { border-color: var(--accent); }
+input[type=number], select {
+  width: 100%;
+  min-width: 0;
+  padding: 11px 12px;
+  background: transparent;
+  color: white;
+  border: 0;
+  outline: 0;
+  font: inherit;
+}
+input:disabled { color: #86a5b6; opacity: 1; }
+input[type=number]::-webkit-inner-spin-button { opacity: .5; }
+select { background: #0e1b2b; border: 1px solid #365069; border-radius: 9px; cursor: pointer; }
+.unit { padding: 0 12px; color: var(--muted); white-space: nowrap; }
+.help { color: var(--muted); font-size: 12px; margin: 9px 0 0; }
+
+/* Known quantities (radio = calculated field) */
+.metric-grid { display: grid; gap: 10px; }
+.metric {
+  border: 1px solid var(--line);
+  background: var(--card);
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: grid;
+  grid-template-columns: 25px 1fr 144px;
+  align-items: center;
+  gap: 11px;
+}
+.metric.target { border-color: var(--accent); background: #17333c; }
+.metric input[type=radio] { width: 17px; height: 17px; accent-color: var(--accent); cursor: pointer; }
+.metric strong { font-weight: 600; display: block; }
+.metric small { color: var(--muted); font-size: 11px; display: block; }
+.metric .input-shell { background: #0d1b2a; }
+
+/* =========================================================
+   Results
+   ========================================================= */
+.result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.result { padding: 13px; border: 1px solid var(--line); background: var(--card); border-radius: 10px; }
+.result .caption { font-size: 11px; color: var(--muted); }
+.result .value { font-weight: 650; font-size: 19px; margin-top: 4px; letter-spacing: -.3px; }
+.error {
+  border: 1px solid #98534d;
+  color: var(--danger);
+  background: #462629;
+  border-radius: 9px;
+  padding: 11px;
+  margin-top: 15px;
+  display: none;
+}
+.error.show { display: block; }
+.toggle { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; margin-top: 14px; }
+.toggle input { accent-color: var(--accent); }
+.footer-note { font-size: 11px; color: #829bb0; margin-top: 24px; line-height: 1.6; }
+
+/* =========================================================
+   3D preview
+   ========================================================= */
+.viz-header { position: absolute; top: 25px; left: 25px; right: 25px; z-index: 3; pointer-events: none; }
+.viz-header h2 { margin: 0 0 4px; color: var(--text); font-size: 15px; letter-spacing: .15px; text-transform: none; }
+.viz-header p { margin: 0; color: #a5c3d5; font-size: 12px; }
+.viz-toolbar { position: absolute; top: 24px; right: 24px; z-index: 4; display: flex; gap: 7px; }
+.tool {
+  border: 1px solid #416077;
+  background: #182d3e;
+  color: var(--text);
+  border-radius: 8px;
+  padding: 7px 10px;
+  cursor: pointer;
+}
+.tool:hover { background: #24485c; }
+.viz canvas { width: 100%; height: 100%; display: block; cursor: grab; touch-action: none; }
+.viz canvas:active { cursor: grabbing; }
+.legend {
+  position: absolute;
+  bottom: 22px;
+  left: 24px;
+  right: 24px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  color: #bfd1e0;
+  font-size: 12px;
+  pointer-events: none;
+}
+.swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; }
+.pill { background: #152b3b; border: 1px solid #355166; border-radius: 99px; padding: 5px 11px; }
+
+/* =========================================================
+   Responsive
+   ========================================================= */
+@media (max-width: 900px) {
+  .app { grid-template-columns: 1fr; height: auto; }
+  .controls { border-right: 0; border-bottom: 1px solid var(--line); overflow: visible; padding: 22px; }
+  .viz { height: 65vh; min-height: 460px; }
+  .viz-toolbar { right: 15px; }
+  .viz-header { left: 16px; top: 20px; }
+  .legend { left: 16px; right: 16px; }
+}
+@media (max-width: 480px) {
+  .metric { grid-template-columns: 22px 1fr 128px; gap: 5px; }
+  .controls { padding: 16px; }
+  .metric .input-shell input { padding: 9px 6px; }
+  .unit { padding: 0 6px; }
+  .feature-panel { padding: 13px 12px; }
+}
 </style>
 </head>
-<body><main class="app">
+<body>
+<main class="app">
 <section class="controls">
-<header><h1>Pond geometry calculator</h1><p>Calculate pond capacity, footprint area or depth, including freeboard and usable storage.</p></header>
+
+<header>
+  <h1>Pond geometry calculator</h1>
+  <p>Calculate pond capacity, footprint area or depth, including freeboard and usable storage.</p>
+</header>
+
+<!-- Optional features: tick to show their inputs. Unticked features have no effect on results. -->
+<div class="features" role="group" aria-labelledby="featuresTitle">
+  <div class="features-head">
+    <strong id="featuresTitle">Optional features</strong>
+    <span>Unticked features are hidden and ignored</span>
+  </div>
+  <div class="feature-list">
+    <label class="feature-chip"><input type="checkbox" id="featGradients" data-feature="gradients"> Ground &amp; base gradients</label>
+  </div>
+</div>
+
+<!-- ======================= 01 Plan shape ======================= -->
 <h2>01 — Plan shape</h2>
 <div class="shape-grid" role="group" aria-label="Plan shape">
-<button type="button" class="shape-btn active" data-shape="circle" aria-pressed="true"><svg viewBox="0 0 44 32" fill="none"><ellipse cx="22" cy="16" rx="14" ry="11" stroke="currentColor" stroke-width="2"/><ellipse cx="22" cy="16" rx="7" ry="5" stroke="currentColor" opacity=".55"/></svg>Circle</button>
-<button type="button" class="shape-btn" data-shape="square" aria-pressed="false"><svg viewBox="0 0 44 32" fill="none"><path d="M11 5H33V27H11Z" stroke="currentColor" stroke-width="2"/><path d="M16 10H28V22H16Z" stroke="currentColor" opacity=".55"/></svg>Square</button>
-<button type="button" class="shape-btn" data-shape="rectangle" aria-pressed="false"><svg viewBox="0 0 44 32" fill="none"><path d="M3 7H41V25H3Z" stroke="currentColor" stroke-width="2"/><path d="M11 11H33V21H11Z" stroke="currentColor" opacity=".55"/></svg>Rectangle</button>
-<button type="button" class="shape-btn" data-shape="custom" aria-pressed="false"><svg viewBox="0 0 44 32" fill="none"><path d="M4 10L16 3L38 7L33 23L19 29L7 21Z" stroke="currentColor" stroke-width="2"/><path d="M12 12L18 10L29 12L26 20L19 22L13 18Z" stroke="currentColor" opacity=".55"/></svg>Custom</button>
+  <button type="button" class="shape-btn active" data-shape="circle" aria-pressed="true"><svg viewBox="0 0 44 32" fill="none"><ellipse cx="22" cy="16" rx="14" ry="11" stroke="currentColor" stroke-width="2"/><ellipse cx="22" cy="16" rx="7" ry="5" stroke="currentColor" opacity=".55"/></svg>Circle</button>
+  <button type="button" class="shape-btn" data-shape="square" aria-pressed="false"><svg viewBox="0 0 44 32" fill="none"><path d="M11 5H33V27H11Z" stroke="currentColor" stroke-width="2"/><path d="M16 10H28V22H16Z" stroke="currentColor" opacity=".55"/></svg>Square</button>
+  <button type="button" class="shape-btn" data-shape="rectangle" aria-pressed="false"><svg viewBox="0 0 44 32" fill="none"><path d="M3 7H41V25H3Z" stroke="currentColor" stroke-width="2"/><path d="M11 11H33V21H11Z" stroke="currentColor" opacity=".55"/></svg>Rectangle</button>
+  <button type="button" class="shape-btn" data-shape="custom" aria-pressed="false"><svg viewBox="0 0 44 32" fill="none"><path d="M4 10L16 3L38 7L33 23L19 29L7 21Z" stroke="currentColor" stroke-width="2"/><path d="M12 12L18 10L29 12L26 20L19 22L13 18Z" stroke="currentColor" opacity=".55"/></svg>Custom</button>
 </div>
+
 <div id="customWrap" hidden style="margin-top:14px">
- <div class="draw-head"><strong>Draw the top pond outline</strong><span id="drawStatus">Click to place vertices</span></div>
- <canvas id="drawCanvas" width="720" height="390" aria-label="Draw custom pond outline by clicking vertices" style="width:100%;height:auto;aspect-ratio:720/390;border:1px solid #365069;border-radius:10px;background:#0c1b29;cursor:crosshair;touch-action:none"></canvas>
- <div class="draw-buttons"><button class="tool" type="button" id="undoPoint">Undo point</button><button class="tool" type="button" id="closePolygon">Close outline</button><button class="tool" type="button" id="clearPolygon">Clear</button></div>
- <p class="help">Click points around the rim, then click <strong>Close outline</strong> (or the first point). Drag vertices to adjust. The sketch defines proportions, not metres: the outline is automatically scaled to your specified area or capacity.</p>
- <p class="help" id="customScaleInfo">Draw at least three points to begin.</p>
- </div>
- <div id="aspectWrap" style="margin-top:14px"><div class="field"><label for="aspect">Length : width ratio</label><div class="input-shell"><input id="aspect" type="number" min="1" max="20" step="0.1" value="1.5"><span class="unit">: 1</span></div></div></div>
+  <div class="draw-head"><strong>Draw the top pond outline</strong><span id="drawStatus">Click to place vertices</span></div>
+  <canvas id="drawCanvas" width="720" height="390" aria-label="Draw custom pond outline by clicking vertices"></canvas>
+  <div class="draw-buttons">
+    <button class="tool" type="button" id="undoPoint">Undo point</button>
+    <button class="tool" type="button" id="closePolygon">Close outline</button>
+    <button class="tool" type="button" id="clearPolygon">Clear</button>
+  </div>
+  <p class="help">Click points around the rim, then click <strong>Close outline</strong> (or the first point). Drag vertices to adjust. The sketch defines proportions, not metres: the outline is automatically scaled to your specified area or capacity.</p>
+  <p class="help" id="customScaleInfo">Draw at least three points to begin.</p>
+</div>
+
+<div id="aspectWrap" hidden style="margin-top:14px">
+  <div class="field">
+    <label for="aspect">Length : width ratio</label>
+    <div class="input-shell"><input id="aspect" type="number" min="1" max="20" step="0.1" value="1.5"><span class="unit">: 1</span></div>
+  </div>
+</div>
+
+<!-- ======================= 02 Slopes ======================= -->
 <h2>02 — Slopes &amp; gradients</h2>
-<div class="row"><div class="field"><label for="slopeFormat">Global gradient format</label><select id="slopeFormat"><option value="ratio">1 in x</option><option value="percent">Grade (%)</option></select></div><div class="field"><label for="slope" id="slopeLabel">Side slope (1V:xH)</label><div class="input-shell"><input id="slope" type="number" min="0" max="100000" step="any" value="3"><span id="slopeUnit" class="unit">1 in x</span></div></div></div>
+<div class="row">
+  <div class="field">
+    <label for="slopeFormat">Global gradient format</label>
+    <select id="slopeFormat"><option value="ratio">1 in x</option><option value="percent">Grade (%)</option></select>
+  </div>
+  <div class="field">
+    <label for="slope" id="slopeLabel">Side slope (1V:xH)</label>
+    <div class="input-shell"><input id="slope" type="number" min="0" max="100000" step="any" value="3"><span id="slopeUnit" class="unit">1 in x</span></div>
+  </div>
+</div>
 <p class="help" id="slopeHint">1V:3H means 3 m horizontal run per 1 m of depth (33.33% grade).</p>
-<details class="gradient-group" id="groundDetails"><summary>Existing ground gradients <span class="summary-value" id="groundSummary">Flat · 0 / 0</span></summary>
-<div class="gradient-body"><p class="help">Ground rises with a positive gradient in +X (length) or +Y (width). A negative value falls in that direction. <strong>0</strong> means level.</p>
-<div class="row"><div class="field"><label for="groundLong">Longitudinal (+X)</label><div class="input-shell"><input id="groundLong" type="number" step="any" value="0"><span class="unit gradient-unit">1 in x</span></div></div><div class="field"><label for="groundCross">Crossfall (+Y)</label><div class="input-shell"><input id="groundCross" type="number" step="any" value="0"><span class="unit gradient-unit">1 in x</span></div></div></div></div></details>
-<details class="gradient-group" id="baseDetails"><summary>Pond base gradients <span class="summary-value" id="baseSummary">Flat · 0 / 0</span></summary>
-<div class="gradient-body"><p class="help">Base gradients are independent of ground. <strong>Depth is always the minimum vertical distance between the ground plane and base plane anywhere in the top footprint.</strong></p>
-<div class="row"><div class="field"><label for="baseLong">Longitudinal (+X)</label><div class="input-shell"><input id="baseLong" type="number" step="any" value="0"><span class="unit gradient-unit">1 in x</span></div></div><div class="field"><label for="baseCross">Crossfall (+Y)</label><div class="input-shell"><input id="baseCross" type="number" step="any" value="0"><span class="unit gradient-unit">1 in x</span></div></div></div></div></details>
-<h2>05 — Freeboard and capacity basis</h2>
-<div class="row"><div class="field"><label for="freeboard">Freeboard depth</label><div class="input-shell"><input id="freeboard" type="number" min="0" step="any" value="0.3"><span class="unit">m</span></div></div><div class="field"><label for="volumeBasis">Volume input refers to</label><select id="volumeBasis"><option value="usable" selected>Usable storage (below freeboard)</option><option value="total">Total to top of rim</option></select></div></div>
+
+<!-- Feature: ground & base gradients -->
+<div class="feature-panel" data-feature-panel="gradients" hidden>
+  <div class="sub">
+    <h3>Existing ground gradients</h3>
+    <p class="help">Ground rises with a positive gradient in +X (length) or +Y (width). A negative value falls in that direction. <strong>0</strong> means level.</p>
+    <div class="row">
+      <div class="field"><label for="groundLong">Longitudinal (+X)</label><div class="input-shell"><input id="groundLong" type="number" step="any" value="0"><span class="unit gradient-unit">1 in x</span></div></div>
+      <div class="field"><label for="groundCross">Crossfall (+Y)</label><div class="input-shell"><input id="groundCross" type="number" step="any" value="0"><span class="unit gradient-unit">1 in x</span></div></div>
+    </div>
+  </div>
+  <div class="sub">
+    <h3>Pond base gradients</h3>
+    <p class="help">Base gradients are independent of ground. <strong>Depth is always the minimum vertical distance between the ground plane and base plane anywhere in the top footprint.</strong></p>
+    <div class="row">
+      <div class="field"><label for="baseLong">Longitudinal (+X)</label><div class="input-shell"><input id="baseLong" type="number" step="any" value="0"><span class="unit gradient-unit">1 in x</span></div></div>
+      <div class="field"><label for="baseCross">Crossfall (+Y)</label><div class="input-shell"><input id="baseCross" type="number" step="any" value="0"><span class="unit gradient-unit">1 in x</span></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================= 03 Freeboard ======================= -->
+<h2>03 — Freeboard and capacity basis</h2>
+<div class="row">
+  <div class="field">
+    <label for="freeboard">Freeboard depth</label>
+    <div class="input-shell"><input id="freeboard" type="number" min="0" step="any" value="0.3"><span class="unit">m</span></div>
+  </div>
+  <div class="field">
+    <label for="volumeBasis">Volume input refers to</label>
+    <select id="volumeBasis"><option value="usable" selected>Usable storage (below freeboard)</option><option value="total">Total to top of rim</option></select>
+  </div>
+</div>
 <p class="help">Freeboard is measured vertically below the <strong>lowest rim elevation (overflow point)</strong>, not the highest rim. Water is always horizontal. Where the base or pond sides rise above the water level, they store no water.</p>
-<h2>06 — Known quantities</h2>
+
+<!-- ======================= 04 Known quantities ======================= -->
+<h2>04 — Known quantities</h2>
 <p class="help" style="margin:-3px 0 12px">The selected radio button marks the calculated (locked) field. To type a target volume, select <strong>Area</strong> or <strong>Depth</strong>; then enter the volume and choose usable or total capacity above.</p>
 <div class="metric-grid">
-<label class="metric target" data-target="volume"><input type="radio" name="solve" value="volume" checked><span><strong>Volume</strong><small id="volumeDescription">Usable storage below freeboard</small></span><span class="input-shell"><input type="number" id="volume" min="0" step="any" value="" disabled aria-label="Volume"><span class="unit">m³</span></span></label>
-<label class="metric" data-target="area"><input type="radio" name="solve" value="area"><span><strong>Area</strong><small>Top rim footprint</small></span><span class="input-shell"><input type="number" id="area" min="0" step="any" value="200" aria-label="Top area"><span class="unit">m²</span></span></label>
-<label class="metric" data-target="depth"><input type="radio" name="solve" value="depth"><span><strong>Minimum depth</strong><small>Shallowest ground-to-base difference</small></span><span class="input-shell"><input type="number" id="depth" min="0" step="any" value="2" aria-label="Depth"><span class="unit">m</span></span></label>
+  <label class="metric target" data-target="volume"><input type="radio" name="solve" value="volume" checked><span><strong>Volume</strong><small id="volumeDescription">Usable storage below freeboard</small></span><span class="input-shell"><input type="number" id="volume" min="0" step="any" value="" disabled aria-label="Volume"><span class="unit">m³</span></span></label>
+  <label class="metric" data-target="area"><input type="radio" name="solve" value="area"><span><strong>Area</strong><small>Top rim footprint</small></span><span class="input-shell"><input type="number" id="area" min="0" step="any" value="200" aria-label="Top area"><span class="unit">m²</span></span></label>
+  <label class="metric" data-target="depth"><input type="radio" name="solve" value="depth"><span><strong>Minimum depth</strong><small>Shallowest ground-to-base difference</small></span><span class="input-shell"><input type="number" id="depth" min="0" step="any" value="2" aria-label="Depth"><span class="unit">m</span></span></label>
 </div>
 <div id="error" class="error" role="alert"></div>
-<h2>07 — Storage capacity</h2>
-<div class="result-grid" style="margin-bottom:10px"><div class="result"><div class="caption">Maximum storage (before spill)</div><div class="value" id="totalCapacity">—</div></div><div class="result"><div class="caption">Usable capacity</div><div class="value" id="usableCapacity">—</div></div><div class="result"><div class="caption">Storage reserved by freeboard</div><div class="value" id="freeboardVolume">—</div></div><div class="result"><div class="caption">Design water area</div><div class="value" id="waterArea">—</div></div></div>
-<h2>08 — Calculated geometry</h2>
-<div class="result-grid" style="margin-bottom:10px"><div class="result"><div class="caption">Lowest rim level (relative)</div><div class="value" id="spillElevation">—</div></div><div class="result"><div class="caption">Design water level (relative)</div><div class="value" id="waterElevation">—</div></div><div class="result"><div class="caption">Exposed/dry pond footprint</div><div class="value" id="dryArea">—</div></div><div class="result"><div class="caption">Centre ground-to-base depth</div><div class="value" id="centreDepth">—</div></div><div class="result"><div class="caption">Base elevation range</div><div class="value" id="baseRange">—</div></div></div>
-<div class="result-grid"><div class="result"><div class="caption">Bottom area</div><div class="value" id="bottomArea">—</div></div><div class="result"><div class="caption">Top dimensions</div><div class="value" id="topDims">—</div></div><div class="result"><div class="caption">Bottom dimensions</div><div class="value" id="bottomDims">—</div></div><div class="result"><div class="caption">Side run (each side)</div><div class="value" id="sideRun">—</div></div></div>
+
+<!-- ======================= 05 Storage ======================= -->
+<h2>05 — Storage capacity</h2>
+<div class="result-grid" style="margin-bottom:10px">
+  <div class="result"><div class="caption">Maximum storage (before spill)</div><div class="value" id="totalCapacity">—</div></div>
+  <div class="result"><div class="caption">Usable capacity</div><div class="value" id="usableCapacity">—</div></div>
+  <div class="result"><div class="caption">Storage reserved by freeboard</div><div class="value" id="freeboardVolume">—</div></div>
+  <div class="result"><div class="caption">Design water area</div><div class="value" id="waterArea">—</div></div>
+</div>
+
+<!-- ======================= 06 Geometry ======================= -->
+<h2>06 — Calculated geometry</h2>
+<div class="result-grid" style="margin-bottom:10px">
+  <div class="result"><div class="caption">Lowest rim level (relative)</div><div class="value" id="spillElevation">—</div></div>
+  <div class="result"><div class="caption">Design water level (relative)</div><div class="value" id="waterElevation">—</div></div>
+  <div class="result"><div class="caption">Exposed/dry pond footprint</div><div class="value" id="dryArea">—</div></div>
+  <div class="result"><div class="caption">Centre ground-to-base depth</div><div class="value" id="centreDepth">—</div></div>
+  <div class="result"><div class="caption">Base elevation range</div><div class="value" id="baseRange">—</div></div>
+</div>
+<div class="result-grid">
+  <div class="result"><div class="caption">Bottom area</div><div class="value" id="bottomArea">—</div></div>
+  <div class="result"><div class="caption">Top dimensions</div><div class="value" id="topDims">—</div></div>
+  <div class="result"><div class="caption">Bottom dimensions</div><div class="value" id="bottomDims">—</div></div>
+  <div class="result"><div class="caption">Side run (each side)</div><div class="value" id="sideRun">—</div></div>
+</div>
 <label class="toggle"><input type="checkbox" id="waterToggle" checked> Show horizontal design water surface</label>
 <p class="help">Export DXF saves the top rim, estimated base toe and design waterline as AutoCAD 3D polylines (metres, local XY at pond centre, relative Z levels). Toe and waterline contours are sampled approximations, not setting-out geometry.</p>
 <p class="footer-note">Model: a planar ground (rim) surface and planar base with independent X/Y grades. Depth is the minimum vertical ground-to-base separation anywhere in the top footprint; the actual centre excavation depth is adjusted to maintain that minimum. Sides drop from their closest top-rim point at the specified inward slope, meeting the base where possible. The pond cannot store water above its <strong>lowest rim point</strong>; freeboard is below that controlling spill elevation. Maximum storage is not an earthworks excavation quantity. Numerical grid integration and rendered meshes are approximate; finite sampling can affect narrow shapes and steep slopes. Flat zero-gradient results correspond to a conventional level-rim pond. No outfall, berm/retaining-wall design, ground-condition, hydraulic routing, sediment or operational storage allowance is included. <strong>Concept sizing only; verify detailed levels, stability, and volumes in CAD.</strong></p>
 </section>
-<section class="viz" id="viz"><div class="viz-header"><h2>Interactive 3D preview</h2><p>Drag to rotate · Scroll to zoom · Shift + drag to pan</p></div><div class="viz-toolbar"><button class="tool" id="exportDxf" type="button" title="Export top rim, base toe and design waterline as AutoCAD DXF 3D polylines">Export DXF</button><button class="tool" id="resetView">Reset view</button></div><canvas id="canvas" aria-label="Interactive three-dimensional preview of pond geometry"></canvas><div class="legend"><span><i class="swatch" style="background:#92b098"></i>Sloping ground / rim</span><span><i class="swatch" style="background:#b78f69"></i>Excavated sides</span><span><i class="swatch" style="background:#54b8e7"></i>Horizontal water</span><span class="pill" id="vizCaption">—</span></div></section>
-</main>
-<script>
-(()=>{'use strict';
-const $=id=>document.getElementById(id);
-let shape='circle',solve='volume',geometry=null,points=[],closed=false,polygonData=null,dragVertex=-1;
-const vals={volume:$('volume'),area:$('area'),depth:$('depth')};
-const fmt=(n,u='',digits=2)=>Number.isFinite(n)?new Intl.NumberFormat('en-GB',{maximumFractionDigits:digits}).format(n)+(u?' '+u:''):'—';
-const num=id=>Number($(id).value);
-const validNum=id=>$(id).value.trim()!==''&&Number.isFinite(Number($(id).value));
-function getSlope(){let a=num('slope');return $('slopeFormat').value==='percent'?(a>0?100/a:NaN):a;}
-function error(t){$('error').textContent=t;$('error').classList.toggle('show',!!t)}
-function clearResults(){for(const id of ['totalCapacity','usableCapacity','freeboardVolume','waterArea','bottomArea','topDims','bottomDims','sideRun','spillElevation','waterElevation','dryArea','baseRange','centreDepth'])$(id).textContent='—';$('vizCaption').textContent='No valid geometry';geometry=null;draw()}
-function polyArea(ps){let v=0;for(let i=0;i<ps.length;i++){const a=ps[i],b=ps[(i+1)%ps.length];v+=a[0]*b[1]-b[0]*a[1]}return Math.abs(v)/2}
-function insidePoly(x,y,ps){let inside=false;for(let i=0,j=ps.length-1;i<ps.length;j=i++){const a=ps[i],b=ps[j];if((a[1]>y)!==(b[1]>y)&&x<(b[0]-a[0])*(y-a[1])/(b[1]-a[1])+a[0])inside=!inside;}return inside}
-function intersect(a,b,c,d){const cross=(u,v,w)=>(v[0]-u[0])*(w[1]-u[1])-(v[1]-u[1])*(w[0]-u[0]);return cross(a,b,c)*cross(a,b,d)<0&&cross(c,d,a)*cross(c,d,b)<0}
-function buildPolygon(){polygonData=null;if(!closed||points.length<3)return;for(let i=0;i<points.length;i++)for(let j=i+1;j<points.length;j++){if(Math.abs(i-j)<=1||(i===0&&j===points.length-1))continue;if(intersect(points[i],points[(i+1)%points.length],points[j],points[(j+1)%points.length]))return}const area=polyArea(points);if(area<100)return;const xs=points.map(p=>p[0]),ys=points.map(p=>p[1]);polygonData={area,bounds:{x:Math.min(...xs),y:Math.min(...ys),w:Math.max(...xs)-Math.min(...xs),h:Math.max(...ys)-Math.min(...ys)}}}
-function dimFromArea(A){if(shape==='custom'){const b=polygonData.bounds,k=Math.sqrt(A/polygonData.area);return {w:b.w*k,l:b.h*k}}if(shape==='circle'){const r=Math.sqrt(A/Math.PI);return {w:r*2,l:r*2,r}}const ratio=shape==='square'?1:num('aspect'),w=Math.sqrt(A/ratio);return {w,l:w*ratio}}
-// Shape coordinates normalised to exactly 1 square metre, centred on bbox midpoint.
-let cachedKey='',sampleCache=null;
-function makeShape(){const key=shape+'|'+(shape==='rectangle'?num('aspect'):'')+'|'+(shape==='custom'?points.map(p=>p.join(',')).join('|'):'');if(key===cachedKey&&sampleCache)return sampleCache;
- let vertices=[],dim=dimFromArea(1),w=dim.w,l=dim.l;
- if(shape==='circle'){for(let i=0;i<100;i++){let t=2*Math.PI*i/100;vertices.push([w/2*Math.cos(t),l/2*Math.sin(t)])}}
- else if(shape==='custom'){let b=polygonData.bounds,k=Math.sqrt(1/polygonData.area);vertices=points.map(p=>[(p[0]-b.x-b.w/2)*k,(p[1]-b.y-b.h/2)*k])}
- else vertices=[[-w/2,-l/2],[w/2,-l/2],[w/2,l/2],[-w/2,l/2]];
- function nearest(x,y){if(shape==='circle'){let d=Math.hypot(x,y),r=w/2;return {distance:r-d,px:d>1e-12?x*r/d:r,py:d>1e-12?y*r/d:0}}
- let best=Infinity,px=0,py=0;for(let i=0;i<vertices.length;i++){const a=vertices[i],b=vertices[(i+1)%vertices.length],vx=b[0]-a[0],vy=b[1]-a[1];let t=Math.max(0,Math.min(1,((x-a[0])*vx+(y-a[1])*vy)/(vx*vx+vy*vy||1)));let qx=a[0]+t*vx,qy=a[1]+t*vy,ds=(x-qx)**2+(y-qy)**2;if(ds<best){best=ds;px=qx;py=qy}}return {distance:Math.sqrt(best),px,py}}
- function inside(x,y){return shape==='circle'?x*x+y*y<=(w/2)**2:shape==='custom'?insidePoly(x,y,vertices):Math.abs(x)<=w/2&&Math.abs(y)<=l/2}
- const samples=[],N=96,nx=N,ny=Math.max(12,Math.round(N*l/w));let dx=w/nx,dy=l/ny;
- for(let j=0;j<ny;j++)for(let i=0;i<nx;i++){let x=-w/2+(i+.5)*dx,y=-l/2+(j+.5)*dy;if(inside(x,y)){const n=nearest(x,y);samples.push({x,y,...n})}}
- if(!samples.length)throw Error('Cannot sample this footprint. Draw a wider outline.');
- sampleCache={vertices,dim,samples,inside,nearest};cachedKey=key;return sampleCache;
-}
-function gradientToDecimal(id){const n=num(id);return $('slopeFormat').value==='percent'?n/100:(n===0?0:1/n)}
-function inputs(){return {m:getSlope(),f:num('freeboard'),gl:gradientToDecimal('groundLong'),gc:gradientToDecimal('groundCross'),bl:gradientToDecimal('baseLong'),bc:gradientToDecimal('baseCross')}}
-function centreDepthForMinimum(A,D,g,shapeData){const k=Math.sqrt(A),dl=g.gl-g.bl,dc=g.gc-g.bc;
- // For an affine plane, minimum separation occurs at a boundary vertex.
- // For a circle the true extremum may fall between sampled vertices.
- const minOffset=shape==='circle'?-Math.hypot(dl,dc)*shapeData.dim.w*k/2:Math.min(...shapeData.vertices.map(v=>(dl*v[0]+dc*v[1])*k));
- return D-minOffset;
-}
-function gradeSummary(id1,id2){let a=num(id1),b=num(id2),u=$('slopeFormat').value==='percent'?'%':'1 in';return a===0&&b===0?'Flat · 0 / 0':(u==='%'?a+'% / '+b+'%':(a===0?'0':('1 in '+a))+' / '+(b===0?'0':('1 in '+b)))}
-function updateGradientSummaries(){$('groundSummary').textContent=gradeSummary('groundLong','groundCross');$('baseSummary').textContent=gradeSummary('baseLong','baseCross')}
 
-function rimMin(g,shapeData,A){const k=Math.sqrt(A);if(shape==='circle')return -Math.hypot(g.gl,g.gc)*shapeData.dim.w*k/2;return Math.min(...shapeData.vertices.map(p=>g.gl*p[0]*k+g.gc*p[1]*k))}
-function surface(p,k,centreDepth,g){const x=p.x*k,y=p.y*k;const rimAtEdge=g.gl*p.px*k+g.gc*p.py*k;
- const side=g.m===0?-Infinity:rimAtEdge-p.distance*k/g.m;
- const base=-centreDepth+g.bl*x+g.bc*y;
- const ground=g.gl*x+g.gc*y;
- // Clamp to existing terrain: a non-excavated location stores no water.
- return {z:Math.min(ground,Math.max(base,side)),base,ground,side};}
-// The two storage quantities are measured from a single LEVEL water surface.
-// "Maximum" means just below the lowest (spill-controlling) rim point.
-function compute(A,D,g,shapeData,details=false){const centreDepth=centreDepthForMinimum(A,D,g,shapeData),k=Math.sqrt(A),spill=rimMin(g,shapeData,A),wl=spill-g.f,ss=shapeData.samples;let vMax=0,vUse=0,wet=0,baseN=0,dry=0;
- for(let i=0;i<ss.length;i++){const s=surface(ss[i],k,centreDepth,g);vMax+=Math.max(0,spill-s.z);vUse+=Math.max(0,wl-s.z);if(s.z<wl)wet++;else dry++;if(s.base>=s.side&&s.base<s.ground)baseN++}
- const unit=A/ss.length,total=vMax*unit,usable=vUse*unit;
- if(!details)return {total,usable,spill,wl};
- const vals=shapeData.vertices.map(p=>-centreDepth+(g.bl*p[0]+g.bc*p[1])*k);
- return {total,usable,spill,wl,wetArea:wet*unit,dryArea:dry*unit,baseArea:baseN*unit,baseMin:Math.min(...vals),baseMax:Math.max(...vals),centreDepth};
-}
-function bisectIncreasing(fn,lo,hi,target){for(let i=0;i<54;i++){let m=(lo+hi)/2;if(fn(m)<target)lo=m;else hi=m}return (lo+hi)/2}
-function update(){error('');const g=inputs(),basis=$('volumeBasis').value;updateGradientSummaries();
- $('volumeDescription').textContent=basis==='usable'?'Capacity under horizontal freeboard level':'Maximum capacity up to lowest rim';
- if(!['slope','freeboard','groundLong','groundCross','baseLong','baseCross'].every(validNum)||!Number.isFinite(g.m)||g.m<0||g.f<0||[g.gl,g.gc,g.bl,g.bc].some(v=>!Number.isFinite(v)||Math.abs(v)>2)){error('Enter valid gradients (within ±200%), a non-negative freeboard and a valid side slope. Use 0 for flat grades.');clearResults();return}
- if(shape==='custom'&&!polygonData){error('Draw and close a non-self-intersecting custom outline first.');clearResults();return}
- if(shape==='rectangle'&&(!validNum('aspect')||num('aspect')<1||num('aspect')>20)){error('Rectangle length:width ratio must be between 1 and 20.');clearResults();return}
- const known=Object.keys(vals).filter(x=>x!==solve);
- if(known.some(x=>vals[x].value.trim()===''||!Number.isFinite(Number(vals[x].value))||Number(vals[x].value)<=0)){error('Enter positive values for both known quantities.');vals[solve].value='';clearResults();return}
- try{const shapeData=makeShape();let A=num('area'),D=num('depth'),V=num('volume');
- const cap=(a,d)=>{const r=compute(a,d,g,shapeData);return basis==='usable'?r.usable:r.total};
- if(solve==='volume')V=cap(A,D);
- else if(solve==='area'){
-  const target=V;let lo=1e-7,hi=Math.max(1,A||100);let vLo=cap(lo,D),vHi=cap(hi,D);
-  // Since the ground and base may be differently inclined, a solution need not exist.
-  let attempts=0;while(vHi<target&&attempts++<45){hi*=1.8;vHi=cap(hi,D)}
-  if(vHi<target)throw Error('Target volume could not be reached by enlarging this outline. Check ground/base gradients or increase centre depth.');
-  A=bisectIncreasing(a=>cap(a,D),lo,hi,target);
- }else{
-  const target=V;let lo=.000001,hi=Math.max(1,D||2),vHi=cap(A,hi),attempts=0;
-  while(vHi<target&&attempts++<28){hi*=1.65;vHi=cap(A,hi)}
-  if(vHi<target)throw Error('Target volume cannot be stored in this footprint: steep sides, ground levels or freeboard limit the capacity.');
-  D=bisectIncreasing(d=>cap(A,d),lo,hi,target);
- }
- if(!Number.isFinite(A)||!Number.isFinite(D)||A<=0||D<=0)throw Error('Calculated geometry is invalid.');
- const r=compute(A,D,g,shapeData,true),dim=dimFromArea(A);
- vals[solve].value=Number((solve==='volume'?V:solve==='area'?A:D).toPrecision(10)).toString();
- $('totalCapacity').textContent=fmt(r.total,'m³');$('usableCapacity').textContent=fmt(r.usable,'m³');
- $('freeboardVolume').textContent=fmt(r.total-r.usable,'m³');$('waterArea').textContent=fmt(r.wetArea,'m²');
- $('spillElevation').textContent=fmt(r.spill,'m');$('waterElevation').textContent=fmt(r.wl,'m');
- $('dryArea').textContent=fmt(r.dryArea,'m²');$('baseRange').textContent=fmt(r.baseMin,'m')+' to '+fmt(r.baseMax,'m');$('centreDepth').textContent=fmt(r.centreDepth,'m');
- $('bottomArea').textContent=fmt(r.baseArea,'m²');$('topDims').textContent=shape==='circle'?'Ø '+fmt(dim.w,'m'):fmt(dim.w,'m')+' × '+fmt(dim.l,'m');
- $('bottomDims').textContent='Sloping base (see 3D)';$('sideRun').textContent=fmt(g.m*r.centreDepth,'m')+' at centre';
- if(shape==='custom')$('customScaleInfo').textContent='Top outline '+fmt(A,'m²')+' · bounding box '+fmt(dim.w,'m')+' × '+fmt(dim.l,'m')+' · uniformly scaled';
- $('vizCaption').textContent=fmt(r.usable,'m³')+' usable · '+fmt(r.total,'m³')+' max';
- geometry={A,D,V,g,dim,shapeData,...r};draw();
- }catch(e){error(e.message);vals[solve].value='';clearResults()}
-}
-for(const k in vals)vals[k].addEventListener('input',()=>{if(k!==solve)update()});
-document.querySelectorAll('input[name=solve]').forEach(el=>el.addEventListener('change',()=>{solve=el.value;document.querySelectorAll('.metric').forEach(m=>m.classList.toggle('target',m.dataset.target===solve));for(const k in vals)vals[k].disabled=k===solve;update()}));
-document.querySelectorAll('.shape-btn').forEach(b=>b.addEventListener('click',()=>{shape=b.dataset.shape;cachedKey='';document.querySelectorAll('.shape-btn').forEach(x=>{x.classList.toggle('active',x===b);x.setAttribute('aria-pressed',String(x===b))});$('aspectWrap').style.display=shape==='rectangle'?'block':'none';$('customWrap').hidden=shape!=='custom';drawSketch();update()}));
-for(const id of ['aspect','freeboard','groundLong','groundCross','baseLong','baseCross'])$(id).addEventListener('input',update);
-$('volumeBasis').addEventListener('change',()=>{if(solve!=='volume'&&geometry)vals.volume.value=Number(($('volumeBasis').value==='usable'?geometry.usable:geometry.total).toPrecision(10));update()});
-$('slopeFormat').addEventListener('change',()=>{const fields=['slope','groundLong','groundCross','baseLong','baseCross'];for(const id of fields){const n=num(id);$(id).value=n===0?'0':Number((100/n).toPrecision(12)).toString()}
- const percent=$('slopeFormat').value==='percent';$('slopeLabel').textContent=percent?'Side slope (vertical grade)':'Side slope (1V:xH)';$('slopeUnit').textContent=percent?'%':'1 in x';document.querySelectorAll('.gradient-unit').forEach(x=>x.textContent=percent?'%':'1 in x');updateHint();update()});
-$('slope').addEventListener('input',()=>{updateHint();update()});$('waterToggle').addEventListener('change',draw);
-function updateHint(){let m=getSlope();$('slopeHint').textContent=Number.isFinite(m)?(m===0?'Vertical sides':'1V:'+fmt(m,'H',3)+' → '+fmt(100/m,'%',2)+' grade. Slope is measured from closest rim point.'):'Enter a positive grade or switch to side ratio.'}
-// Sketch editor; its coordinates define plan SHAPE only, not metres.
-const sketch=$('drawCanvas'),sketchCtx=sketch.getContext('2d');
-function sketchPos(e){const rc=sketch.getBoundingClientRect();return [(e.clientX-rc.left)*sketch.width/rc.width,(e.clientY-rc.top)*sketch.height/rc.height]}
-function drawSketch(){const w=sketch.width,h=sketch.height;sketchCtx.clearRect(0,0,w,h);sketchCtx.strokeStyle='#284257';sketchCtx.lineWidth=1;for(let x=0;x<w;x+=30){sketchCtx.beginPath();sketchCtx.moveTo(x,0);sketchCtx.lineTo(x,h);sketchCtx.stroke()}for(let y=0;y<h;y+=30){sketchCtx.beginPath();sketchCtx.moveTo(0,y);sketchCtx.lineTo(w,y);sketchCtx.stroke()}
-if(points.length){sketchCtx.beginPath();sketchCtx.moveTo(...points[0]);for(let i=1;i<points.length;i++)sketchCtx.lineTo(...points[i]);if(closed)sketchCtx.closePath();if(closed){sketchCtx.fillStyle='rgba(92,219,191,.14)';sketchCtx.fill()}sketchCtx.strokeStyle=closed?'#5cdbbf':'#67b8f9';sketchCtx.lineWidth=3;sketchCtx.stroke();points.forEach((p,i)=>{sketchCtx.beginPath();sketchCtx.arc(p[0],p[1],i===0?7:5,0,Math.PI*2);sketchCtx.fillStyle=i===0?'#f5cf8d':'#91ccf5';sketchCtx.fill()})}
-$('drawStatus').textContent=closed?(polygonData?'Outline closed · drag points to edit':'Invalid outline'):(points.length+' points · add at least 3')}
-function changeSketch(){buildPolygon();cachedKey='';drawSketch();if(shape==='custom')update()}
-sketch.addEventListener('pointerdown',e=>{const p=sketchPos(e);if(closed){let index=points.findIndex(q=>Math.hypot(q[0]-p[0],q[1]-p[1])<15);if(index>=0){dragVertex=index;sketch.setPointerCapture(e.pointerId)}return}if(points.length>=3&&Math.hypot(p[0]-points[0][0],p[1]-points[0][1])<14){closed=true;changeSketch();return}if(points.length<70){points.push(p);changeSketch()}});
-sketch.addEventListener('pointermove',e=>{if(dragVertex<0)return;const p=sketchPos(e);points[dragVertex]=[Math.max(5,Math.min(sketch.width-5,p[0])),Math.max(5,Math.min(sketch.height-5,p[1]))];changeSketch()});
-for(const ev of ['pointerup','pointercancel','lostpointercapture'])sketch.addEventListener(ev,()=>dragVertex=-1);
-$('undoPoint').addEventListener('click',()=>{closed=false;points.pop();changeSketch()});$('clearPolygon').addEventListener('click',()=>{points=[];closed=false;changeSketch()});$('closePolygon').addEventListener('click',()=>{if(points.length>=3){closed=true;changeSketch()}});
-// Completely offline 2D canvas 3D rendering: terrain, sloping excavation and a level clipped water plane.
-const canvas=$('canvas'),ctx=canvas.getContext('2d');let yaw=-.65,pitch=.61,zoom=1,panX=0,panY=0;
-function project(p,scale,cx,cy){const [x,y,z]=p,X=x*Math.cos(yaw)-y*Math.sin(yaw),Y=x*Math.sin(yaw)+y*Math.cos(yaw);return {x:cx+X*scale+panX,y:cy+(Y*Math.sin(pitch)-z*Math.cos(pitch))*scale+panY,depth:Y*Math.cos(pitch)+z*Math.sin(pitch)}}
-function polygon(ps,fill,stroke=null,alpha=1,width=1){if(!ps.length)return;ctx.save();ctx.globalAlpha=alpha;ctx.beginPath();ctx.moveTo(ps[0].x,ps[0].y);for(let i=1;i<ps.length;i++)ctx.lineTo(ps[i].x,ps[i].y);ctx.closePath();if(fill){ctx.fillStyle=fill;ctx.fill()}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=width;ctx.stroke()}ctx.restore()}
-function line(ps,color,width=1,dash=[]){ctx.save();ctx.beginPath();ctx.setLineDash(dash);ctx.moveTo(ps[0].x,ps[0].y);for(let i=1;i<ps.length;i++)ctx.lineTo(ps[i].x,ps[i].y);ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();ctx.restore()}
-function draw(){const r=canvas.getBoundingClientRect();if(!r.width||!r.height)return;const dpr=Math.min(devicePixelRatio||1,2),cw=Math.round(r.width*dpr),ch=Math.round(r.height*dpr);if(canvas.width!==cw||canvas.height!==ch){canvas.width=cw;canvas.height=ch}ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,r.width,r.height);if(!geometry)return;
- const {A,D,centreDepth,g,dim,shapeData,wl,spill}=geometry,k=Math.sqrt(A),w=dim.w,l=dim.l;
- const maxDimension=Math.max(w,l,D*1.5,.1),scale=Math.min(r.width*.72,r.height*.62)/maxDimension*zoom,cx=r.width*.5,cy=r.height*.52;
- const proj=(x,y,z)=>project([x,y,z],scale,cx,cy);
- const groundZ=(x,y)=>g.gl*x+g.gc*y;
- let tiles=[];const edge=Math.max(w,l)*.24,gw=w+2*edge,gl=l+2*edge,N=54,nx=N,ny=Math.max(20,Math.round(N*gl/gw)),dx=gw/nx,dy=gl/ny;
- for(let j=0;j<ny;j++)for(let i=0;i<nx;i++){
- const x=-gw/2+(i+.5)*dx,y=-gl/2+(j+.5)*dy,xn=x/k,yn=y/k;
- const inP=shapeData.inside(xn,yn);
- const p=inP?{x:xn,y:yn,...shapeData.nearest(xn,yn)}:null;
- const surf=inP?surface(p,k,centreDepth,g):null,z=inP?surf.z:groundZ(x,y);
- const verts=[[x-dx/2,y-dy/2],[x+dx/2,y-dy/2],[x+dx/2,y+dy/2],[x-dx/2,y+dy/2]];
- const groundTile=verts.map(q=>proj(q[0],q[1],inP?z:groundZ(q[0],q[1])));
- const mean=groundTile.reduce((s,q)=>s+q.depth,0)/4;
- const isBase=inP&&surf.base>=surf.side&&surf.base<surf.ground;
- const col=inP?(isBase?'#527c82':'#97714f'):'#344d47';
- tiles.push({ps:groundTile,mean,col,water:false});
- if(inP&&$('waterToggle').checked&&z<wl){const ps=verts.map(q=>proj(q[0],q[1],wl));tiles.push({ps,mean:ps.reduce((s,q)=>s+q.depth,0)/4,col:'#48b9ef',water:true})}
- }
- tiles.sort((a,b)=>a.mean-b.mean);for(const t of tiles)polygon(t.ps,t.col,null,t.water?.72:1);
- // Wireframe rim: actual elevations of the sloping ground. Green shows physical spill control.
- const rim=shapeData.vertices.map(v=>proj(v[0]*k,v[1]*k,groundZ(v[0]*k,v[1]*k)));
- line([...rim,rim[0]],'#d0e6aa',2.7);
- // Show horizontal spill and water datum markers next to pond.
- const x=w*.67+edge*.3,y=-l*.46;
- const a=proj(x,y,spill),b=proj(x,y,wl),c=proj(x,y,-centreDepth);
- line([a,c],'#eaf1f8',1.25,[5,4]);line([{x:a.x-6,y:a.y},{x:a.x+6,y:a.y}],'#f1db9a',2);
- line([{x:b.x-7,y:b.y},{x:b.x+7,y:b.y}],'#49bfff',2.5);
- ctx.save();ctx.font='11px system-ui';ctx.fillStyle='#eaf1f8';ctx.fillText('Spill',a.x+9,a.y);ctx.fillText('Water',b.x+9,b.y);ctx.restore();
- const coord=proj(-w*.60,-l*.60,groundZ(-w*.60,-l*.60));let xArrow=proj(-w*.60+w*.15,-l*.60,groundZ(-w*.60+w*.15,-l*.60)),yArrow=proj(-w*.60,-l*.60+l*.15,groundZ(-w*.60,-l*.60+l*.15));
- line([coord,xArrow],'#ffb18e',2);line([coord,yArrow],'#91c2ff',2);ctx.save();ctx.font='bold 12px system-ui';ctx.fillStyle='#ffb18e';ctx.fillText('+X',xArrow.x+3,xArrow.y);ctx.fillStyle='#91c2ff';ctx.fillText('+Y',yArrow.x+3,yArrow.y);ctx.restore();
-}
-let dragging=false,lastX=0,lastY=0;canvas.addEventListener('pointerdown',e=>{dragging=true;lastX=e.clientX;lastY=e.clientY;canvas.setPointerCapture(e.pointerId)});canvas.addEventListener('pointerup',()=>dragging=false);canvas.addEventListener('pointercancel',()=>dragging=false);canvas.addEventListener('pointermove',e=>{if(!dragging)return;let dx=e.clientX-lastX,dy=e.clientY-lastY;lastX=e.clientX;lastY=e.clientY;if(e.shiftKey){panX+=dx;panY+=dy}else{yaw+=dx*.008;pitch=Math.max(.14,Math.min(1.48,pitch+dy*.006))}draw()});canvas.addEventListener('wheel',e=>{e.preventDefault();zoom=Math.max(.35,Math.min(4.5,zoom*Math.exp(-e.deltaY*.001)));draw()},{passive:false});
-// Offline AutoCAD R12 DXF export: layer-separated 3D polylines in metres.
-// XY origin is the centre of the top footprint bounding box; Z=0 is centre ground datum.
-// Sampled contours represent hydraulic water edge and geometric base-to-side toe.
-function polygonContours(kind,geom){
- const {A,centreDepth,g,shapeData,dim,wl}=geom,k=Math.sqrt(A),w=dim.w,l=dim.l;
- const nx=118,ny=Math.max(28,Math.min(220,Math.round(nx*l/w))),dx=w/nx,dy=l/ny;
- // Include a narrow exterior margin so that clipped boundaries form closed contours.
- const margin=Math.max(dx,dy)*1.4,xmin=-w/2-margin,ymin=-l/2-margin;
- const gx=nx+4,gy=ny+4,sx=(w+2*margin)/gx,sy=(l+2*margin)/gy;
- const inside=new Uint8Array((gx+1)*(gy+1));
- const at=(i,j)=>j*(gx+1)+i;
- for(let j=0;j<=gy;j++)for(let i=0;i<=gx;i++){
-  const x=xmin+i*sx,y=ymin+j*sy,u=x/k,v=y/k;
-  if(!shapeData.inside(u,v))continue;
-  const p={x:u,y:v,...shapeData.nearest(u,v)},q=surface(p,k,centreDepth,g);
-  inside[at(i,j)]=kind==='water'?(q.z<wl?1:0):(q.base>=q.side&&q.base<q.ground?1:0);
- }
- const edges=[];
- function edgePoint(i,j,e){return e===0?[xmin+(i+.5)*sx,ymin+j*sy]:e===1?[xmin+(i+1)*sx,ymin+(j+.5)*sy]:e===2?[xmin+(i+.5)*sx,ymin+(j+1)*sy]:[xmin+i*sx,ymin+(j+.5)*sy]}
- // Marching squares: connectivity within ambiguous diagonal cells follows
- // one of two deterministic branches; no interpolation accuracy is claimed.
- const patterns=[[],[[3,0]],[[0,1]],[[3,1]],[[1,2]],[[3,2],[0,1]],[[0,2]],[[3,2]],[[2,3]],[[0,2]],[[0,3],[1,2]],[[1,2]],[[1,3]],[[0,1]],[[0,3]],[]];
- for(let j=0;j<gy;j++)for(let i=0;i<gx;i++){
-  const a=inside[at(i,j)],b=inside[at(i+1,j)],c=inside[at(i+1,j+1)],d=inside[at(i,j+1)];
-  const code=a+2*b+4*c+8*d;
-  for(const [e1,e2] of patterns[code])edges.push([edgePoint(i,j,e1),edgePoint(i,j,e2)]);
- }
- const nodes=new Map(),links=[];
- const key=p=>Math.round(p[0]*1e7)+','+Math.round(p[1]*1e7);
- for(const [a,b] of edges){const ia=key(a),ib=key(b),n=links.length;links.push([ia,ib]);
-  if(!nodes.has(ia))nodes.set(ia,{p:a,adj:[]});if(!nodes.has(ib))nodes.set(ib,{p:b,adj:[]});
-  nodes.get(ia).adj.push(n);nodes.get(ib).adj.push(n);
- }
- const visited=new Uint8Array(links.length),out=[];
- for(let e=0;e<links.length;e++){
-  if(visited[e])continue;visited[e]=1;
-  let [a,b]=links[e],chain=[a,b],node=b;
-  while(node!==a){const next=(nodes.get(node)?.adj||[]).find(ix=>!visited[ix]);if(next===undefined)break;visited[next]=1;
-   const [u,v]=links[next];node=node===u?v:u;chain.push(node);if(chain.length>links.length+2)break;
+<section class="viz" id="viz">
+  <div class="viz-header"><h2>Interactive 3D preview</h2><p>Drag to rotate · Scroll to zoom · Shift + drag to pan</p></div>
+  <div class="viz-toolbar">
+    <button class="tool" id="exportDxf" type="button" title="Export top rim, base toe and design waterline as AutoCAD DXF 3D polylines">Export DXF</button>
+    <button class="tool" id="resetView" type="button">Reset view</button>
+  </div>
+  <canvas id="canvas" aria-label="Interactive three-dimensional preview of pond geometry"></canvas>
+  <div class="legend">
+    <span><i class="swatch" style="background:#92b098"></i>Sloping ground / rim</span>
+    <span><i class="swatch" style="background:#b78f69"></i>Excavated sides</span>
+    <span><i class="swatch" style="background:#54b8e7"></i>Horizontal water</span>
+    <span class="pill" id="vizCaption">—</span>
+  </div>
+</section>
+</main>
+
+<script>
+(() => {
+'use strict';
+
+/* =========================================================
+ * 1. Helpers
+ * ======================================================= */
+const $ = id => document.getElementById(id);
+
+const fmt = (n, unit = '', digits = 2) => Number.isFinite(n)
+  ? new Intl.NumberFormat('en-GB', { maximumFractionDigits: digits }).format(n) + (unit ? ' ' + unit : '')
+  : '—';
+
+const isNumeric = text => String(text).trim() !== '' && Number.isFinite(Number(text));
+
+/** An input problem. clearSolved = also blank the calculated (locked) field. */
+class InputError extends Error {
+  constructor(message, clearSolved = false) {
+    super(message);
+    this.clearSolved = clearSolved;
   }
-  if(chain.length>=4){const closed=chain[0]===chain[chain.length-1];if(closed)chain.pop();
-   const xyz=chain.map(id=>{const p=nodes.get(id).p,x=p[0],y=p[1],z=kind==='water'?wl:(-centreDepth+g.bl*x+g.bc*y);return [x,y,z]});
-   if(closed&&xyz.length>=3)out.push(xyz);
+}
+
+/* =========================================================
+ * 2. App state
+ *
+ * Optional features are switched on by the tick boxes at the top.
+ * A feature that is off is hidden AND ignored by the calculation.
+ * To add a feature: add its key to FEATURE_DEFAULTS, add a tick box with
+ * data-feature="key", and wrap its inputs in data-feature-panel="key".
+ *
+ * Ponds are held in a list so that a second pond can be added later.
+ * The form currently edits the active pond only.
+ * ======================================================= */
+const FEATURE_DEFAULTS = { gradients: false };
+const FEATURE_STORAGE_KEY = 'pondCalc.features';
+
+/** Form fields that belong to a pond (stored as the raw text typed). */
+const POND_INPUT_IDS = ['aspect', 'slope', 'freeboard', 'volumeBasis', 'volume', 'area', 'depth',
+  'groundLong', 'groundCross', 'baseLong', 'baseCross'];
+
+function createPond(name) {
+  return {
+    name,
+    shape: 'circle',     // circle | square | rectangle | custom
+    solve: 'volume',     // which quantity is calculated: volume | area | depth
+    inputs: {},          // raw form values, keyed by POND_INPUT_IDS
+    sketch: { points: [], closed: false, outline: null },  // custom outline in sketch pixels
+    cache: { key: '', shape: null },                         // sampled unit-area footprint
+    geometry: null       // last valid solution, used by the 3D view and DXF export
+  };
+}
+
+const state = {
+  features: { ...FEATURE_DEFAULTS },
+  slopeFormat: 'ratio',   // ratio (1 in x) | percent; applies to side slope and all gradients
+  ponds: [createPond('Pond 1')],
+  active: 0
+};
+const activePond = () => state.ponds[state.active];
+
+/* =========================================================
+ * 3. Polygon geometry (pure)
+ * ======================================================= */
+function polygonArea(ps) {
+  let v = 0;
+  for (let i = 0; i < ps.length; i++) {
+    const a = ps[i], b = ps[(i + 1) % ps.length];
+    v += a[0] * b[1] - b[0] * a[1];
   }
- }
- return out;
+  return Math.abs(v) / 2;
 }
-function dxfPolyline(layer,vertices){
- if(vertices.length<3)return '';
- let txt=`0\nPOLYLINE\n8\n${layer}\n66\n1\n70\n9\n10\n0\n20\n0\n30\n0\n`;
- for(const [x,y,z] of vertices)txt+=`0\nVERTEX\n8\n${layer}\n10\n${x.toFixed(6)}\n20\n${y.toFixed(6)}\n30\n${z.toFixed(6)}\n70\n32\n`;
- return txt+`0\nSEQEND\n8\n${layer}\n`;
+
+function pointInPolygon(x, y, ps) {
+  let inside = false;
+  for (let i = 0, j = ps.length - 1; i < ps.length; j = i++) {
+    const a = ps[i], b = ps[j];
+    if ((a[1] > y) !== (b[1] > y) && x < (b[0] - a[0]) * (y - a[1]) / (b[1] - a[1]) + a[0]) inside = !inside;
+  }
+  return inside;
 }
-function exportDXF(){if(!geometry){error('Calculate a valid pond before exporting DXF.');return}
- try{
-  const {A,shapeData,g}=geometry,k=Math.sqrt(A);
-  const rim=shapeData.vertices.map(([u,v])=>[u*k,v*k,g.gl*u*k+g.gc*v*k]);
-  const toe=polygonContours('toe',geometry),water=polygonContours('water',geometry);
-  let txt='0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1009\n0\nENDSEC\n0\nSECTION\n2\nTABLES\n0\nTABLE\n2\nLAYER\n70\n3\n';
-  for(const [name,color] of [['POND_TOP_RIM',3],['POND_BASE_TOE_APPROX',2],['POND_WATERLINE_APPROX',5]])txt+=`0\nLAYER\n2\n${name}\n70\n0\n62\n${color}\n6\nCONTINUOUS\n`;
-  txt+='0\nENDTAB\n0\nENDSEC\n0\nSECTION\n2\nENTITIES\n';
-  txt+=dxfPolyline('POND_TOP_RIM',rim);
-  for(const line of toe)txt+=dxfPolyline('POND_BASE_TOE_APPROX',line);
-  for(const line of water)txt+=dxfPolyline('POND_WATERLINE_APPROX',line);
-  txt+='0\nENDSEC\n0\nEOF\n';
-  const url=URL.createObjectURL(new Blob([txt],{type:'application/dxf'}));
-  const a=document.createElement('a');a.href=url;a.download='Pond_Contours_Local_Metres.dxf';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),3000);
- }catch(e){error('DXF export failed: '+e.message)}
+
+function segmentsCross(a, b, c, d) {
+  const cross = (u, v, w) => (v[0] - u[0]) * (w[1] - u[1]) - (v[1] - u[1]) * (w[0] - u[0]);
+  return cross(a, b, c) * cross(a, b, d) < 0 && cross(c, d, a) * cross(c, d, b) < 0;
 }
-$('exportDxf').addEventListener('click',exportDXF);
-$('resetView').addEventListener('click',()=>{yaw=-.65;pitch=.61;zoom=1;panX=panY=0;draw()});new ResizeObserver(draw).observe($('viz'));drawSketch();updateHint();update();
+
+/** Area and bounding box of a closed, non-self-intersecting outline, else null. */
+function analyseOutline(points, closed) {
+  if (!closed || points.length < 3) return null;
+  for (let i = 0; i < points.length; i++) {
+    for (let j = i + 1; j < points.length; j++) {
+      if (Math.abs(i - j) <= 1 || (i === 0 && j === points.length - 1)) continue;
+      if (segmentsCross(points[i], points[(i + 1) % points.length], points[j], points[(j + 1) % points.length])) return null;
+    }
+  }
+  const area = polygonArea(points);
+  if (area < 100) return null;
+  const xs = points.map(p => p[0]), ys = points.map(p => p[1]);
+  return {
+    area,
+    bounds: {
+      x: Math.min(...xs), y: Math.min(...ys),
+      w: Math.max(...xs) - Math.min(...xs), h: Math.max(...ys) - Math.min(...ys)
+    }
+  };
+}
+
+/* =========================================================
+ * 4. Footprint shapes
+ *
+ * Every shape is built at exactly 1 m² and centred on its bounding box,
+ * then scaled by k = sqrt(area). Samples on a grid inside the footprint
+ * carry their distance to the nearest rim point, which drives the side slope.
+ * ======================================================= */
+function footprintDimensions(pond, A) {
+  if (pond.shape === 'custom') {
+    const o = pond.sketch.outline, k = Math.sqrt(A / o.area);
+    return { w: o.bounds.w * k, l: o.bounds.h * k };
+  }
+  if (pond.shape === 'circle') {
+    const r = Math.sqrt(A / Math.PI);
+    return { w: r * 2, l: r * 2, r };
+  }
+  const ratio = pond.shape === 'square' ? 1 : Number(pond.inputs.aspect), w = Math.sqrt(A / ratio);
+  return { w, l: w * ratio };
+}
+
+function unitShape(pond) {
+  const type = pond.shape;
+  const key = type + '|' + (type === 'rectangle' ? Number(pond.inputs.aspect) : '') + '|' +
+    (type === 'custom' ? pond.sketch.points.map(p => p.join(',')).join('|') : '');
+  if (key === pond.cache.key && pond.cache.shape) return pond.cache.shape;
+
+  const dim = footprintDimensions(pond, 1), w = dim.w, l = dim.l;
+  let vertices = [];
+  if (type === 'circle') {
+    for (let i = 0; i < 100; i++) {
+      const t = 2 * Math.PI * i / 100;
+      vertices.push([w / 2 * Math.cos(t), l / 2 * Math.sin(t)]);
+    }
+  } else if (type === 'custom') {
+    const b = pond.sketch.outline.bounds, k = Math.sqrt(1 / pond.sketch.outline.area);
+    vertices = pond.sketch.points.map(p => [(p[0] - b.x - b.w / 2) * k, (p[1] - b.y - b.h / 2) * k]);
+  } else {
+    vertices = [[-w / 2, -l / 2], [w / 2, -l / 2], [w / 2, l / 2], [-w / 2, l / 2]];
+  }
+
+  /** Distance to, and position of, the nearest rim point. */
+  function nearest(x, y) {
+    if (type === 'circle') {
+      const d = Math.hypot(x, y), r = w / 2;
+      return { distance: r - d, px: d > 1e-12 ? x * r / d : r, py: d > 1e-12 ? y * r / d : 0 };
+    }
+    let best = Infinity, px = 0, py = 0;
+    for (let i = 0; i < vertices.length; i++) {
+      const a = vertices[i], b = vertices[(i + 1) % vertices.length], vx = b[0] - a[0], vy = b[1] - a[1];
+      const t = Math.max(0, Math.min(1, ((x - a[0]) * vx + (y - a[1]) * vy) / (vx * vx + vy * vy || 1)));
+      const qx = a[0] + t * vx, qy = a[1] + t * vy, ds = (x - qx) ** 2 + (y - qy) ** 2;
+      if (ds < best) { best = ds; px = qx; py = qy; }
+    }
+    return { distance: Math.sqrt(best), px, py };
+  }
+
+  function inside(x, y) {
+    if (type === 'circle') return x * x + y * y <= (w / 2) ** 2;
+    if (type === 'custom') return pointInPolygon(x, y, vertices);
+    return Math.abs(x) <= w / 2 && Math.abs(y) <= l / 2;
+  }
+
+  const samples = [], nx = 96, ny = Math.max(12, Math.round(96 * l / w)), dx = w / nx, dy = l / ny;
+  for (let j = 0; j < ny; j++) {
+    for (let i = 0; i < nx; i++) {
+      const x = -w / 2 + (i + .5) * dx, y = -l / 2 + (j + .5) * dy;
+      if (inside(x, y)) samples.push({ x, y, ...nearest(x, y) });
+    }
+  }
+  if (!samples.length) throw Error('Cannot sample this footprint. Draw a wider outline.');
+
+  pond.cache = { key, shape: { type, vertices, dim, samples, inside, nearest } };
+  return pond.cache.shape;
+}
+
+/* =========================================================
+ * 5. Design parameters
+ * ======================================================= */
+/** Gradient text → rise per metre, using the global format. */
+function gradeToDecimal(text) {
+  const n = Number(text);
+  return state.slopeFormat === 'percent' ? n / 100 : (n === 0 ? 0 : 1 / n);
+}
+
+/** Side slope text → horizontal metres per vertical metre (the x in 1V:xH). */
+function sideSlopeRatio(text) {
+  const a = Number(text);
+  return state.slopeFormat === 'percent' ? (a > 0 ? 100 / a : NaN) : a;
+}
+
+/** m = side slope, f = freeboard, gl/gc = ground long/cross, bl/bc = base long/cross. */
+function designParameters(pond) {
+  const i = pond.inputs, grads = state.features.gradients;
+  return {
+    m: sideSlopeRatio(i.slope),
+    f: Number(i.freeboard),
+    gl: grads ? gradeToDecimal(i.groundLong) : 0,
+    gc: grads ? gradeToDecimal(i.groundCross) : 0,
+    bl: grads ? gradeToDecimal(i.baseLong) : 0,
+    bc: grads ? gradeToDecimal(i.baseCross) : 0
+  };
+}
+
+function validatePond(pond, g) {
+  const i = pond.inputs, grads = state.features.gradients;
+  const numericIds = ['slope', 'freeboard', ...(grads ? ['groundLong', 'groundCross', 'baseLong', 'baseCross'] : [])];
+  if (!numericIds.every(id => isNumeric(i[id])) || !Number.isFinite(g.m) || g.m < 0 || g.f < 0 ||
+      [g.gl, g.gc, g.bl, g.bc].some(v => !Number.isFinite(v) || Math.abs(v) > 2)) {
+    throw new InputError(grads
+      ? 'Enter valid gradients (within ±200%), a non-negative freeboard and a valid side slope. Use 0 for flat grades.'
+      : 'Enter a non-negative freeboard and a valid side slope.');
+  }
+  if (pond.shape === 'custom' && !pond.sketch.outline) throw new InputError('Draw and close a non-self-intersecting custom outline first.');
+  if (pond.shape === 'rectangle' && (!isNumeric(i.aspect) || Number(i.aspect) < 1 || Number(i.aspect) > 20)) {
+    throw new InputError('Rectangle length:width ratio must be between 1 and 20.');
+  }
+  const known = ['volume', 'area', 'depth'].filter(q => q !== pond.solve);
+  if (known.some(q => !isNumeric(i[q]) || Number(i[q]) <= 0)) throw new InputError('Enter positive values for both known quantities.', true);
+}
+
+/* =========================================================
+ * 6. Storage model (pure)
+ *
+ * Ground (rim) and base are planes. Sides fall from the nearest rim point at
+ * the side slope. Water is level; it cannot rise above the lowest rim point.
+ * ======================================================= */
+/** Centre depth giving the requested MINIMUM ground-to-base depth over the footprint. */
+function centreDepthForMinimum(A, D, g, shapeData) {
+  const k = Math.sqrt(A), dl = g.gl - g.bl, dc = g.gc - g.bc;
+  // For a plane the minimum separation is at a boundary vertex; for a circle
+  // the true extremum may fall between sampled vertices, so solve it exactly.
+  const minOffset = shapeData.type === 'circle'
+    ? -Math.hypot(dl, dc) * shapeData.dim.w * k / 2
+    : Math.min(...shapeData.vertices.map(v => (dl * v[0] + dc * v[1]) * k));
+  return D - minOffset;
+}
+
+/** Level of the lowest rim point (the spill level). */
+function lowestRimLevel(g, shapeData, A) {
+  const k = Math.sqrt(A);
+  if (shapeData.type === 'circle') return -Math.hypot(g.gl, g.gc) * shapeData.dim.w * k / 2;
+  return Math.min(...shapeData.vertices.map(p => g.gl * p[0] * k + g.gc * p[1] * k));
+}
+
+/** Excavated surface level at sample p (unit coordinates) for a pond scaled by k. */
+function surfaceAt(p, k, centreDepth, g) {
+  const x = p.x * k, y = p.y * k;
+  const rimAtEdge = g.gl * p.px * k + g.gc * p.py * k;
+  const side = g.m === 0 ? -Infinity : rimAtEdge - p.distance * k / g.m;
+  const base = -centreDepth + g.bl * x + g.bc * y;
+  const ground = g.gl * x + g.gc * y;
+  // Clamp to existing terrain: a non-excavated location stores no water.
+  return { z: Math.min(ground, Math.max(base, side)), base, ground, side };
+}
+
+/** Total (to spill) and usable (to design water level) storage by grid integration. */
+function computeStorage(A, D, g, shapeData, details = false) {
+  const centreDepth = centreDepthForMinimum(A, D, g, shapeData), k = Math.sqrt(A);
+  const spill = lowestRimLevel(g, shapeData, A), wl = spill - g.f, ss = shapeData.samples;
+  let vMax = 0, vUse = 0, wet = 0, baseN = 0, dry = 0;
+  for (let i = 0; i < ss.length; i++) {
+    const s = surfaceAt(ss[i], k, centreDepth, g);
+    vMax += Math.max(0, spill - s.z);
+    vUse += Math.max(0, wl - s.z);
+    if (s.z < wl) wet++; else dry++;
+    if (s.base >= s.side && s.base < s.ground) baseN++;
+  }
+  const unit = A / ss.length, total = vMax * unit, usable = vUse * unit;
+  if (!details) return { total, usable, spill, wl };
+  const baseLevels = shapeData.vertices.map(p => -centreDepth + (g.bl * p[0] + g.bc * p[1]) * k);
+  return {
+    total, usable, spill, wl,
+    wetArea: wet * unit, dryArea: dry * unit, baseArea: baseN * unit,
+    baseMin: Math.min(...baseLevels), baseMax: Math.max(...baseLevels), centreDepth
+  };
+}
+
+function bisectIncreasing(fn, lo, hi, target) {
+  for (let i = 0; i < 54; i++) {
+    const m = (lo + hi) / 2;
+    if (fn(m) < target) lo = m; else hi = m;
+  }
+  return (lo + hi) / 2;
+}
+
+/* =========================================================
+ * 7. Solver
+ * ======================================================= */
+/** Solve the pond for its calculated quantity. Throws InputError / Error. */
+function solvePond(pond) {
+  const g = designParameters(pond);
+  validatePond(pond, g);
+  const shapeData = unitShape(pond), i = pond.inputs;
+  let A = Number(i.area), D = Number(i.depth), V = Number(i.volume);
+  const capacity = (a, d) => {
+    const r = computeStorage(a, d, g, shapeData);
+    return i.volumeBasis === 'usable' ? r.usable : r.total;
+  };
+
+  if (pond.solve === 'volume') {
+    V = capacity(A, D);
+  } else if (pond.solve === 'area') {
+    // Ground and base may be inclined differently, so a solution need not exist.
+    let lo = 1e-7, hi = Math.max(1, A || 100), vHi = capacity(hi, D), attempts = 0;
+    while (vHi < V && attempts++ < 45) { hi *= 1.8; vHi = capacity(hi, D); }
+    if (vHi < V) throw Error('Target volume could not be reached by enlarging this outline. Check ground/base gradients or increase centre depth.');
+    A = bisectIncreasing(a => capacity(a, D), lo, hi, V);
+  } else {
+    let lo = .000001, hi = Math.max(1, D || 2), vHi = capacity(A, hi), attempts = 0;
+    while (vHi < V && attempts++ < 28) { hi *= 1.65; vHi = capacity(A, hi); }
+    if (vHi < V) throw Error('Target volume cannot be stored in this footprint: steep sides, ground levels or freeboard limit the capacity.');
+    D = bisectIncreasing(d => capacity(A, d), lo, hi, V);
+  }
+  if (!Number.isFinite(A) || !Number.isFinite(D) || A <= 0 || D <= 0) throw Error('Calculated geometry is invalid.');
+
+  const r = computeStorage(A, D, g, shapeData, true);
+  return { A, D, V, g, dim: footprintDimensions(pond, A), shapeData, ...r };
+}
+
+/* =========================================================
+ * 8. Form ↔ state
+ * ======================================================= */
+const quantityInputs = { volume: $('volume'), area: $('area'), depth: $('depth') };
+const RESULT_IDS = ['totalCapacity', 'usableCapacity', 'freeboardVolume', 'waterArea', 'bottomArea', 'topDims',
+  'bottomDims', 'sideRun', 'spillElevation', 'waterElevation', 'dryArea', 'baseRange', 'centreDepth'];
+
+function readPondInputs(pond) {
+  for (const id of POND_INPUT_IDS) pond.inputs[id] = $(id).value;
+}
+
+function showError(text) {
+  $('error').textContent = text;
+  $('error').classList.toggle('show', !!text);
+}
+
+function clearResults() {
+  for (const id of RESULT_IDS) $(id).textContent = '—';
+  $('vizCaption').textContent = 'No valid geometry';
+  activePond().geometry = null;
+  draw();
+}
+
+function showResults(pond, r) {
+  quantityInputs[pond.solve].value = Number((pond.solve === 'volume' ? r.V : pond.solve === 'area' ? r.A : r.D).toPrecision(10)).toString();
+  $('totalCapacity').textContent = fmt(r.total, 'm³');
+  $('usableCapacity').textContent = fmt(r.usable, 'm³');
+  $('freeboardVolume').textContent = fmt(r.total - r.usable, 'm³');
+  $('waterArea').textContent = fmt(r.wetArea, 'm²');
+  $('spillElevation').textContent = fmt(r.spill, 'm');
+  $('waterElevation').textContent = fmt(r.wl, 'm');
+  $('dryArea').textContent = fmt(r.dryArea, 'm²');
+  $('baseRange').textContent = fmt(r.baseMin, 'm') + ' to ' + fmt(r.baseMax, 'm');
+  $('centreDepth').textContent = fmt(r.centreDepth, 'm');
+  $('bottomArea').textContent = fmt(r.baseArea, 'm²');
+  $('topDims').textContent = pond.shape === 'circle' ? 'Ø ' + fmt(r.dim.w, 'm') : fmt(r.dim.w, 'm') + ' × ' + fmt(r.dim.l, 'm');
+  $('bottomDims').textContent = 'Sloping base (see 3D)';
+  $('sideRun').textContent = fmt(r.g.m * r.centreDepth, 'm') + ' at centre';
+  if (pond.shape === 'custom') {
+    $('customScaleInfo').textContent = 'Top outline ' + fmt(r.A, 'm²') + ' · bounding box ' + fmt(r.dim.w, 'm') + ' × ' + fmt(r.dim.l, 'm') + ' · uniformly scaled';
+  }
+  $('vizCaption').textContent = fmt(r.usable, 'm³') + ' usable · ' + fmt(r.total, 'm³') + ' max';
+}
+
+function update() {
+  const pond = activePond();
+  showError('');
+  readPondInputs(pond);
+  $('volumeDescription').textContent = pond.inputs.volumeBasis === 'usable'
+    ? 'Capacity under horizontal freeboard level'
+    : 'Maximum capacity up to lowest rim';
+  try {
+    const result = solvePond(pond);
+    showResults(pond, result);
+    pond.geometry = result;
+    draw();
+  } catch (e) {
+    showError(e.message);
+    if (!(e instanceof InputError) || e.clearSolved) quantityInputs[pond.solve].value = '';
+    clearResults();
+  }
+}
+
+function updateSlopeHint() {
+  const m = sideSlopeRatio($('slope').value);
+  $('slopeHint').textContent = Number.isFinite(m)
+    ? (m === 0 ? 'Vertical sides' : '1V:' + fmt(m, 'H', 3) + ' → ' + fmt(100 / m, '%', 2) + ' grade. Slope is measured from closest rim point.')
+    : 'Enter a positive grade or switch to side ratio.';
+}
+
+/* ---------- Optional feature tick boxes ---------- */
+function loadFeatures() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(FEATURE_STORAGE_KEY) || '{}');
+    for (const key in FEATURE_DEFAULTS) if (typeof saved[key] === 'boolean') state.features[key] = saved[key];
+  } catch (e) { /* storage unavailable: use defaults */ }
+}
+
+function saveFeatures() {
+  try { localStorage.setItem(FEATURE_STORAGE_KEY, JSON.stringify(state.features)); } catch (e) { /* ignore */ }
+}
+
+function applyFeatures() {
+  document.querySelectorAll('[data-feature]').forEach(cb => { cb.checked = !!state.features[cb.dataset.feature]; });
+  document.querySelectorAll('[data-feature-panel]').forEach(el => { el.hidden = !state.features[el.dataset.featurePanel]; });
+}
+
+document.querySelectorAll('[data-feature]').forEach(cb => cb.addEventListener('change', () => {
+  state.features[cb.dataset.feature] = cb.checked;
+  saveFeatures();
+  applyFeatures();
+  update();
+}));
+
+/* ---------- Form events ---------- */
+for (const q in quantityInputs) quantityInputs[q].addEventListener('input', () => { if (q !== activePond().solve) update(); });
+
+document.querySelectorAll('input[name=solve]').forEach(el => el.addEventListener('change', () => {
+  const pond = activePond();
+  pond.solve = el.value;
+  document.querySelectorAll('.metric').forEach(m => m.classList.toggle('target', m.dataset.target === pond.solve));
+  for (const q in quantityInputs) quantityInputs[q].disabled = q === pond.solve;
+  update();
+}));
+
+document.querySelectorAll('.shape-btn').forEach(btn => btn.addEventListener('click', () => {
+  const pond = activePond();
+  pond.shape = btn.dataset.shape;
+  pond.cache.key = '';
+  document.querySelectorAll('.shape-btn').forEach(x => {
+    x.classList.toggle('active', x === btn);
+    x.setAttribute('aria-pressed', String(x === btn));
+  });
+  $('aspectWrap').hidden = pond.shape !== 'rectangle';
+  $('customWrap').hidden = pond.shape !== 'custom';
+  drawSketch();
+  update();
+}));
+
+for (const id of ['aspect', 'freeboard', 'groundLong', 'groundCross', 'baseLong', 'baseCross']) $(id).addEventListener('input', update);
+
+$('volumeBasis').addEventListener('change', () => {
+  const pond = activePond(), geom = pond.geometry;
+  if (pond.solve !== 'volume' && geom) {
+    quantityInputs.volume.value = Number(($('volumeBasis').value === 'usable' ? geom.usable : geom.total).toPrecision(10));
+  }
+  update();
+});
+
+$('slopeFormat').addEventListener('change', () => {
+  // Convert every slope/gradient value so the geometry is unchanged.
+  for (const id of ['slope', 'groundLong', 'groundCross', 'baseLong', 'baseCross']) {
+    const n = Number($(id).value);
+    $(id).value = n === 0 ? '0' : Number((100 / n).toPrecision(12)).toString();
+  }
+  state.slopeFormat = $('slopeFormat').value;
+  const percent = state.slopeFormat === 'percent';
+  $('slopeLabel').textContent = percent ? 'Side slope (vertical grade)' : 'Side slope (1V:xH)';
+  $('slopeUnit').textContent = percent ? '%' : '1 in x';
+  document.querySelectorAll('.gradient-unit').forEach(x => { x.textContent = percent ? '%' : '1 in x'; });
+  updateSlopeHint();
+  update();
+});
+
+$('slope').addEventListener('input', () => { updateSlopeHint(); update(); });
+$('waterToggle').addEventListener('change', draw);
+
+/* =========================================================
+ * 9. Custom outline sketch editor
+ * Sketch coordinates define plan SHAPE only, not metres.
+ * ======================================================= */
+const sketch = $('drawCanvas'), sketchCtx = sketch.getContext('2d');
+let dragVertex = -1;
+
+function sketchPos(e) {
+  const rc = sketch.getBoundingClientRect();
+  return [(e.clientX - rc.left) * sketch.width / rc.width, (e.clientY - rc.top) * sketch.height / rc.height];
+}
+
+function drawSketch() {
+  const { points, closed, outline } = activePond().sketch, w = sketch.width, h = sketch.height;
+  sketchCtx.clearRect(0, 0, w, h);
+  sketchCtx.strokeStyle = '#284257';
+  sketchCtx.lineWidth = 1;
+  for (let x = 0; x < w; x += 30) { sketchCtx.beginPath(); sketchCtx.moveTo(x, 0); sketchCtx.lineTo(x, h); sketchCtx.stroke(); }
+  for (let y = 0; y < h; y += 30) { sketchCtx.beginPath(); sketchCtx.moveTo(0, y); sketchCtx.lineTo(w, y); sketchCtx.stroke(); }
+  if (points.length) {
+    sketchCtx.beginPath();
+    sketchCtx.moveTo(...points[0]);
+    for (let i = 1; i < points.length; i++) sketchCtx.lineTo(...points[i]);
+    if (closed) {
+      sketchCtx.closePath();
+      sketchCtx.fillStyle = 'rgba(92,219,191,.14)';
+      sketchCtx.fill();
+    }
+    sketchCtx.strokeStyle = closed ? '#5cdbbf' : '#67b8f9';
+    sketchCtx.lineWidth = 3;
+    sketchCtx.stroke();
+    points.forEach((p, i) => {
+      sketchCtx.beginPath();
+      sketchCtx.arc(p[0], p[1], i === 0 ? 7 : 5, 0, Math.PI * 2);
+      sketchCtx.fillStyle = i === 0 ? '#f5cf8d' : '#91ccf5';
+      sketchCtx.fill();
+    });
+  }
+  $('drawStatus').textContent = closed
+    ? (outline ? 'Outline closed · drag points to edit' : 'Invalid outline')
+    : points.length + ' points · add at least 3';
+}
+
+function sketchChanged() {
+  const pond = activePond(), s = pond.sketch;
+  s.outline = analyseOutline(s.points, s.closed);
+  pond.cache.key = '';
+  drawSketch();
+  if (pond.shape === 'custom') update();
+}
+
+sketch.addEventListener('pointerdown', e => {
+  const s = activePond().sketch, p = sketchPos(e);
+  if (s.closed) {
+    const index = s.points.findIndex(q => Math.hypot(q[0] - p[0], q[1] - p[1]) < 15);
+    if (index >= 0) { dragVertex = index; sketch.setPointerCapture(e.pointerId); }
+    return;
+  }
+  if (s.points.length >= 3 && Math.hypot(p[0] - s.points[0][0], p[1] - s.points[0][1]) < 14) {
+    s.closed = true;
+    sketchChanged();
+    return;
+  }
+  if (s.points.length < 70) { s.points.push(p); sketchChanged(); }
+});
+sketch.addEventListener('pointermove', e => {
+  if (dragVertex < 0) return;
+  const p = sketchPos(e);
+  activePond().sketch.points[dragVertex] = [
+    Math.max(5, Math.min(sketch.width - 5, p[0])),
+    Math.max(5, Math.min(sketch.height - 5, p[1]))
+  ];
+  sketchChanged();
+});
+for (const ev of ['pointerup', 'pointercancel', 'lostpointercapture']) sketch.addEventListener(ev, () => { dragVertex = -1; });
+
+$('undoPoint').addEventListener('click', () => { const s = activePond().sketch; s.closed = false; s.points.pop(); sketchChanged(); });
+$('clearPolygon').addEventListener('click', () => { const s = activePond().sketch; s.points = []; s.closed = false; sketchChanged(); });
+$('closePolygon').addEventListener('click', () => { const s = activePond().sketch; if (s.points.length >= 3) { s.closed = true; sketchChanged(); } });
+
+/* =========================================================
+ * 10. 3D preview (offline 2D-canvas renderer)
+ * Terrain, sloping excavation and a level, clipped water plane.
+ * ======================================================= */
+const canvas = $('canvas'), ctx = canvas.getContext('2d');
+const VIEW_DEFAULT = { yaw: -.65, pitch: .61, zoom: 1, panX: 0, panY: 0 };
+const view = { ...VIEW_DEFAULT };
+
+function project(p, scale, cx, cy) {
+  const [x, y, z] = p;
+  const X = x * Math.cos(view.yaw) - y * Math.sin(view.yaw), Y = x * Math.sin(view.yaw) + y * Math.cos(view.yaw);
+  return {
+    x: cx + X * scale + view.panX,
+    y: cy + (Y * Math.sin(view.pitch) - z * Math.cos(view.pitch)) * scale + view.panY,
+    depth: Y * Math.cos(view.pitch) + z * Math.sin(view.pitch)
+  };
+}
+
+function fillPolygon(ps, fill, stroke = null, alpha = 1, width = 1) {
+  if (!ps.length) return;
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.beginPath();
+  ctx.moveTo(ps[0].x, ps[0].y);
+  for (let i = 1; i < ps.length; i++) ctx.lineTo(ps[i].x, ps[i].y);
+  ctx.closePath();
+  if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+  if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = width; ctx.stroke(); }
+  ctx.restore();
+}
+
+function strokeLine(ps, color, width = 1, dash = []) {
+  ctx.save();
+  ctx.beginPath();
+  ctx.setLineDash(dash);
+  ctx.moveTo(ps[0].x, ps[0].y);
+  for (let i = 1; i < ps.length; i++) ctx.lineTo(ps[i].x, ps[i].y);
+  ctx.strokeStyle = color;
+  ctx.lineWidth = width;
+  ctx.stroke();
+  ctx.restore();
+}
+
+function draw() {
+  const rect = canvas.getBoundingClientRect();
+  if (!rect.width || !rect.height) return;
+  const dpr = Math.min(devicePixelRatio || 1, 2), cw = Math.round(rect.width * dpr), ch = Math.round(rect.height * dpr);
+  if (canvas.width !== cw || canvas.height !== ch) { canvas.width = cw; canvas.height = ch; }
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, rect.width, rect.height);
+  const geometry = activePond().geometry;
+  if (!geometry) return;
+
+  const { A, D, centreDepth, g, dim, shapeData, wl, spill } = geometry, k = Math.sqrt(A), w = dim.w, l = dim.l;
+  const maxDimension = Math.max(w, l, D * 1.5, .1);
+  const scale = Math.min(rect.width * .72, rect.height * .62) / maxDimension * view.zoom, cx = rect.width * .5, cy = rect.height * .52;
+  const proj = (x, y, z) => project([x, y, z], scale, cx, cy);
+  const groundZ = (x, y) => g.gl * x + g.gc * y;
+
+  // Tiles over the pond plus a margin of surrounding ground, painted back to front.
+  const tiles = [], edge = Math.max(w, l) * .24, gw = w + 2 * edge, gLen = l + 2 * edge;
+  const nx = 54, ny = Math.max(20, Math.round(54 * gLen / gw)), dx = gw / nx, dy = gLen / ny;
+  const showWater = $('waterToggle').checked;
+  for (let j = 0; j < ny; j++) {
+    for (let i = 0; i < nx; i++) {
+      const x = -gw / 2 + (i + .5) * dx, y = -gLen / 2 + (j + .5) * dy, xn = x / k, yn = y / k;
+      const inPond = shapeData.inside(xn, yn);
+      const surf = inPond ? surfaceAt({ x: xn, y: yn, ...shapeData.nearest(xn, yn) }, k, centreDepth, g) : null;
+      const z = inPond ? surf.z : groundZ(x, y);
+      const corners = [[x - dx / 2, y - dy / 2], [x + dx / 2, y - dy / 2], [x + dx / 2, y + dy / 2], [x - dx / 2, y + dy / 2]];
+      const groundTile = corners.map(q => proj(q[0], q[1], inPond ? z : groundZ(q[0], q[1])));
+      const mean = groundTile.reduce((s, q) => s + q.depth, 0) / 4;
+      const isBase = inPond && surf.base >= surf.side && surf.base < surf.ground;
+      tiles.push({ ps: groundTile, mean, col: inPond ? (isBase ? '#527c82' : '#97714f') : '#344d47', water: false });
+      if (inPond && showWater && z < wl) {
+        const ps = corners.map(q => proj(q[0], q[1], wl));
+        tiles.push({ ps, mean: ps.reduce((s, q) => s + q.depth, 0) / 4, col: '#48b9ef', water: true });
+      }
+    }
+  }
+  tiles.sort((a, b) => a.mean - b.mean);
+  for (const t of tiles) fillPolygon(t.ps, t.col, null, t.water ? .72 : 1);
+
+  // Rim at actual sloping-ground levels.
+  const rim = shapeData.vertices.map(v => proj(v[0] * k, v[1] * k, groundZ(v[0] * k, v[1] * k)));
+  strokeLine([...rim, rim[0]], '#d0e6aa', 2.7);
+
+  // Spill and water level markers beside the pond.
+  const mx = w * .67 + edge * .3, my = -l * .46;
+  const a = proj(mx, my, spill), b = proj(mx, my, wl), c = proj(mx, my, -centreDepth);
+  strokeLine([a, c], '#eaf1f8', 1.25, [5, 4]);
+  strokeLine([{ x: a.x - 6, y: a.y }, { x: a.x + 6, y: a.y }], '#f1db9a', 2);
+  strokeLine([{ x: b.x - 7, y: b.y }, { x: b.x + 7, y: b.y }], '#49bfff', 2.5);
+  ctx.save();
+  ctx.font = '11px system-ui';
+  ctx.fillStyle = '#eaf1f8';
+  ctx.fillText('Spill', a.x + 9, a.y);
+  ctx.fillText('Water', b.x + 9, b.y);
+  ctx.restore();
+
+  // Axis arrows.
+  const ox = -w * .60, oy = -l * .60;
+  const origin = proj(ox, oy, groundZ(ox, oy));
+  const xArrow = proj(ox + w * .15, oy, groundZ(ox + w * .15, oy));
+  const yArrow = proj(ox, oy + l * .15, groundZ(ox, oy + l * .15));
+  strokeLine([origin, xArrow], '#ffb18e', 2);
+  strokeLine([origin, yArrow], '#91c2ff', 2);
+  ctx.save();
+  ctx.font = 'bold 12px system-ui';
+  ctx.fillStyle = '#ffb18e';
+  ctx.fillText('+X', xArrow.x + 3, xArrow.y);
+  ctx.fillStyle = '#91c2ff';
+  ctx.fillText('+Y', yArrow.x + 3, yArrow.y);
+  ctx.restore();
+}
+
+let dragging = false, lastX = 0, lastY = 0;
+canvas.addEventListener('pointerdown', e => { dragging = true; lastX = e.clientX; lastY = e.clientY; canvas.setPointerCapture(e.pointerId); });
+canvas.addEventListener('pointerup', () => { dragging = false; });
+canvas.addEventListener('pointercancel', () => { dragging = false; });
+canvas.addEventListener('pointermove', e => {
+  if (!dragging) return;
+  const dx = e.clientX - lastX, dy = e.clientY - lastY;
+  lastX = e.clientX;
+  lastY = e.clientY;
+  if (e.shiftKey) { view.panX += dx; view.panY += dy; }
+  else { view.yaw += dx * .008; view.pitch = Math.max(.14, Math.min(1.48, view.pitch + dy * .006)); }
+  draw();
+});
+canvas.addEventListener('wheel', e => {
+  e.preventDefault();
+  view.zoom = Math.max(.35, Math.min(4.5, view.zoom * Math.exp(-e.deltaY * .001)));
+  draw();
+}, { passive: false });
+$('resetView').addEventListener('click', () => { Object.assign(view, VIEW_DEFAULT); draw(); });
+
+/* =========================================================
+ * 11. DXF export (AutoCAD R12, metres)
+ * XY origin is the centre of the top footprint bounding box; Z = 0 is the
+ * centre ground datum. Toe and waterline are sampled contours.
+ * ======================================================= */
+/** Closed contours of the water edge ('water') or base-to-side toe ('toe'). */
+function sampledContours(kind, geom) {
+  const { A, centreDepth, g, shapeData, dim, wl } = geom, k = Math.sqrt(A), w = dim.w, l = dim.l;
+  const nx = 118, ny = Math.max(28, Math.min(220, Math.round(nx * l / w))), dx = w / nx, dy = l / ny;
+  // A narrow exterior margin so clipped boundaries form closed contours.
+  const margin = Math.max(dx, dy) * 1.4, xmin = -w / 2 - margin, ymin = -l / 2 - margin;
+  const gx = nx + 4, gy = ny + 4, sx = (w + 2 * margin) / gx, sy = (l + 2 * margin) / gy;
+  const inside = new Uint8Array((gx + 1) * (gy + 1));
+  const at = (i, j) => j * (gx + 1) + i;
+  for (let j = 0; j <= gy; j++) {
+    for (let i = 0; i <= gx; i++) {
+      const u = (xmin + i * sx) / k, v = (ymin + j * sy) / k;
+      if (!shapeData.inside(u, v)) continue;
+      const q = surfaceAt({ x: u, y: v, ...shapeData.nearest(u, v) }, k, centreDepth, g);
+      inside[at(i, j)] = kind === 'water' ? (q.z < wl ? 1 : 0) : (q.base >= q.side && q.base < q.ground ? 1 : 0);
+    }
+  }
+
+  // Marching squares. Ambiguous diagonal cells follow a fixed branch; no interpolation.
+  const edgePoint = (i, j, e) => e === 0 ? [xmin + (i + .5) * sx, ymin + j * sy]
+    : e === 1 ? [xmin + (i + 1) * sx, ymin + (j + .5) * sy]
+    : e === 2 ? [xmin + (i + .5) * sx, ymin + (j + 1) * sy]
+    : [xmin + i * sx, ymin + (j + .5) * sy];
+  const patterns = [[], [[3, 0]], [[0, 1]], [[3, 1]], [[1, 2]], [[3, 2], [0, 1]], [[0, 2]], [[3, 2]],
+    [[2, 3]], [[0, 2]], [[0, 3], [1, 2]], [[1, 2]], [[1, 3]], [[0, 1]], [[0, 3]], []];
+  const edges = [];
+  for (let j = 0; j < gy; j++) {
+    for (let i = 0; i < gx; i++) {
+      const code = inside[at(i, j)] + 2 * inside[at(i + 1, j)] + 4 * inside[at(i + 1, j + 1)] + 8 * inside[at(i, j + 1)];
+      for (const [e1, e2] of patterns[code]) edges.push([edgePoint(i, j, e1), edgePoint(i, j, e2)]);
+    }
+  }
+
+  // Join segments into closed chains.
+  const nodes = new Map(), links = [];
+  const key = p => Math.round(p[0] * 1e7) + ',' + Math.round(p[1] * 1e7);
+  for (const [a, b] of edges) {
+    const ia = key(a), ib = key(b), n = links.length;
+    links.push([ia, ib]);
+    if (!nodes.has(ia)) nodes.set(ia, { p: a, adj: [] });
+    if (!nodes.has(ib)) nodes.set(ib, { p: b, adj: [] });
+    nodes.get(ia).adj.push(n);
+    nodes.get(ib).adj.push(n);
+  }
+  const visited = new Uint8Array(links.length), out = [];
+  for (let e = 0; e < links.length; e++) {
+    if (visited[e]) continue;
+    visited[e] = 1;
+    const [start, second] = links[e], chain = [start, second];
+    let node = second;
+    while (node !== start) {
+      const next = (nodes.get(node)?.adj || []).find(ix => !visited[ix]);
+      if (next === undefined) break;
+      visited[next] = 1;
+      const [u, v] = links[next];
+      node = node === u ? v : u;
+      chain.push(node);
+      if (chain.length > links.length + 2) break;
+    }
+    if (chain.length >= 4) {
+      const closed = chain[0] === chain[chain.length - 1];
+      if (closed) chain.pop();
+      const xyz = chain.map(id => {
+        const [x, y] = nodes.get(id).p;
+        return [x, y, kind === 'water' ? wl : (-centreDepth + g.bl * x + g.bc * y)];
+      });
+      if (closed && xyz.length >= 3) out.push(xyz);
+    }
+  }
+  return out;
+}
+
+function dxfPolyline(layer, vertices) {
+  if (vertices.length < 3) return '';
+  let txt = `0\nPOLYLINE\n8\n${layer}\n66\n1\n70\n9\n10\n0\n20\n0\n30\n0\n`;
+  for (const [x, y, z] of vertices) txt += `0\nVERTEX\n8\n${layer}\n10\n${x.toFixed(6)}\n20\n${y.toFixed(6)}\n30\n${z.toFixed(6)}\n70\n32\n`;
+  return txt + `0\nSEQEND\n8\n${layer}\n`;
+}
+
+function exportDXF() {
+  const geom = activePond().geometry;
+  if (!geom) { showError('Calculate a valid pond before exporting DXF.'); return; }
+  try {
+    const { A, shapeData, g } = geom, k = Math.sqrt(A);
+    const rim = shapeData.vertices.map(([u, v]) => [u * k, v * k, g.gl * u * k + g.gc * v * k]);
+    const layers = [['POND_TOP_RIM', 3], ['POND_BASE_TOE_APPROX', 2], ['POND_WATERLINE_APPROX', 5]];
+    let txt = '0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1009\n0\nENDSEC\n0\nSECTION\n2\nTABLES\n0\nTABLE\n2\nLAYER\n70\n3\n';
+    for (const [name, color] of layers) txt += `0\nLAYER\n2\n${name}\n70\n0\n62\n${color}\n6\nCONTINUOUS\n`;
+    txt += '0\nENDTAB\n0\nENDSEC\n0\nSECTION\n2\nENTITIES\n';
+    txt += dxfPolyline('POND_TOP_RIM', rim);
+    for (const c of sampledContours('toe', geom)) txt += dxfPolyline('POND_BASE_TOE_APPROX', c);
+    for (const c of sampledContours('water', geom)) txt += dxfPolyline('POND_WATERLINE_APPROX', c);
+    txt += '0\nENDSEC\n0\nEOF\n';
+    const url = URL.createObjectURL(new Blob([txt], { type: 'application/dxf' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'Pond_Contours_Local_Metres.dxf';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 3000);
+  } catch (e) {
+    showError('DXF export failed: ' + e.message);
+  }
+}
+$('exportDxf').addEventListener('click', exportDXF);
+
+/* =========================================================
+ * 12. Start-up
+ * ======================================================= */
+state.slopeFormat = $('slopeFormat').value;
+loadFeatures();
+applyFeatures();
+new ResizeObserver(draw).observe($('viz'));
+drawSketch();
+updateSlopeHint();
+update();
 })();
-</script></body></html>
+</script>
+</body>
+</html>
