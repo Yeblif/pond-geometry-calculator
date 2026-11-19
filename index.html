@@ -39,6 +39,7 @@ body {
   min-height: 650px;
 }
 .controls {
+  min-width: 0;
   overflow: auto;
   padding: 28px 28px 38px;
   border-right: 1px solid var(--line);
@@ -52,6 +53,8 @@ body {
 header { margin: 0 0 22px; }
 header h1 { font-size: 25px; letter-spacing: -.7px; margin: 0 0 5px; }
 header p { color: var(--muted); margin: 0; }
+.header-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.file-buttons { display: flex; gap: 7px; flex-shrink: 0; }
 h2 {
   font-size: 12px;
   text-transform: uppercase;
@@ -110,7 +113,7 @@ h2 {
 /* =========================================================
    Plan shape and sketch
    ========================================================= */
-.shape-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 9px; }
+.shape-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(78px, 1fr)); gap: 9px; }
 .shape-btn {
   background: var(--card);
   border: 1px solid var(--line);
@@ -213,6 +216,54 @@ select { background: #0e1b2b; border: 1px solid #365069; border-radius: 9px; cur
 .error.show { display: block; }
 .toggle { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; margin-top: 14px; }
 .toggle input { accent-color: var(--accent); }
+.btn-row { display: flex; gap: 7px; flex-wrap: wrap; align-items: center; }
+.table-wrap { max-height: 320px; overflow: auto; margin-top: 12px; border: 1px solid var(--line); border-radius: 9px; }
+table.data { width: 100%; border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; }
+table.data th, table.data td { padding: 6px 9px; text-align: right; border-bottom: 1px solid #22374a; white-space: nowrap; }
+table.data th { position: sticky; top: 0; background: #17293b; color: var(--muted); font-weight: 600; }
+table.data th:last-child, table.data td:last-child { text-align: left; }
+table.data tr.mark td { background: #173e43; }
+.result-grid + .result-grid, .result-grid[data-feature-panel] { margin-bottom: 10px; }
+textarea {
+  width: 100%;
+  min-height: 82px;
+  padding: 10px 12px;
+  background: #0e1b2b;
+  color: white;
+  border: 1px solid #365069;
+  border-radius: 9px;
+  font: 12px/1.4 ui-monospace, Consolas, monospace;
+  resize: vertical;
+}
+input[type=range] { width: 100%; accent-color: var(--accent); }
+.import-list { display: grid; gap: 6px; margin-top: 12px; }
+.import-item { display: flex; gap: 9px; align-items: center; padding: 8px 10px; border: 1px solid var(--line); border-radius: 9px; background: var(--card); font-size: 12px; }
+.import-item.bad { opacity: .6; }
+.import-item input { accent-color: var(--accent); }
+.row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.pond-tabs { display: flex; gap: 8px; margin-top: 14px; }
+.pond-tab {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--card);
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+}
+.pond-tab.active { border-color: var(--accent); background: #173e43; box-shadow: inset 0 0 0 1px var(--accent); }
+.pond-tab small { display: block; font-weight: 400; color: var(--muted); font-size: 11px; }
+.site-results { margin-top: 14px; }
+.site-results h3 { margin: 16px 0 8px; font-size: 13px; color: var(--muted); font-weight: 600; }
+.status-ok { color: var(--accent); }
+.status-bad { color: var(--danger); }
+.warn-list { margin: 8px 0 0; padding-left: 18px; color: #f3d39a; font-size: 12px; }
+.badge { display: inline-block; padding: 1px 6px; border-radius: 99px; font-size: 10px; border: 1px solid #8a6d2f; color: #f3d39a; margin-left: 4px; }
+table.data td.ok { color: var(--accent); }
+table.data td.warn { color: #f3d39a; }
+table.data td.left, table.data th.left { text-align: left; white-space: normal; }
 .footer-note { font-size: 11px; color: #829bb0; margin-top: 24px; line-height: 1.6; }
 
 /* =========================================================
@@ -262,6 +313,7 @@ select { background: #0e1b2b; border: 1px solid #365069; border-radius: 9px; cur
   .legend { left: 16px; right: 16px; }
 }
 @media (max-width: 480px) {
+  .row3 { grid-template-columns: 1fr 1fr; }
   .metric { grid-template-columns: 22px 1fr 128px; gap: 5px; }
   .controls { padding: 16px; }
   .metric .input-shell input { padding: 9px 6px; }
@@ -275,7 +327,14 @@ select { background: #0e1b2b; border: 1px solid #365069; border-radius: 9px; cur
 <section class="controls">
 
 <header>
-  <h1>Pond geometry calculator</h1>
+  <div class="header-row">
+    <h1>Pond geometry calculator</h1>
+    <div class="file-buttons">
+      <button class="tool" type="button" id="saveProject" title="Download all inputs as a .json project file">Save</button>
+      <button class="tool" type="button" id="loadProject" title="Load a .json project file">Load</button>
+      <input type="file" id="loadFile" accept=".json,application/json" hidden>
+    </div>
+  </div>
   <p>Calculate pond capacity, footprint area or depth, including freeboard and usable storage.</p>
 </header>
 
@@ -287,7 +346,22 @@ select { background: #0e1b2b; border: 1px solid #365069; border-radius: 9px; cur
   </div>
   <div class="feature-list">
     <label class="feature-chip"><input type="checkbox" id="featGradients" data-feature="gradients"> Ground &amp; base gradients</label>
+    <label class="feature-chip"><input type="checkbox" id="featPermanentWater" data-feature="permanentWater"> Permanent water level</label>
+    <label class="feature-chip"><input type="checkbox" id="featBenchRamp" data-feature="benchRamp"> Safety bench &amp; access ramp</label>
+    <label class="feature-chip"><input type="checkbox" id="featStageStorage" data-feature="stageStorage"> Stage-storage table</label>
+    <label class="feature-chip"><input type="checkbox" id="featNatural" data-feature="naturalShapes"> Natural shapes &amp; smoothing</label>
+    <label class="feature-chip"><input type="checkbox" id="featImport" data-feature="importOutline"> Import polyline (DXF / CSV)</label>
+    <label class="feature-chip"><input type="checkbox" id="featTrack" data-feature="track"> Maintenance track &amp; verges</label>
+    <label class="feature-chip"><input type="checkbox" id="featBoundary" data-feature="siteBoundary"> Site boundary check</label>
+    <label class="feature-chip"><input type="checkbox" id="featSecondPond" data-feature="secondPond"> Treatment + attenuation ponds</label>
+    <label class="feature-chip"><input type="checkbox" id="featSuds" data-feature="sudsChecks"> SuDS guidance checks</label>
   </div>
+</div>
+
+<!-- Pond tabs (second pond feature) -->
+<div class="pond-tabs" data-feature-panel="secondPond" hidden>
+  <button type="button" class="pond-tab active" data-pond-index="0">Pond 1<small>Treatment</small></button>
+  <button type="button" class="pond-tab" data-pond-index="1">Pond 2<small>Attenuation</small></button>
 </div>
 
 <!-- ======================= 01 Plan shape ======================= -->
@@ -297,6 +371,7 @@ select { background: #0e1b2b; border: 1px solid #365069; border-radius: 9px; cur
   <button type="button" class="shape-btn" data-shape="square" aria-pressed="false"><svg viewBox="0 0 44 32" fill="none"><path d="M11 5H33V27H11Z" stroke="currentColor" stroke-width="2"/><path d="M16 10H28V22H16Z" stroke="currentColor" opacity=".55"/></svg>Square</button>
   <button type="button" class="shape-btn" data-shape="rectangle" aria-pressed="false"><svg viewBox="0 0 44 32" fill="none"><path d="M3 7H41V25H3Z" stroke="currentColor" stroke-width="2"/><path d="M11 11H33V21H11Z" stroke="currentColor" opacity=".55"/></svg>Rectangle</button>
   <button type="button" class="shape-btn" data-shape="custom" aria-pressed="false"><svg viewBox="0 0 44 32" fill="none"><path d="M4 10L16 3L38 7L33 23L19 29L7 21Z" stroke="currentColor" stroke-width="2"/><path d="M12 12L18 10L29 12L26 20L19 22L13 18Z" stroke="currentColor" opacity=".55"/></svg>Custom</button>
+  <button type="button" class="shape-btn" data-shape="natural" data-feature-panel="naturalShapes" aria-pressed="false" hidden><svg viewBox="0 0 44 32" fill="none"><path d="M6 15C5 8 13 4 20 6C26 8 30 3 36 7C42 11 38 18 36 22C33 28 25 26 20 28C13 30 7 22 6 15Z" stroke="currentColor" stroke-width="2"/><path d="M14 15C14 12 18 11 21 12C24 13 27 11 29 14C31 17 28 19 25 20C21 21 15 19 14 15Z" stroke="currentColor" opacity=".55"/></svg>Natural</button>
 </div>
 
 <div id="customWrap" hidden style="margin-top:14px">
@@ -306,16 +381,54 @@ select { background: #0e1b2b; border: 1px solid #365069; border-radius: 9px; cur
     <button class="tool" type="button" id="undoPoint">Undo point</button>
     <button class="tool" type="button" id="closePolygon">Close outline</button>
     <button class="tool" type="button" id="clearPolygon">Clear</button>
+    <button class="tool" type="button" id="smoothPolygon" data-feature-panel="naturalShapes" hidden title="Round off corners (each click doubles the points)">Smooth outline</button>
   </div>
-  <p class="help">Click points around the rim, then click <strong>Close outline</strong> (or the first point). Drag vertices to adjust. The sketch defines proportions, not metres: the outline is automatically scaled to your specified area or capacity.</p>
+  <p class="help">Click points around the rim, then click <strong>Close outline</strong> (or the first point). Drag vertices to adjust. Up on the sketch is +Y. The sketch defines proportions, not metres: the outline is automatically scaled to your specified area or capacity.</p>
   <p class="help" id="customScaleInfo">Draw at least three points to begin.</p>
 </div>
 
 <div id="aspectWrap" hidden style="margin-top:14px">
   <div class="field">
-    <label for="aspect">Length : width ratio</label>
-    <div class="input-shell"><input id="aspect" type="number" min="1" max="20" step="0.1" value="1.5"><span class="unit">: 1</span></div>
+    <label for="aspect">Length (X) : width (Y) ratio</label>
+    <div class="input-shell"><input id="aspect" data-pond type="number" min="1" max="20" step="0.1" value="1.5"><span class="unit">: 1</span></div>
   </div>
+</div>
+
+<div id="naturalWrap" hidden style="margin-top:14px">
+  <div class="field">
+    <label for="naturalIrregularity">Irregularity <span id="irregularityValue"></span></label>
+    <input id="naturalIrregularity" data-pond type="range" min="0" max="100" step="1" value="40">
+  </div>
+  <div class="row" style="margin-top:12px">
+    <div class="field"><label for="naturalSeed">Shape number (seed)</label><div class="input-shell"><input id="naturalSeed" data-pond type="number" min="0" step="1" value="1"></div></div>
+    <div class="field"><label for="naturalMinBend">Minimum inward bend radius</label><div class="input-shell"><input id="naturalMinBend" data-pond type="number" min="0" step="any" value="3"><span class="unit">m</span></div></div>
+  </div>
+  <div class="btn-row" style="margin-top:10px"><button class="tool" type="button" id="newNatural">New shape</button></div>
+  <p class="help" id="naturalInfo">An ellipse (length : width ratio above) with smooth random variation. 0 irregularity is a plain ellipse; the same shape number always gives the same shape.</p>
+</div>
+
+<div id="placeWrap" data-feature-any="siteBoundary secondPond" hidden style="margin-top:14px">
+  <div class="row3">
+    <div class="field"><label for="placeX">Centre X</label><div class="input-shell"><input id="placeX" data-pond type="number" step="any" value="0"><span class="unit">m</span></div></div>
+    <div class="field"><label for="placeY">Centre Y</label><div class="input-shell"><input id="placeY" data-pond type="number" step="any" value="0"><span class="unit">m</span></div></div>
+    <div class="field"><label for="placeRot">Rotation</label><div class="input-shell"><input id="placeRot" data-pond type="number" step="any" value="0"><span class="unit">°</span></div></div>
+  </div>
+  <p class="help" id="placeHelp">Position of the pond centre in the site and rotation of its length (+X) axis, anticlockwise. Ground gradients are site-wide; base gradients follow the pond's own axes.</p>
+</div>
+
+<!-- Feature: import a closed polyline -->
+<div class="feature-panel" data-feature-panel="importOutline" hidden>
+  <h3>Import a closed polyline</h3>
+  <p class="help">Reads closed LWPOLYLINE and POLYLINE entities from an ASCII DXF (drawing units taken as metres; arcs are split into short straight segments), or X,Y coordinates pasted one pair per line.</p>
+  <div class="btn-row"><button class="tool" type="button" id="importDxfBtn">Choose DXF…</button><input type="file" id="importDxfFile" accept=".dxf" hidden><span class="help" id="importFileName" style="margin:0"></span></div>
+  <div class="field" style="margin-top:12px"><label for="importCsv">Or paste coordinates (X, Y per line)</label><textarea id="importCsv" placeholder="452100.0, 168200.5&#10;452130.2, 168205.0&#10;452128.7, 168231.9"></textarea></div>
+  <div class="btn-row" style="margin-top:8px"><button class="tool" type="button" id="importCsvBtn">Read coordinates</button></div>
+  <div class="import-list" id="importList"></div>
+  <div class="row" style="margin-top:12px">
+    <div class="field"><label for="importTarget">Use as</label><select id="importTarget"><option value="pond">Pond outline (active pond)</option><option value="boundary">Site boundary</option></select></div>
+    <div class="field"><label>&nbsp;</label><button class="tool" type="button" id="importUse" disabled>Use selected</button></div>
+  </div>
+  <p class="help" id="importMsg"></p>
 </div>
 
 <!-- ======================= 02 Slopes ======================= -->
@@ -327,7 +440,7 @@ select { background: #0e1b2b; border: 1px solid #365069; border-radius: 9px; cur
   </div>
   <div class="field">
     <label for="slope" id="slopeLabel">Side slope (1V:xH)</label>
-    <div class="input-shell"><input id="slope" type="number" min="0" max="100000" step="any" value="3"><span id="slopeUnit" class="unit">1 in x</span></div>
+    <div class="input-shell"><input id="slope" data-pond data-grade type="number" min="0" max="100000" step="any" value="3"><span id="slopeUnit" class="unit">1 in x</span></div>
   </div>
 </div>
 <p class="help" id="slopeHint">1V:3H means 3 m horizontal run per 1 m of depth (33.33% grade).</p>
@@ -338,41 +451,84 @@ select { background: #0e1b2b; border: 1px solid #365069; border-radius: 9px; cur
     <h3>Existing ground gradients</h3>
     <p class="help">Ground rises with a positive gradient in +X (length) or +Y (width). A negative value falls in that direction. <strong>0</strong> means level.</p>
     <div class="row">
-      <div class="field"><label for="groundLong">Longitudinal (+X)</label><div class="input-shell"><input id="groundLong" type="number" step="any" value="0"><span class="unit gradient-unit">1 in x</span></div></div>
-      <div class="field"><label for="groundCross">Crossfall (+Y)</label><div class="input-shell"><input id="groundCross" type="number" step="any" value="0"><span class="unit gradient-unit">1 in x</span></div></div>
+      <div class="field"><label for="groundLong">Longitudinal (+X)</label><div class="input-shell"><input id="groundLong" data-site data-grade type="number" step="any" value="0"><span class="unit gradient-unit">1 in x</span></div></div>
+      <div class="field"><label for="groundCross">Crossfall (+Y)</label><div class="input-shell"><input id="groundCross" data-site data-grade type="number" step="any" value="0"><span class="unit gradient-unit">1 in x</span></div></div>
     </div>
   </div>
   <div class="sub">
     <h3>Pond base gradients</h3>
-    <p class="help">Base gradients are independent of ground. <strong>Depth is always the minimum vertical distance between the ground plane and base plane anywhere in the top footprint.</strong></p>
+    <label class="toggle" style="margin:0 0 10px"><input type="checkbox" id="baseMatchGround" data-pond> Base matches ground gradients</label>
+    <p class="help" id="baseMatchHelp" hidden>The base follows the ground, so the excavation depth is the same everywhere (minimum depth = centre depth). Water is still level and limited by the lowest rim point, so on sloping ground the high end stores less usable water.</p>
+    <p class="help" id="baseFreeHelp">Base gradients are independent of ground. <strong>Depth is always the minimum vertical distance between the ground plane and base plane anywhere in the top footprint.</strong></p>
     <div class="row">
-      <div class="field"><label for="baseLong">Longitudinal (+X)</label><div class="input-shell"><input id="baseLong" type="number" step="any" value="0"><span class="unit gradient-unit">1 in x</span></div></div>
-      <div class="field"><label for="baseCross">Crossfall (+Y)</label><div class="input-shell"><input id="baseCross" type="number" step="any" value="0"><span class="unit gradient-unit">1 in x</span></div></div>
+      <div class="field"><label for="baseLong">Longitudinal (+X)</label><div class="input-shell"><input id="baseLong" data-pond data-grade type="number" step="any" value="0"><span class="unit gradient-unit">1 in x</span></div></div>
+      <div class="field"><label for="baseCross">Crossfall (+Y)</label><div class="input-shell"><input id="baseCross" data-pond data-grade type="number" step="any" value="0"><span class="unit gradient-unit">1 in x</span></div></div>
     </div>
   </div>
 </div>
 
-<!-- ======================= 03 Freeboard ======================= -->
-<h2>03 — Freeboard and capacity basis</h2>
-<div class="row">
-  <div class="field">
-    <label for="freeboard">Freeboard depth</label>
-    <div class="input-shell"><input id="freeboard" type="number" min="0" step="any" value="0.3"><span class="unit">m</span></div>
+<!-- Feature: safety bench and access ramp -->
+<div class="feature-panel" data-feature-panel="benchRamp" hidden>
+  <div class="sub">
+    <h3>Safety bench</h3>
+    <label class="toggle" style="margin:0 0 10px"><input type="checkbox" id="benchOn" data-pond checked> Include a level bench around the sides</label>
+    <div class="row">
+      <div class="field"><label for="benchWidth">Bench width</label><div class="input-shell"><input id="benchWidth" data-pond type="number" min="0" step="any" value="1"><span class="unit">m</span></div></div>
+      <div class="field"><label for="benchDepth">Depth below water level</label><div class="input-shell"><input id="benchDepth" data-pond type="number" min="0" step="any" value="0.3"><span class="unit">m</span></div></div>
+    </div>
+    <p class="help">A level shelf cut into the side slopes, measured below the permanent water level (or the design water level when no permanent water level is set). Below the bench the side slope continues down to the base.</p>
   </div>
-  <div class="field">
-    <label for="volumeBasis">Volume input refers to</label>
-    <select id="volumeBasis"><option value="usable" selected>Usable storage (below freeboard)</option><option value="total">Total to top of rim</option></select>
+  <div class="sub">
+    <h3>Access ramp</h3>
+    <label class="toggle" style="margin:0 0 10px"><input type="checkbox" id="rampOn" data-pond checked> Include a maintenance access ramp</label>
+    <div class="row">
+      <div class="field"><label for="rampWidth">Ramp width</label><div class="input-shell"><input id="rampWidth" data-pond type="number" min="0" step="any" value="3.5"><span class="unit">m</span></div></div>
+      <div class="field"><label for="rampGrade">Ramp gradient</label><div class="input-shell"><input id="rampGrade" data-pond data-grade type="number" min="0" step="any" value="10"><span class="unit gradient-unit">1 in x</span></div></div>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <div class="field"><label for="rampBearing">Position around the pond</label><div class="input-shell"><input id="rampBearing" data-pond type="number" step="any" value="0"><span class="unit">° from +X</span></div></div>
+    </div>
+    <p class="help">The ramp starts on the rim in the chosen direction from the pond centre (0° = +X, 90° = +Y) and runs straight in, square to the edge, until it meets the base. It is fill inside the pond, so it reduces the storage.</p>
   </div>
 </div>
-<p class="help">Freeboard is measured vertically below the <strong>lowest rim elevation (overflow point)</strong>, not the highest rim. Water is always horizontal. Where the base or pond sides rise above the water level, they store no water.</p>
+
+<!-- ======================= 03 Levels and freeboard ======================= -->
+<h2>03 — Levels, freeboard and capacity basis</h2>
+<div class="row">
+  <div class="field">
+    <label for="datum" id="datumLabel">Datum: ground level at pond centre</label>
+    <div class="input-shell"><input id="datum" data-site type="number" step="any" value="0"><span class="unit">m</span></div>
+  </div>
+  <div class="field">
+    <label for="freeboard">Freeboard depth</label>
+    <div class="input-shell"><input id="freeboard" data-pond type="number" min="0" step="any" value="0.3"><span class="unit">m</span></div>
+  </div>
+</div>
+<div class="row" style="margin-top:12px">
+  <div class="field">
+    <label for="volumeBasis">Volume input refers to</label>
+    <select id="volumeBasis" data-pond><option value="usable" selected>Usable storage (below freeboard)</option><option value="total">Total to top of rim</option><option value="attenuation" data-feature-option="permanentWater">Attenuation (above permanent water level)</option></select>
+  </div>
+</div>
+<p class="help">Enter the existing ground level at the pond centre (e.g. in m AOD) to report real levels; leave it at 0 for levels relative to the centre ground. Freeboard is measured vertically below the <strong>lowest rim elevation (overflow point)</strong>, not the highest rim. Water is always horizontal. Where the base or pond sides rise above the water level, they store no water.</p>
+
+<!-- Feature: permanent water level -->
+<div class="feature-panel" data-feature-panel="permanentWater" hidden>
+  <h3>Permanent water level</h3>
+  <p class="help">The outlet invert of a wet pond. Water below it is the permanent (treatment) volume; storage between it and the design water level is the attenuation volume.</p>
+  <div class="row">
+    <div class="field"><label for="pwlMode">Set by</label><select id="pwlMode" data-pond><option value="depth">Depth above lowest point of pond</option><option value="level">Level</option></select></div>
+    <div class="field"><label for="pwlValue" id="pwlLabel">Depth above lowest point of pond</label><div class="input-shell"><input id="pwlValue" data-pond type="number" step="any" value="1"><span class="unit">m</span></div></div>
+  </div>
+</div>
 
 <!-- ======================= 04 Known quantities ======================= -->
 <h2>04 — Known quantities</h2>
-<p class="help" style="margin:-3px 0 12px">The selected radio button marks the calculated (locked) field. To type a target volume, select <strong>Area</strong> or <strong>Depth</strong>; then enter the volume and choose usable or total capacity above.</p>
+<p class="help" style="margin:-3px 0 12px">The selected radio button marks the calculated (locked) field. To type a target volume, select <strong>Area</strong> or <strong>Depth</strong>; then enter the volume and choose the capacity basis above.</p>
 <div class="metric-grid">
-  <label class="metric target" data-target="volume"><input type="radio" name="solve" value="volume" checked><span><strong>Volume</strong><small id="volumeDescription">Usable storage below freeboard</small></span><span class="input-shell"><input type="number" id="volume" min="0" step="any" value="" disabled aria-label="Volume"><span class="unit">m³</span></span></label>
-  <label class="metric" data-target="area"><input type="radio" name="solve" value="area"><span><strong>Area</strong><small>Top rim footprint</small></span><span class="input-shell"><input type="number" id="area" min="0" step="any" value="200" aria-label="Top area"><span class="unit">m²</span></span></label>
-  <label class="metric" data-target="depth"><input type="radio" name="solve" value="depth"><span><strong>Minimum depth</strong><small>Shallowest ground-to-base difference</small></span><span class="input-shell"><input type="number" id="depth" min="0" step="any" value="2" aria-label="Depth"><span class="unit">m</span></span></label>
+  <label class="metric target" data-target="volume"><input type="radio" name="solve" value="volume" checked><span><strong>Volume</strong><small id="volumeDescription">Usable storage below freeboard</small></span><span class="input-shell"><input type="number" id="volume" data-pond min="0" step="any" value="" disabled aria-label="Volume"><span class="unit">m³</span></span></label>
+  <label class="metric" data-target="area"><input type="radio" name="solve" value="area"><span><strong>Area</strong><small>Top rim footprint</small></span><span class="input-shell"><input type="number" id="area" data-pond min="0" step="any" value="200" aria-label="Top area"><span class="unit">m²</span></span></label>
+  <label class="metric" data-target="depth"><input type="radio" name="solve" value="depth"><span><strong>Minimum depth</strong><small>Shallowest ground-to-base difference</small></span><span class="input-shell"><input type="number" id="depth" data-pond min="0" step="any" value="2" aria-label="Depth"><span class="unit">m</span></span></label>
 </div>
 <div id="error" class="error" role="alert"></div>
 
@@ -385,30 +541,109 @@ select { background: #0e1b2b; border: 1px solid #365069; border-radius: 9px; cur
   <div class="result"><div class="caption">Design water area</div><div class="value" id="waterArea">—</div></div>
 </div>
 
+<div class="result-grid" data-feature-panel="permanentWater" hidden>
+  <div class="result"><div class="caption">Permanent (treatment) volume</div><div class="value" id="permanentVolume">—</div></div>
+  <div class="result"><div class="caption">Attenuation volume (permanent to design water level)</div><div class="value" id="attenuationVolume">—</div></div>
+  <div class="result"><div class="caption">Permanent water level</div><div class="value" id="pwlLevel">—</div></div>
+  <div class="result"><div class="caption">Permanent water area</div><div class="value" id="pwlArea">—</div></div>
+</div>
+
+<!-- Feature: stage-storage table -->
+<div class="feature-panel" data-feature-panel="stageStorage" hidden>
+  <h3>Stage-storage table</h3>
+  <div class="row">
+    <div class="field"><label for="stageInterval">Depth interval</label><div class="input-shell"><input id="stageInterval" data-site type="number" min="0.01" step="any" value="0.1"><span class="unit">m</span></div></div>
+    <div class="field"><label>&nbsp;</label><div class="btn-row"><button class="tool" type="button" id="stageCopy">Copy table</button><button class="tool" type="button" id="stageCsv">Download CSV</button></div></div>
+  </div>
+  <div class="table-wrap"><table class="data" id="stageTable"></table></div>
+  <p class="help" id="stageNote">From the lowest point of the pond to the spill level. Depth is above the lowest point; level is datum + relative level. Wetted area is the plan water area at that level; volume is cumulative from the lowest point.</p>
+</div>
+
 <!-- ======================= 06 Geometry ======================= -->
 <h2>06 — Calculated geometry</h2>
 <div class="result-grid" style="margin-bottom:10px">
-  <div class="result"><div class="caption">Lowest rim level (relative)</div><div class="value" id="spillElevation">—</div></div>
-  <div class="result"><div class="caption">Design water level (relative)</div><div class="value" id="waterElevation">—</div></div>
+  <div class="result"><div class="caption">Lowest rim level (spill)</div><div class="value" id="spillElevation">—</div></div>
+  <div class="result"><div class="caption">Design water level</div><div class="value" id="waterElevation">—</div></div>
   <div class="result"><div class="caption">Exposed/dry pond footprint</div><div class="value" id="dryArea">—</div></div>
   <div class="result"><div class="caption">Centre ground-to-base depth</div><div class="value" id="centreDepth">—</div></div>
-  <div class="result"><div class="caption">Base elevation range</div><div class="value" id="baseRange">—</div></div>
+  <div class="result"><div class="caption">Base level range</div><div class="value" id="baseRange">—</div></div>
+  <div class="result"><div class="caption">Ground level at pond centre</div><div class="value" id="centreGround">—</div></div>
 </div>
 <div class="result-grid">
   <div class="result"><div class="caption">Bottom area</div><div class="value" id="bottomArea">—</div></div>
-  <div class="result"><div class="caption">Top dimensions</div><div class="value" id="topDims">—</div></div>
+  <div class="result"><div class="caption">Top dimensions (X × Y)</div><div class="value" id="topDims">—</div></div>
   <div class="result"><div class="caption">Bottom dimensions</div><div class="value" id="bottomDims">—</div></div>
   <div class="result"><div class="caption">Side run (each side)</div><div class="value" id="sideRun">—</div></div>
 </div>
+<!-- ======================= 07 Site layout ======================= -->
+<h2 data-feature-any="track siteBoundary secondPond" hidden>07 — Site layout</h2>
+
+<!-- Feature: treatment + attenuation ponds -->
+<div class="feature-panel" data-feature-panel="secondPond" hidden>
+  <h3>Treatment and attenuation ponds</h3>
+  <p class="help">Pond 1 is the treatment pond; it overflows into Pond 2, the attenuation pond. Use the tabs at the top to edit each pond's shape, slopes, levels and volume.</p>
+  <div class="row">
+    <div class="field"><label for="layoutMode">Layout</label><select id="layoutMode" data-site><option value="end">End to end (along Pond 1's X)</option><option value="side">Side by side (along Pond 1's Y)</option><option value="manual">Manual (each pond's own position)</option></select></div>
+    <div class="field"><label for="layoutGap">Gap between top of banks</label><div class="input-shell"><input id="layoutGap" data-site type="number" min="0" step="any" value="9"><span class="unit">m</span></div></div>
+  </div>
+  <label class="toggle"><input type="checkbox" id="treatLink" data-site> Set the treatment pond volume as a % of the attenuation pond volume</label>
+  <div class="row" style="margin-top:10px">
+    <div class="field"><label for="treatPct">Treatment volume</label><div class="input-shell"><input id="treatPct" data-site type="number" min="0" step="any" value="25"><span class="unit">% of Pond 2</span></div></div>
+  </div>
+  <p class="help">For a maintenance track between the ponds, make the gap at least 2 × inner verge + track width; the track is then shared. The percentage applies to each pond's own volume basis.</p>
+</div>
+
+<!-- Feature: maintenance track -->
+<div class="feature-panel" data-feature-panel="track" hidden>
+  <h3>Maintenance track and verges</h3>
+  <div class="row3">
+    <div class="field"><label for="trackInnerVerge">Inner verge</label><div class="input-shell"><input id="trackInnerVerge" data-site type="number" min="0" step="any" value="1"><span class="unit">m</span></div></div>
+    <div class="field"><label for="trackWidth">Track width</label><div class="input-shell"><input id="trackWidth" data-site type="number" min="0" step="any" value="3.5"><span class="unit">m</span></div></div>
+    <div class="field"><label for="trackOuterVerge">Outer verge</label><div class="input-shell"><input id="trackOuterVerge" data-site type="number" min="0" step="any" value="1"><span class="unit">m</span></div></div>
+  </div>
+  <div class="row3" style="margin-top:12px">
+    <div class="field"><label for="trackCrossfall">Track crossfall</label><div class="input-shell"><input id="trackCrossfall" data-site data-grade type="number" step="any" value="40"><span class="unit gradient-unit">1 in x</span></div></div>
+    <div class="field"><label for="trackOuterSlope">Outer slope (1V:xH)</label><div class="input-shell"><input id="trackOuterSlope" data-site data-grade type="number" min="0" step="any" value="3"><span class="unit gradient-unit">1 in x</span></div></div>
+    <div class="field"><label for="trackMinRadius">Min. centreline radius</label><div class="input-shell"><input id="trackMinRadius" data-site type="number" min="0" step="any" value="10"><span class="unit">m</span></div></div>
+  </div>
+  <p class="help">The track is level with the top of bank and follows a smoothed offset of the rim, so its centreline bends no tighter than the minimum radius (where a bend is smoothed the inner verge gets wider). The crossfall falls away from the pond; beyond the outer verge a slope ties back to existing ground. Edges are found on a fine grid (accurate to a few centimetres).</p>
+</div>
+
+<!-- Feature: site boundary -->
+<div class="feature-panel" data-feature-panel="siteBoundary" hidden>
+  <h3>Site boundary</h3>
+  <div class="row">
+    <div class="field"><label for="boundaryMode">Boundary</label><select id="boundaryMode" data-site><option value="rect">Rectangle (length × width)</option><option value="imported">Imported polyline</option></select></div>
+  </div>
+  <div class="row" id="boundaryRectWrap" style="margin-top:12px">
+    <div class="field"><label for="boundaryLength">Length (X)</label><div class="input-shell"><input id="boundaryLength" data-site type="number" min="0" step="any" value="60"><span class="unit">m</span></div></div>
+    <div class="field"><label for="boundaryWidth">Width (Y)</label><div class="input-shell"><input id="boundaryWidth" data-site type="number" min="0" step="any" value="40"><span class="unit">m</span></div></div>
+  </div>
+  <p class="help" id="boundaryHelp">The rectangle is centred on the site origin (0, 0). To use a drawn boundary, tick <strong>Import polyline</strong> and choose <strong>Use as: Site boundary</strong>. The boundary is shrunk inward by the outer slope, outer verge, track and inner verge to give the allowed top-of-bank area. Move or rotate a pond with its position inputs under Plan shape.</p>
+  <div class="btn-row" style="margin-top:10px"><button class="tool" type="button" id="useAllowedArea">Use allowed area as the pond outline</button></div>
+</div>
+
+<div class="site-results" id="siteResults" data-feature-any="track siteBoundary secondPond" hidden></div>
+
+<!-- Feature: SuDS guidance checks -->
+<div class="feature-panel" data-feature-panel="sudsChecks" hidden style="margin-top:24px">
+  <h3>SuDS guidance checks</h3>
+  <p class="help">Warnings only, against common UK pond guidance (CIRIA C753 The SuDS Manual). Values marked <span class="badge">to confirm</span> came from secondary sources and must be checked against C753 and the adopting authority's requirements.</p>
+  <div class="row">
+    <div class="field"><label for="sudsTreatmentVolume">Required treatment volume (optional)</label><div class="input-shell"><input id="sudsTreatmentVolume" data-site type="number" min="0" step="any" value="" placeholder="blank = skip"><span class="unit">m³</span></div></div>
+  </div>
+  <div id="sudsResults"></div>
+</div>
+
 <label class="toggle"><input type="checkbox" id="waterToggle" checked> Show horizontal design water surface</label>
-<p class="help">Export DXF saves the top rim, estimated base toe and design waterline as AutoCAD 3D polylines (metres, local XY at pond centre, relative Z levels). Toe and waterline contours are sampled approximations, not setting-out geometry.</p>
+<p class="help">Export DXF saves the top rim, estimated base toe and design waterline as AutoCAD 3D polylines on separate layers, at real levels (datum + relative level), in metres. XY is local with the pond centre at 0,0, unless the outline was imported from a drawing, in which case the original coordinates are kept. Toe and waterline contours are sampled approximations, not setting-out geometry.</p>
 <p class="footer-note">Model: a planar ground (rim) surface and planar base with independent X/Y grades. Depth is the minimum vertical ground-to-base separation anywhere in the top footprint; the actual centre excavation depth is adjusted to maintain that minimum. Sides drop from their closest top-rim point at the specified inward slope, meeting the base where possible. The pond cannot store water above its <strong>lowest rim point</strong>; freeboard is below that controlling spill elevation. Maximum storage is not an earthworks excavation quantity. Numerical grid integration and rendered meshes are approximate; finite sampling can affect narrow shapes and steep slopes. Flat zero-gradient results correspond to a conventional level-rim pond. No outfall, berm/retaining-wall design, ground-condition, hydraulic routing, sediment or operational storage allowance is included. <strong>Concept sizing only; verify detailed levels, stability, and volumes in CAD.</strong></p>
 </section>
 
 <section class="viz" id="viz">
   <div class="viz-header"><h2>Interactive 3D preview</h2><p>Drag to rotate · Scroll to zoom · Shift + drag to pan</p></div>
   <div class="viz-toolbar">
-    <button class="tool" id="exportDxf" type="button" title="Export top rim, base toe and design waterline as AutoCAD DXF 3D polylines">Export DXF</button>
+    <button class="tool" id="exportDxf" type="button" title="Export the pond outlines as AutoCAD DXF 3D polylines">Export DXF</button>
     <button class="tool" id="resetView" type="button">Reset view</button>
   </div>
   <canvas id="canvas" aria-label="Interactive three-dimensional preview of pond geometry"></canvas>
@@ -416,6 +651,10 @@ select { background: #0e1b2b; border: 1px solid #365069; border-radius: 9px; cur
     <span><i class="swatch" style="background:#92b098"></i>Sloping ground / rim</span>
     <span><i class="swatch" style="background:#b78f69"></i>Excavated sides</span>
     <span><i class="swatch" style="background:#54b8e7"></i>Horizontal water</span>
+    <span data-feature-panel="permanentWater" hidden><i class="swatch" style="background:#2a74a8"></i>Permanent water</span>
+    <span data-feature-any="track" hidden><i class="swatch" style="background:#7b8187"></i>Track</span>
+    <span data-feature-any="siteBoundary" hidden><i class="swatch" style="background:#f5cf8d"></i>Boundary</span>
+    <span data-feature-panel="benchRamp" hidden><i class="swatch" style="background:#b9a36b"></i>Bench <i class="swatch" style="background:#9a958b;margin-left:8px"></i>Ramp</span>
     <span class="pill" id="vizCaption">—</span>
   </div>
 </section>
@@ -430,11 +669,17 @@ select { background: #0e1b2b; border: 1px solid #365069; border-radius: 9px; cur
  * ======================================================= */
 const $ = id => document.getElementById(id);
 
-const fmt = (n, unit = '', digits = 2) => Number.isFinite(n)
-  ? new Intl.NumberFormat('en-GB', { maximumFractionDigits: digits }).format(n) + (unit ? ' ' + unit : '')
-  : '—';
+/** Format a number; rounds first so tiny negatives never show as "-0". */
+const fmt = (n, unit = '', digits = 2) => {
+  if (!Number.isFinite(n)) return '—';
+  const r = Number(n.toFixed(digits)) || 0;
+  return new Intl.NumberFormat('en-GB', { maximumFractionDigits: digits }).format(r) + (unit ? ' ' + unit : '');
+};
 
 const isNumeric = text => String(text).trim() !== '' && Number.isFinite(Number(text));
+
+/** Rotate a 2D point by angle a (radians, anticlockwise). */
+const rotate = (x, y, a) => [x * Math.cos(a) - y * Math.sin(a), x * Math.sin(a) + y * Math.cos(a)];
 
 /** An input problem. clearSolved = also blank the calculated (locked) field. */
 class InputError extends Error {
@@ -442,6 +687,17 @@ class InputError extends Error {
     super(message);
     this.clearSolved = clearSolved;
   }
+}
+
+function downloadText(text, filename, type) {
+  const url = URL.createObjectURL(new Blob([text], { type }));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 3000);
 }
 
 /* =========================================================
@@ -452,31 +708,58 @@ class InputError extends Error {
  * To add a feature: add its key to FEATURE_DEFAULTS, add a tick box with
  * data-feature="key", and wrap its inputs in data-feature-panel="key".
  *
- * Ponds are held in a list so that a second pond can be added later.
- * The form currently edits the active pond only.
+ * Form fields marked data-pond belong to the active pond; fields marked
+ * data-site are shared by the whole site (ground, datum, ...). Both are
+ * stored as the raw text typed (or true/false for tick boxes), so they can
+ * be saved, loaded and switched between ponds without per-field code.
+ *
+ * Coordinates: the SITE frame is in metres with Z = 0 at the datum ground
+ * level. Each pond has its own LOCAL frame (origin at the centre of its top
+ * footprint, +X along its length) placed in the site by { x, y, rot }.
  * ======================================================= */
-const FEATURE_DEFAULTS = { gradients: false };
+const FEATURE_DEFAULTS = { gradients: false, permanentWater: false, benchRamp: false, stageStorage: false, naturalShapes: false, importOutline: false,
+  track: false, siteBoundary: false, secondPond: false, sudsChecks: false };
 const FEATURE_STORAGE_KEY = 'pondCalc.features';
+const PROJECT_VERSION = 1;
 
-/** Form fields that belong to a pond (stored as the raw text typed). */
-const POND_INPUT_IDS = ['aspect', 'slope', 'freeboard', 'volumeBasis', 'volume', 'area', 'depth',
-  'groundLong', 'groundCross', 'baseLong', 'baseCross'];
+const pondFields = () => [...document.querySelectorAll('[data-pond]')];
+const siteFields = () => [...document.querySelectorAll('[data-site]')];
+const fieldValue = el => el.type === 'checkbox' ? el.checked : el.value;
+const readFields = els => Object.fromEntries(els.map(el => [el.id, fieldValue(el)]));
+
+function writeFields(els, values) {
+  for (const el of els) {
+    if (!(el.id in values)) continue;
+    if (el.type === 'checkbox') el.checked = !!values[el.id];
+    else el.value = values[el.id];
+  }
+}
+
+/** Initial form values, captured before anything changes them. */
+const DEFAULT_POND_INPUTS = readFields(pondFields());
+const DEFAULT_SITE_INPUTS = readFields(siteFields());
 
 function createPond(name) {
   return {
     name,
-    shape: 'circle',     // circle | square | rectangle | custom
+    shape: 'circle',     // circle | square | rectangle | custom | natural
     solve: 'volume',     // which quantity is calculated: volume | area | depth
-    inputs: {},          // raw form values, keyed by POND_INPUT_IDS
-    sketch: { points: [], closed: false, outline: null },  // custom outline in sketch pixels
-    cache: { key: '', shape: null },                         // sampled unit-area footprint
-    geometry: null       // last valid solution, used by the 3D view and DXF export
+    inputs: { ...DEFAULT_POND_INPUTS },
+    // Custom outline in sketch pixels. world = { cx, cy, s } when the outline
+    // came from a drawing: site X = cx + (px - 360) / s, Y = cy - (py - 195) / s.
+    sketch: { points: [], closed: false, outline: null, world: null },
+    cache: { key: '', shape: null },   // sampled unit-area footprint
+    naturalFactor: 1,                  // irregularity reduction applied to meet the minimum bend radius
+    geometry: null                     // last valid solution (3D view, DXF, tables)
   };
 }
 
 const state = {
   features: { ...FEATURE_DEFAULTS },
   slopeFormat: 'ratio',   // ratio (1 in x) | percent; applies to side slope and all gradients
+  // boundary: imported site boundary polygon (site coordinates), or null.
+  site: { inputs: { ...DEFAULT_SITE_INPUTS }, worldOrigin: null, boundary: null },
+  siteResult: null,       // last track / boundary / pond-pair results (3D view, DXF)
   ponds: [createPond('Pond 1')],
   active: 0
 };
@@ -508,76 +791,139 @@ function segmentsCross(a, b, c, d) {
   return cross(a, b, c) * cross(a, b, d) < 0 && cross(c, d, a) * cross(c, d, b) < 0;
 }
 
-/** Area and bounding box of a closed, non-self-intersecting outline, else null. */
-function analyseOutline(points, closed) {
-  if (!closed || points.length < 3) return null;
-  for (let i = 0; i < points.length; i++) {
-    for (let j = i + 1; j < points.length; j++) {
-      if (Math.abs(i - j) <= 1 || (i === 0 && j === points.length - 1)) continue;
-      if (segmentsCross(points[i], points[(i + 1) % points.length], points[j], points[(j + 1) % points.length])) return null;
+function selfIntersects(points) {
+  const n = points.length;
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      if (j - i <= 1 || (i === 0 && j === n - 1)) continue;
+      if (segmentsCross(points[i], points[(i + 1) % n], points[j], points[(j + 1) % n])) return true;
     }
   }
+  return false;
+}
+
+function bounds(points) {
+  const xs = points.map(p => p[0]), ys = points.map(p => p[1]);
+  const x = Math.min(...xs), y = Math.min(...ys);
+  return { x, y, w: Math.max(...xs) - x, h: Math.max(...ys) - y };
+}
+
+/** Area and bounding box of a closed, non-self-intersecting outline, else null. */
+function analyseOutline(points, closed) {
+  if (!closed || points.length < 3 || selfIntersects(points)) return null;
   const area = polygonArea(points);
   if (area < 100) return null;
-  const xs = points.map(p => p[0]), ys = points.map(p => p[1]);
-  return {
-    area,
-    bounds: {
-      x: Math.min(...xs), y: Math.min(...ys),
-      w: Math.max(...xs) - Math.min(...xs), h: Math.max(...ys) - Math.min(...ys)
-    }
-  };
+  return { area, bounds: bounds(points) };
 }
 
 /* =========================================================
  * 4. Footprint shapes
  *
- * Every shape is built at exactly 1 m² and centred on its bounding box,
- * then scaled by k = sqrt(area). Samples on a grid inside the footprint
- * carry their distance to the nearest rim point, which drives the side slope.
+ * Every shape is built at exactly 1 m² and centred on its bounding box
+ * (+X = length, +Y = width), then scaled by k = sqrt(area). Samples on a grid
+ * inside the footprint carry their distance to the nearest rim point, which
+ * drives the side slope.
  * ======================================================= */
-function footprintDimensions(pond, A) {
-  if (pond.shape === 'custom') {
-    const o = pond.sketch.outline, k = Math.sqrt(A / o.area);
-    return { w: o.bounds.w * k, l: o.bounds.h * k };
+/** Small seeded random number generator (mulberry32), so a seed always gives the same shape. */
+function seededRandom(seed) {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6D2B79F5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/** Scale to 1 m² and centre on the bounding box. */
+function normaliseUnit(points) {
+  const k = 1 / Math.sqrt(polygonArea(points)), b = bounds(points);
+  return points.map(p => [(p[0] - b.x - b.w / 2) * k, (p[1] - b.y - b.h / 2) * k]);
+}
+
+/**
+ * Natural shape: an ellipse (ratio = length : width) whose radius is varied by
+ * a few smooth random harmonics. Radial, so it can never cross itself.
+ */
+function naturalVertices(ratio, irregularity, seed) {
+  const rnd = seededRandom(seed);
+  const harmonics = [2, 3, 4, 5, 6, 7].map(h => ({ h, a: (rnd() * 2 - 1) / h, phase: rnd() * 2 * Math.PI }));
+  const pts = [], n = 144;
+  for (let i = 0; i < n; i++) {
+    const t = 2 * Math.PI * i / n, ellipse = 1 / Math.sqrt((Math.cos(t) / ratio) ** 2 + Math.sin(t) ** 2);
+    let f = 1;
+    for (const H of harmonics) f += irregularity * .55 * H.a * Math.cos(H.h * t + H.phase);
+    f = Math.max(.3, f);
+    pts.push([ellipse * f * Math.cos(t), ellipse * f * Math.sin(t)]);
   }
-  if (pond.shape === 'circle') {
-    const r = Math.sqrt(A / Math.PI);
-    return { w: r * 2, l: r * 2, r };
+  return normaliseUnit(pts);
+}
+
+/** Smallest radius of the inward-curving (concave) bends of a polygon; Infinity if convex. */
+function minConcaveRadius(vs) {
+  let signed = 0;
+  for (let i = 0; i < vs.length; i++) { const a = vs[i], b = vs[(i + 1) % vs.length]; signed += a[0] * b[1] - b[0] * a[1]; }
+  let best = Infinity;
+  for (let i = 0; i < vs.length; i++) {
+    const a = vs[(i - 1 + vs.length) % vs.length], b = vs[i], c = vs[(i + 1) % vs.length];
+    const cross = (b[0] - a[0]) * (c[1] - b[1]) - (b[1] - a[1]) * (c[0] - b[0]);
+    if (cross * signed >= 0) continue;   // convex or straight
+    const r = Math.hypot(b[0] - a[0], b[1] - a[1]) * Math.hypot(c[0] - b[0], c[1] - b[1]) * Math.hypot(c[0] - a[0], c[1] - a[1]) / (2 * Math.abs(cross));
+    best = Math.min(best, r);
   }
-  const ratio = pond.shape === 'square' ? 1 : Number(pond.inputs.aspect), w = Math.sqrt(A / ratio);
-  return { w, l: w * ratio };
+  return best;
+}
+
+/** Unit-area vertices of a polygonal shape (circle handled analytically). */
+function unitVertices(pond) {
+  const type = pond.shape;
+  if (type === 'circle') {
+    const r = Math.sqrt(1 / Math.PI), vs = [];
+    for (let i = 0; i < 100; i++) {
+      const t = 2 * Math.PI * i / 100;
+      vs.push([r * Math.cos(t), r * Math.sin(t)]);
+    }
+    return vs;
+  }
+  if (type === 'custom') {
+    const o = pond.sketch.outline, b = o.bounds, k = Math.sqrt(1 / o.area);
+    // Sketch pixels run downwards; flip so that up on the sketch is +Y.
+    return pond.sketch.points.map(p => [(p[0] - b.x - b.w / 2) * k, -(p[1] - b.y - b.h / 2) * k]);
+  }
+  if (type === 'natural') {
+    const i = pond.inputs;
+    return naturalVertices(Number(i.aspect), Number(i.naturalIrregularity) / 100 * pond.naturalFactor, Number(i.naturalSeed));
+  }
+  const ratio = type === 'square' ? 1 : Number(pond.inputs.aspect), X = Math.sqrt(ratio), Y = 1 / X;
+  return [[-X / 2, -Y / 2], [X / 2, -Y / 2], [X / 2, Y / 2], [-X / 2, Y / 2]];
+}
+
+function shapeKey(pond) {
+  const t = pond.shape;
+  const i = pond.inputs;
+  return t + '|' + (t === 'rectangle' || t === 'natural' ? Number(i.aspect) : '') + '|' +
+    (t === 'natural' ? [i.naturalIrregularity, i.naturalSeed, pond.naturalFactor].join(',') : '') + '|' +
+    (t === 'custom' ? pond.sketch.points.map(p => p.join(',')).join('|') : '');
 }
 
 function unitShape(pond) {
-  const type = pond.shape;
-  const key = type + '|' + (type === 'rectangle' ? Number(pond.inputs.aspect) : '') + '|' +
-    (type === 'custom' ? pond.sketch.points.map(p => p.join(',')).join('|') : '');
+  const key = shapeKey(pond);
   if (key === pond.cache.key && pond.cache.shape) return pond.cache.shape;
 
-  const dim = footprintDimensions(pond, 1), w = dim.w, l = dim.l;
-  let vertices = [];
-  if (type === 'circle') {
-    for (let i = 0; i < 100; i++) {
-      const t = 2 * Math.PI * i / 100;
-      vertices.push([w / 2 * Math.cos(t), l / 2 * Math.sin(t)]);
-    }
-  } else if (type === 'custom') {
-    const b = pond.sketch.outline.bounds, k = Math.sqrt(1 / pond.sketch.outline.area);
-    vertices = pond.sketch.points.map(p => [(p[0] - b.x - b.w / 2) * k, (p[1] - b.y - b.h / 2) * k]);
-  } else {
-    vertices = [[-w / 2, -l / 2], [w / 2, -l / 2], [w / 2, l / 2], [-w / 2, l / 2]];
-  }
+  const type = pond.shape, vertices = unitVertices(pond);
+  const b = type === 'circle' ? { x: -Math.sqrt(1 / Math.PI), y: -Math.sqrt(1 / Math.PI), w: 2 * Math.sqrt(1 / Math.PI), h: 2 * Math.sqrt(1 / Math.PI) } : bounds(vertices);
+  const w = b.w, l = b.h, r = w / 2;
 
   /** Distance to, and position of, the nearest rim point. */
   function nearest(x, y) {
     if (type === 'circle') {
-      const d = Math.hypot(x, y), r = w / 2;
+      const d = Math.hypot(x, y);
       return { distance: r - d, px: d > 1e-12 ? x * r / d : r, py: d > 1e-12 ? y * r / d : 0 };
     }
     let best = Infinity, px = 0, py = 0;
     for (let i = 0; i < vertices.length; i++) {
-      const a = vertices[i], b = vertices[(i + 1) % vertices.length], vx = b[0] - a[0], vy = b[1] - a[1];
+      const a = vertices[i], c = vertices[(i + 1) % vertices.length], vx = c[0] - a[0], vy = c[1] - a[1];
       const t = Math.max(0, Math.min(1, ((x - a[0]) * vx + (y - a[1]) * vy) / (vx * vx + vy * vy || 1)));
       const qx = a[0] + t * vx, qy = a[1] + t * vy, ds = (x - qx) ** 2 + (y - qy) ** 2;
       if (ds < best) { best = ds; px = qx; py = qy; }
@@ -586,22 +932,30 @@ function unitShape(pond) {
   }
 
   function inside(x, y) {
-    if (type === 'circle') return x * x + y * y <= (w / 2) ** 2;
-    if (type === 'custom') return pointInPolygon(x, y, vertices);
-    return Math.abs(x) <= w / 2 && Math.abs(y) <= l / 2;
+    if (type === 'circle') return x * x + y * y <= r * r;
+    if (type === 'square' || type === 'rectangle') return Math.abs(x) <= w / 2 && Math.abs(y) <= l / 2;
+    return pointInPolygon(x, y, vertices);
   }
 
-  const samples = [], nx = 96, ny = Math.max(12, Math.round(96 * l / w)), dx = w / nx, dy = l / ny;
+  // 96 samples across the shorter side; capped for very long shapes.
+  const short = Math.min(w, l), cell = short / Math.min(96, Math.floor(Math.sqrt(60000 * short / Math.max(w, l))));
+  const nx = Math.max(12, Math.round(w / cell)), ny = Math.max(12, Math.round(l / cell)), dx = w / nx, dy = l / ny;
+  const samples = [];
   for (let j = 0; j < ny; j++) {
     for (let i = 0; i < nx; i++) {
-      const x = -w / 2 + (i + .5) * dx, y = -l / 2 + (j + .5) * dy;
+      const x = b.x + (i + .5) * dx, y = b.y + (j + .5) * dy;
       if (inside(x, y)) samples.push({ x, y, ...nearest(x, y) });
     }
   }
   if (!samples.length) throw Error('Cannot sample this footprint. Draw a wider outline.');
 
-  pond.cache = { key, shape: { type, vertices, dim, samples, inside, nearest } };
+  pond.cache = { key, shape: { type, vertices, unitDim: { x: w, y: l }, samples, inside, nearest } };
   return pond.cache.shape;
+}
+
+function footprintDimensions(shapeData, A) {
+  const k = Math.sqrt(A);
+  return { x: shapeData.unitDim.x * k, y: shapeData.unitDim.y * k };
 }
 
 /* =========================================================
@@ -613,40 +967,110 @@ function gradeToDecimal(text) {
   return state.slopeFormat === 'percent' ? n / 100 : (n === 0 ? 0 : 1 / n);
 }
 
+/** Rise per metre → gradient text in the global format. */
+function decimalToGrade(v) {
+  if (v === 0) return '0';
+  return Number((state.slopeFormat === 'percent' ? v * 100 : 1 / v).toPrecision(10)).toString();
+}
+
 /** Side slope text → horizontal metres per vertical metre (the x in 1V:xH). */
 function sideSlopeRatio(text) {
   const a = Number(text);
   return state.slopeFormat === 'percent' ? (a > 0 ? 100 / a : NaN) : a;
 }
 
-/** m = side slope, f = freeboard, gl/gc = ground long/cross, bl/bc = base long/cross. */
-function designParameters(pond) {
-  const i = pond.inputs, grads = state.features.gradients;
+/** Site ground gradients (rise per metre in site +X and +Y). */
+function siteGround() {
+  const s = state.site.inputs;
+  if (!state.features.gradients) return { gx: 0, gy: 0 };
+  return { gx: gradeToDecimal(s.groundLong), gy: gradeToDecimal(s.groundCross) };
+}
+
+/** Where a pond sits in the site frame: { x, y, rot (radians) }. */
+function pondPlacement(pond) {
+  const w = pond.shape === 'custom' && pond.sketch.world && pond.sketch.outline;
+  if (w) {
+    // Outline taken from a drawing: keep its original position.
+    const b = pond.sketch.outline.bounds, t = pond.sketch.world;
+    return { x: t.cx + (b.x + b.w / 2 - 360) / t.s, y: t.cy - (b.y + b.h / 2 - 195) / t.s, rot: 0, fixed: true };
+  }
+  if (pond.autoPlace) return pond.autoPlace;
+  if (placementEditable()) {
+    const i = pond.inputs;
+    return { x: Number(i.placeX), y: Number(i.placeY), rot: Number(i.placeRot) * Math.PI / 180, fixed: false };
+  }
+  return { x: 0, y: 0, rot: 0, fixed: false };
+}
+
+const placementEditable = () => state.features.siteBoundary || state.features.secondPond;
+
+/** Ponds taking part in the calculation (Pond 2 only with the second-pond feature). */
+const livePonds = () => state.ponds.slice(0, state.features.secondPond ? 2 : 1);
+
+/**
+ * Automatic layout: Pond 2 is put end to end (along Pond 1's X) or side by
+ * side (along its Y) with the given gap between top-of-bank edges, centres in line.
+ */
+function autoPlacement(g1, g2, mode, gap) {
+  const axis = mode === 'side' ? 1 : 0, k1 = Math.sqrt(g1.A), k2 = Math.sqrt(g2.A);
+  const reach1 = Math.max(...g1.shapeData.vertices.map(v => v[axis] * k1));
+  const reach2 = -Math.min(...g2.shapeData.vertices.map(v => v[axis] * k2));
+  const off = reach1 + gap + reach2, [rx, ry] = rotate(axis ? 0 : off, axis ? off : 0, g1.place.rot);
+  return { x: g1.place.x + rx, y: g1.place.y + ry, rot: g1.place.rot, fixed: false, auto: true };
+}
+
+/**
+ * Pond parameters in its LOCAL frame.
+ * m = side slope, f = freeboard, gl/gc = ground long/cross, bl/bc = base long/cross.
+ */
+function designParameters(pond, place) {
+  const i = pond.inputs, grads = state.features.gradients, G = siteGround();
+  // Rotate the site ground gradient into the pond's own axes.
+  const c = Math.cos(place.rot), s = Math.sin(place.rot);
+  const gl = G.gx * c + G.gy * s, gc = -G.gx * s + G.gy * c;
+  const match = grads && i.baseMatchGround, f = state.features;
   return {
     m: sideSlopeRatio(i.slope),
     f: Number(i.freeboard),
-    gl: grads ? gradeToDecimal(i.groundLong) : 0,
-    gc: grads ? gradeToDecimal(i.groundCross) : 0,
-    bl: grads ? gradeToDecimal(i.baseLong) : 0,
-    bc: grads ? gradeToDecimal(i.baseCross) : 0
+    gl, gc,
+    bl: !grads ? 0 : match ? gl : gradeToDecimal(i.baseLong),
+    bc: !grads ? 0 : match ? gc : gradeToDecimal(i.baseCross),
+    z0: G.gx * place.x + G.gy * place.y,   // site ground level at the pond centre
+    // Optional features (null when off).
+    pwl: f.permanentWater ? { mode: i.pwlMode, value: Number(i.pwlValue) } : null,
+    bench: f.benchRamp && i.benchOn ? { w: Number(i.benchWidth), d: Number(i.benchDepth) } : null,
+    ramp: f.benchRamp && i.rampOn ? { w: Number(i.rampWidth), grad: gradeToDecimal(i.rampGrade), bearing: Number(i.rampBearing) * Math.PI / 180 } : null
   };
 }
 
 function validatePond(pond, g) {
-  const i = pond.inputs, grads = state.features.gradients;
-  const numericIds = ['slope', 'freeboard', ...(grads ? ['groundLong', 'groundCross', 'baseLong', 'baseCross'] : [])];
-  if (!numericIds.every(id => isNumeric(i[id])) || !Number.isFinite(g.m) || g.m < 0 || g.f < 0 ||
+  const i = pond.inputs, s = state.site.inputs, grads = state.features.gradients;
+  const numeric = ['slope', 'freeboard'].every(id => isNumeric(i[id])) &&
+    (!grads || (['groundLong', 'groundCross'].every(id => isNumeric(s[id])) &&
+      (i.baseMatchGround || ['baseLong', 'baseCross'].every(id => isNumeric(i[id])))));
+  if (!numeric || !Number.isFinite(g.m) || g.m < 0 || g.f < 0 ||
       [g.gl, g.gc, g.bl, g.bc].some(v => !Number.isFinite(v) || Math.abs(v) > 2)) {
     throw new InputError(grads
       ? 'Enter valid gradients (within ±200%), a non-negative freeboard and a valid side slope. Use 0 for flat grades.'
       : 'Enter a non-negative freeboard and a valid side slope.');
   }
-  if (pond.shape === 'custom' && !pond.sketch.outline) throw new InputError('Draw and close a non-self-intersecting custom outline first.');
-  if (pond.shape === 'rectangle' && (!isNumeric(i.aspect) || Number(i.aspect) < 1 || Number(i.aspect) > 20)) {
-    throw new InputError('Rectangle length:width ratio must be between 1 and 20.');
+  if (!isNumeric(s.datum)) throw new InputError('Enter a datum level (0 for relative levels).');
+  if (placementEditable() && !pond.autoPlace && !['placeX', 'placeY', 'placeRot'].every(id => isNumeric(i[id]))) throw new InputError('Enter the pond centre X, Y and rotation.');
+  if (g.pwl && (!isNumeric(i.pwlValue) || (g.pwl.mode === 'depth' && g.pwl.value < 0))) throw new InputError('Enter a permanent water level (depth of 0 or more above the base, or a level).');
+  if (g.bench && (!isNumeric(i.benchWidth) || !isNumeric(i.benchDepth) || g.bench.w <= 0 || g.bench.d < 0)) throw new InputError('Enter a positive bench width and a bench depth of 0 or more.');
+  if (g.ramp && (!isNumeric(i.rampWidth) || !isNumeric(i.rampGrade) || !isNumeric(i.rampBearing) || g.ramp.w <= 0 || !(g.ramp.grad > 0 && g.ramp.grad <= 1))) {
+    throw new InputError('Enter a positive ramp width, a ramp gradient between 1 in 1 and level (not 0), and a position in degrees.');
   }
-  const known = ['volume', 'area', 'depth'].filter(q => q !== pond.solve);
+  if (pond.shape === 'custom' && !pond.sketch.outline) throw new InputError('Draw and close a non-self-intersecting custom outline first.');
+  if ((pond.shape === 'rectangle' || pond.shape === 'natural') && (!isNumeric(i.aspect) || Number(i.aspect) < 1 || Number(i.aspect) > 20)) {
+    throw new InputError('Length:width ratio must be between 1 and 20.');
+  }
+  if (pond.shape === 'natural' && (!isNumeric(i.naturalSeed) || !isNumeric(i.naturalMinBend) || Number(i.naturalMinBend) < 0)) {
+    throw new InputError('Enter a shape number and a minimum bend radius of 0 or more.');
+  }
+  const known = ['volume', 'area', 'depth'].filter(q => q !== pond.solve && !(q === 'volume' && pond.linkedVolume != null));
   if (known.some(q => !isNumeric(i[q]) || Number(i[q]) <= 0)) throw new InputError('Enter positive values for both known quantities.', true);
+  if (pond.linkedVolume != null && !(pond.linkedVolume > 0)) throw new InputError('The linked treatment volume is zero: check the attenuation pond and percentage.');
 }
 
 /* =========================================================
@@ -654,6 +1078,7 @@ function validatePond(pond, g) {
  *
  * Ground (rim) and base are planes. Sides fall from the nearest rim point at
  * the side slope. Water is level; it cannot rise above the lowest rim point.
+ * All levels here are LOCAL: Z = 0 is the ground at the pond centre.
  * ======================================================= */
 /** Centre depth giving the requested MINIMUM ground-to-base depth over the footprint. */
 function centreDepthForMinimum(A, D, g, shapeData) {
@@ -661,7 +1086,7 @@ function centreDepthForMinimum(A, D, g, shapeData) {
   // For a plane the minimum separation is at a boundary vertex; for a circle
   // the true extremum may fall between sampled vertices, so solve it exactly.
   const minOffset = shapeData.type === 'circle'
-    ? -Math.hypot(dl, dc) * shapeData.dim.w * k / 2
+    ? -Math.hypot(dl, dc) * shapeData.unitDim.x * k / 2
     : Math.min(...shapeData.vertices.map(v => (dl * v[0] + dc * v[1]) * k));
   return D - minOffset;
 }
@@ -669,40 +1094,129 @@ function centreDepthForMinimum(A, D, g, shapeData) {
 /** Level of the lowest rim point (the spill level). */
 function lowestRimLevel(g, shapeData, A) {
   const k = Math.sqrt(A);
-  if (shapeData.type === 'circle') return -Math.hypot(g.gl, g.gc) * shapeData.dim.w * k / 2;
+  if (shapeData.type === 'circle') return -Math.hypot(g.gl, g.gc) * shapeData.unitDim.x * k / 2;
   return Math.min(...shapeData.vertices.map(p => g.gl * p[0] * k + g.gc * p[1] * k));
 }
 
-/** Excavated surface level at sample p (unit coordinates) for a pond scaled by k. */
-function surfaceAt(p, k, centreDepth, g) {
-  const x = p.x * k, y = p.y * k;
-  const rimAtEdge = g.gl * p.px * k + g.gc * p.py * k;
-  const side = g.m === 0 ? -Infinity : rimAtEdge - p.distance * k / g.m;
-  const base = -centreDepth + g.bl * x + g.bc * y;
-  const ground = g.gl * x + g.gc * y;
-  // Clamp to existing terrain: a non-excavated location stores no water.
-  return { z: Math.min(ground, Math.max(base, side)), base, ground, side };
+/**
+ * Where the access ramp meets the rim, in unit coordinates, and the inward
+ * direction square to that edge. The ray from the centre at the bearing is
+ * cut with the outline; the outermost crossing is used.
+ */
+function rampStart(shapeData, bearing) {
+  const dx = Math.cos(bearing), dy = Math.sin(bearing);
+  if (shapeData.type === 'circle') {
+    const r = shapeData.unitDim.x / 2;
+    return { x: r * dx, y: r * dy, nx: -dx, ny: -dy };
+  }
+  const vs = shapeData.vertices;
+  let best = null;
+  for (let i = 0; i < vs.length; i++) {
+    const a = vs[i], b = vs[(i + 1) % vs.length], ex = b[0] - a[0], ey = b[1] - a[1];
+    const den = dx * ey - dy * ex;
+    if (Math.abs(den) < 1e-15) continue;
+    const t = (a[0] * ey - a[1] * ex) / den, u = (a[0] * dy - a[1] * dx) / den;
+    if (t > 0 && u >= 0 && u <= 1 && (!best || t > best.t)) {
+      const len = Math.hypot(ex, ey);
+      let nx = -ey / len, ny = ex / len;
+      if (nx * dx + ny * dy > 0) { nx = -nx; ny = -ny; }   // point inwards
+      best = { t, x: t * dx, y: t * dy, nx, ny };
+    }
+  }
+  return best;
 }
 
-/** Total (to spill) and usable (to design water level) storage by grid integration. */
-function computeStorage(A, D, g, shapeData, details = false) {
+/**
+ * Levels that depend on the whole pond rather than one sample point.
+ * Returned "ext" is passed to surfaceAt. All levels local.
+ */
+function pondLevels(A, D, g, shapeData) {
   const centreDepth = centreDepthForMinimum(A, D, g, shapeData), k = Math.sqrt(A);
-  const spill = lowestRimLevel(g, shapeData, A), wl = spill - g.f, ss = shapeData.samples;
-  let vMax = 0, vUse = 0, wet = 0, baseN = 0, dry = 0;
+  const spill = lowestRimLevel(g, shapeData, A), wl = spill - g.f;
+  const baseLevels = shapeData.vertices.map(p => -centreDepth + (g.bl * p[0] + g.bc * p[1]) * k);
+  const baseMin = Math.min(...baseLevels), baseMax = Math.max(...baseLevels);
+  const ext = {};
+  if (g.ramp) {
+    const r = rampStart(shapeData, g.ramp.bearing);
+    if (r) {
+      const x0 = r.x * k, y0 = r.y * k;
+      ext.ramp = { x0, y0, nx: r.nx, ny: r.ny, hw: g.ramp.w / 2, z0: g.gl * x0 + g.gc * y0, grad: g.ramp.grad };
+    }
+  }
+  let pwl = null;
+  if (g.pwl && g.pwl.mode === 'level') pwl = g.pwl.value - Number(state.site.inputs.datum) - g.z0;
+  else if (g.pwl) {
+    // Depth is measured from the lowest point of the excavated surface (side
+    // slopes and ramp included), not from the base plane under the rim. The
+    // bench is left out: it is placed relative to this level and only raises the sides.
+    let lowest = Infinity;
+    for (const p of shapeData.samples) lowest = Math.min(lowest, surfaceAt(p, k, centreDepth, g, ext).z);
+    pwl = lowest + g.pwl.value;
+  }
+  if (g.bench) { ext.benchZ = (pwl ?? wl) - g.bench.d; ext.benchW = g.bench.w; }
+  return { centreDepth, k, spill, wl, pwl, baseMin, baseMax, ext };
+}
+
+/**
+ * Excavated surface level at sample p (unit coordinates) for a pond scaled by k.
+ * kind: base | side | bench | ramp | ground (not excavated).
+ */
+function surfaceAt(p, k, centreDepth, g, ext = {}) {
+  const x = p.x * k, y = p.y * k, d = p.distance * k;
+  const rimAtEdge = g.gl * p.px * k + g.gc * p.py * k;
+  let side, onBench = false;
+  if (ext.benchZ === undefined || ext.benchZ >= rimAtEdge) {
+    side = g.m === 0 ? -Infinity : rimAtEdge - d / g.m;
+  } else {
+    // Slope down to the bench, level bench, then slope on down from its inner edge.
+    const dB = g.m * (rimAtEdge - ext.benchZ);
+    if (d < dB) side = rimAtEdge - d / g.m;
+    else if (d <= dB + ext.benchW) { side = ext.benchZ; onBench = true; }
+    else side = g.m === 0 ? -Infinity : ext.benchZ - (d - dB - ext.benchW) / g.m;
+  }
+  const base = -centreDepth + g.bl * x + g.bc * y;
+  const ground = g.gl * x + g.gc * y;
+  let z = Math.max(base, side), kind = base >= side ? 'base' : onBench ? 'bench' : 'side';
+  if (ext.ramp) {
+    // Ramp is fill: it raises the surface inside its strip.
+    const r = ext.ramp, rx = x - r.x0, ry = y - r.y0, s = rx * r.nx + ry * r.ny, t = -rx * r.ny + ry * r.nx;
+    if (s >= -1e-9 && Math.abs(t) <= r.hw) {
+      const rz = r.z0 - s * r.grad;
+      if (rz > z) { z = rz; kind = 'ramp'; }
+    }
+  }
+  // Clamp to existing terrain: a non-excavated location stores no water.
+  if (ground <= z) { z = ground; kind = 'ground'; }
+  return { z, base, ground, side, kind };
+}
+
+/**
+ * Storage by grid integration: total (to spill), usable (to design water
+ * level), permanent (to permanent water level) and attenuation (between).
+ */
+function computeStorage(A, D, g, shapeData, details = false) {
+  const L = pondLevels(A, D, g, shapeData), { centreDepth, k, spill, wl, ext } = L, ss = shapeData.samples;
+  const pwl = L.pwl === null ? null : Math.min(L.pwl, wl);
+  let vMax = 0, vUse = 0, vPerm = 0, wet = 0, baseN = 0, dry = 0, permN = 0;
+  const zs = details ? new Float64Array(ss.length) : null;
   for (let i = 0; i < ss.length; i++) {
-    const s = surfaceAt(ss[i], k, centreDepth, g);
+    const s = surfaceAt(ss[i], k, centreDepth, g, ext);
     vMax += Math.max(0, spill - s.z);
     vUse += Math.max(0, wl - s.z);
+    if (pwl !== null && s.z < pwl) { vPerm += pwl - s.z; permN++; }
     if (s.z < wl) wet++; else dry++;
-    if (s.base >= s.side && s.base < s.ground) baseN++;
+    if (s.kind === 'base') baseN++;
+    if (zs) zs[i] = s.z;
   }
   const unit = A / ss.length, total = vMax * unit, usable = vUse * unit;
-  if (!details) return { total, usable, spill, wl };
-  const baseLevels = shapeData.vertices.map(p => -centreDepth + (g.bl * p[0] + g.bc * p[1]) * k);
+  const permanent = pwl === null ? 0 : vPerm * unit, attenuation = usable - permanent;
+  const out = { total, usable, permanent, attenuation, spill, wl, pwl: L.pwl };
+  if (!details) return out;
+  zs.sort();
   return {
-    total, usable, spill, wl,
-    wetArea: wet * unit, dryArea: dry * unit, baseArea: baseN * unit,
-    baseMin: Math.min(...baseLevels), baseMax: Math.max(...baseLevels), centreDepth
+    ...out, ext, zs,
+    wetArea: wet * unit, dryArea: dry * unit, baseArea: baseN * unit, pwlArea: permN * unit,
+    baseMin: L.baseMin, baseMax: L.baseMax, centreDepth
   };
 }
 
@@ -717,15 +1231,35 @@ function bisectIncreasing(fn, lo, hi, target) {
 /* =========================================================
  * 7. Solver
  * ======================================================= */
-/** Solve the pond for its calculated quantity. Throws InputError / Error. */
+/**
+ * Solve the pond. Natural shapes are re-solved with less irregularity until
+ * their tightest inward bend meets the minimum radius (in metres, so it can
+ * only be checked once the size is known).
+ */
 function solvePond(pond) {
-  const g = designParameters(pond);
+  pond.naturalFactor = 1;
+  if (pond.shape !== 'natural') return solvePondOnce(pond);
+  const minBend = Number(pond.inputs.naturalMinBend), irregularity = Number(pond.inputs.naturalIrregularity) / 100;
+  for (let attempt = 0; ; attempt++) {
+    const r = solvePondOnce(pond);
+    r.minBend = minConcaveRadius(r.shapeData.vertices) * Math.sqrt(r.A);
+    r.irregularityUsed = irregularity * pond.naturalFactor;
+    if (r.minBend >= minBend || r.irregularityUsed < .005 || attempt >= 25) return r;
+    pond.naturalFactor *= .85;
+  }
+}
+
+/** Solve the pond for its calculated quantity. Throws InputError / Error. */
+function solvePondOnce(pond) {
+  const place = pondPlacement(pond), g = designParameters(pond, place);
   validatePond(pond, g);
   const shapeData = unitShape(pond), i = pond.inputs;
-  let A = Number(i.area), D = Number(i.depth), V = Number(i.volume);
+  const basis = i.volumeBasis === 'attenuation' && !g.pwl ? 'usable' : i.volumeBasis;
+  let A = Number(i.area), D = Number(i.depth), V = pond.linkedVolume ?? Number(i.volume);
+  const pwlHint = basis === 'attenuation' ? ' The permanent water level may be at or above the design water level.' : '';
   const capacity = (a, d) => {
     const r = computeStorage(a, d, g, shapeData);
-    return i.volumeBasis === 'usable' ? r.usable : r.total;
+    return r[basis];
   };
 
   if (pond.solve === 'volume') {
@@ -734,18 +1268,479 @@ function solvePond(pond) {
     // Ground and base may be inclined differently, so a solution need not exist.
     let lo = 1e-7, hi = Math.max(1, A || 100), vHi = capacity(hi, D), attempts = 0;
     while (vHi < V && attempts++ < 45) { hi *= 1.8; vHi = capacity(hi, D); }
-    if (vHi < V) throw Error('Target volume could not be reached by enlarging this outline. Check ground/base gradients or increase centre depth.');
+    if (vHi < V) throw Error('Target volume could not be reached by enlarging this outline. Check ground/base gradients or increase centre depth.' + pwlHint);
     A = bisectIncreasing(a => capacity(a, D), lo, hi, V);
   } else {
     let lo = .000001, hi = Math.max(1, D || 2), vHi = capacity(A, hi), attempts = 0;
     while (vHi < V && attempts++ < 28) { hi *= 1.65; vHi = capacity(A, hi); }
-    if (vHi < V) throw Error('Target volume cannot be stored in this footprint: steep sides, ground levels or freeboard limit the capacity.');
+    if (vHi < V) throw Error('Target volume cannot be stored in this footprint: steep sides, ground levels or freeboard limit the capacity.' + pwlHint);
     D = bisectIncreasing(d => capacity(A, d), lo, hi, V);
   }
   if (!Number.isFinite(A) || !Number.isFinite(D) || A <= 0 || D <= 0) throw Error('Calculated geometry is invalid.');
 
   const r = computeStorage(A, D, g, shapeData, true);
-  return { A, D, V, g, dim: footprintDimensions(pond, A), shapeData, ...r };
+  if (r.pwl !== null && (r.pwl > r.wl + 1e-9 || r.pwl < r.zs[0] - 1e-9)) {
+    throw Error('The permanent water level must lie between the lowest point of the pond and the design water level (' +
+      fmt(realLevel({ z0: g.z0 }, r.zs[0]), 'm') + ' to ' + fmt(realLevel({ z0: g.z0 }, r.wl), 'm') + ').');
+  }
+  return { A, D, V, g, place, z0: g.z0, basis, dim: footprintDimensions(shapeData, A), shapeData, ...r };
+}
+
+/** Local level → real level (datum + site level). */
+const realLevel = (geom, z) => Number(state.site.inputs.datum) + geom.z0 + z;
+
+/** Local pond point → site point. */
+const toSite = (geom, x, y) => {
+  const [rx, ry] = rotate(x, y, geom.place.rot);
+  return [geom.place.x + rx, geom.place.y + ry];
+};
+
+/** Site point → drawing coordinates (adds the imported drawing origin, if any). */
+const toWorld = (x, y) => {
+  const o = state.site.worldOrigin;
+  return o && worldInUse() ? [o[0] + x, o[1] + y] : [x, y];
+};
+
+/**
+ * Solve every live pond (attenuation first when the treatment volume is
+ * linked), then lay them out. Auto layout and the linked volume depend on
+ * each other (Pond 2's position follows Pond 1's size; moving Pond 2 on
+ * sloping ground can change its volume, which sets Pond 1's), so the
+ * layout and both solutions are repeated until the position settles.
+ */
+function solveAll() {
+  const ponds = livePonds(), s = state.site.inputs;
+  const link = ponds.length === 2 && !!s.treatLink;
+  for (const p of state.ponds) { p.geometry = null; p.error = null; p.linkedVolume = null; p.autoPlace = null; }
+
+  const solveOne = n => {
+    const pond = ponds[n];
+    pond.geometry = null; pond.error = null; pond.linkedVolume = null;
+    if (n === 0 && link) {
+      const att = ponds[1].geometry;
+      if (!att) { pond.error = new Error('Pond 2 (attenuation) has no valid solution, so the linked treatment volume is unknown.'); return; }
+      if (!isNumeric(s.treatPct) || Number(s.treatPct) <= 0) { pond.error = new InputError('Enter a positive treatment volume percentage.'); return; }
+      pond.linkedVolume = att[att.basis] * Number(s.treatPct) / 100;
+    }
+    try { pond.geometry = solvePond(pond); } catch (e) { pond.error = e; }
+  };
+  const fromDrawing = ponds[1] && ponds[1].shape === 'custom' && ponds[1].sketch.world && ponds[1].sketch.outline;
+  const auto = ponds.length === 2 && s.layoutMode !== 'manual' && !fromDrawing;
+  const gapOk = isNumeric(s.layoutGap) && Number(s.layoutGap) >= 0;
+  if (auto && gapOk) {
+    // Provisional position from the footprints at their entered (or last solved)
+    // areas, so Pond 2's levels are first checked near where it will end up.
+    try {
+      const guess = p => { const A = Number(p.inputs.area); return A > 0 ? { A, shapeData: unitShape(p), place: pondPlacement(p) } : null; };
+      const g1 = guess(ponds[0]), g2 = guess(ponds[1]);
+      if (g1 && g2) ponds[1].autoPlace = autoPlacement(g1, g2, s.layoutMode, Number(s.layoutGap));
+    } catch (e) { /* invalid shape: the solve below reports it */ }
+  }
+  for (const n of link ? [1, 0] : ponds.map((_, n) => n)) solveOne(n);
+
+  if (!auto) return;
+  if (!gapOk) { ponds[1].geometry = null; ponds[1].error = new InputError('Enter a gap of 0 m or more between the ponds.'); return; }
+  for (let pass = 0; pass < 8; pass++) {
+    if (!ponds[0].geometry || !ponds[1].geometry) return;
+    const place = autoPlacement(ponds[0].geometry, ponds[1].geometry, s.layoutMode, Number(s.layoutGap)), prev = ponds[1].autoPlace;
+    if (prev && Math.hypot(place.x - prev.x, place.y - prev.y) < 1e-6 && Math.abs(place.rot - prev.rot) < 1e-9) return;
+    ponds[1].autoPlace = place;
+    solveOne(1);
+    if (link) solveOne(0);
+  }
+}
+
+/* =========================================================
+ * 7b. Site geometry: rims in the site, distance fields, track, boundary
+ * ======================================================= */
+/** Rim polygon of a pond in site coordinates (optionally at another area / placement). */
+function rimSite(geom, A = geom.A, place = geom.place) {
+  const k = Math.sqrt(A);
+  return geom.shapeData.vertices.map(([u, v]) => {
+    const [rx, ry] = rotate(u * k, v * k, place.rot);
+    return [place.x + rx, place.y + ry];
+  });
+}
+
+/** Extra points along long edges so checks between vertices are not missed. */
+function densify(poly, step) {
+  const out = [];
+  poly.forEach((a, i) => {
+    const b = poly[(i + 1) % poly.length], n = Math.max(1, Math.ceil(Math.hypot(b[0] - a[0], b[1] - a[1]) / step));
+    for (let j = 0; j < n; j++) out.push([a[0] + (b[0] - a[0]) * j / n, a[1] + (b[1] - a[1]) * j / n]);
+  });
+  return out;
+}
+
+/** Signed distance to a polygon outline (negative inside). */
+function sdPolygon(x, y, poly) {
+  let best = Infinity;
+  for (let i = 0; i < poly.length; i++) {
+    const a = poly[i], b = poly[(i + 1) % poly.length], vx = b[0] - a[0], vy = b[1] - a[1];
+    const t = Math.max(0, Math.min(1, ((x - a[0]) * vx + (y - a[1]) * vy) / (vx * vx + vy * vy || 1)));
+    best = Math.min(best, (x - a[0] - t * vx) ** 2 + (y - a[1] - t * vy) ** 2);
+  }
+  return (pointInPolygon(x, y, poly) ? -1 : 1) * Math.sqrt(best);
+}
+
+/** A regular grid over the site: node (i, j) is at (x0 + i h, y0 + j h). */
+function makeGrid(bx, by, bw, bh, pad, maxCells) {
+  const h = Math.max((Math.max(bw, bh) + 2 * pad) / maxCells, .02);
+  const x0 = bx - pad, y0 = by - pad, nx = Math.ceil((bw + 2 * pad) / h) + 1, ny = Math.ceil((bh + 2 * pad) / h) + 1;
+  return { x0, y0, h, nx, ny };
+}
+
+/** Grid nodes inside any of the polygons (scanline fill). */
+function rasterise(grid, polys) {
+  const { x0, y0, h, nx, ny } = grid, mask = new Uint8Array(nx * ny);
+  for (const poly of polys) {
+    for (let j = 0; j < ny; j++) {
+      const y = y0 + j * h, xs = [];
+      for (let i = 0; i < poly.length; i++) {
+        const a = poly[i], b = poly[(i + 1) % poly.length];
+        if ((a[1] > y) !== (b[1] > y)) xs.push(a[0] + (y - a[1]) * (b[0] - a[0]) / (b[1] - a[1]));
+      }
+      xs.sort((p, q) => p - q);
+      for (let n = 0; n + 1 < xs.length; n += 2) {
+        const i1 = Math.max(0, Math.ceil((xs[n] - x0) / h)), i2 = Math.min(nx - 1, Math.floor((xs[n + 1] - x0) / h));
+        for (let i = i1; i <= i2; i++) mask[j * nx + i] = 1;
+      }
+    }
+  }
+  return mask;
+}
+
+/** Exact Euclidean distance (in cells) from each node to the nearest node where mask = 1. */
+function distanceTransform(mask, nx, ny) {
+  const INF = 1e20, n = Math.max(nx, ny), out = new Float64Array(nx * ny);
+  const f = new Float64Array(n), d = new Float64Array(n), v = new Int32Array(n), z = new Float64Array(n + 1);
+  const pass = len => {   // Felzenszwalb & Huttenlocher 1D squared distance transform
+    let k = 0;
+    v[0] = 0; z[0] = -INF; z[1] = INF;
+    for (let q = 1; q < len; q++) {
+      const sep = () => ((f[q] + q * q) - (f[v[k]] + v[k] * v[k])) / (2 * q - 2 * v[k]);
+      let s = sep();
+      while (s <= z[k]) { k--; s = sep(); }
+      k++; v[k] = q; z[k] = s; z[k + 1] = INF;
+    }
+    k = 0;
+    for (let q = 0; q < len; q++) { while (z[k + 1] < q) k++; d[q] = (q - v[k]) ** 2 + f[v[k]]; }
+  };
+  for (let i = 0; i < nx * ny; i++) out[i] = mask[i] ? 0 : INF;
+  for (let i = 0; i < nx; i++) {
+    for (let j = 0; j < ny; j++) f[j] = out[j * nx + i];
+    pass(ny);
+    for (let j = 0; j < ny; j++) out[j * nx + i] = d[j];
+  }
+  for (let j = 0; j < ny; j++) {
+    for (let i = 0; i < nx; i++) f[i] = out[j * nx + i];
+    pass(nx);
+    for (let i = 0; i < nx; i++) out[j * nx + i] = Math.sqrt(d[i]);
+  }
+  return out;
+}
+
+/** Signed distance (metres) to the edge of a mask: negative inside. */
+function signedField(mask, grid) {
+  const { nx, ny, h } = grid, outside = mask.map(v => 1 - v);
+  const dIn = distanceTransform(mask, nx, ny), dOut = distanceTransform(outside, nx, ny), F = new Float64Array(nx * ny);
+  for (let i = 0; i < F.length; i++) F[i] = mask[i] ? -(dOut[i] - .5) * h : (dIn[i] - .5) * h;
+  return F;
+}
+
+/** Exact signed distance (metres) to the nearest of several polygon outlines: negative inside. */
+function polygonsField(grid, polys) {
+  const { x0, y0, h, nx, ny } = grid, F = new Float64Array(nx * ny).fill(Infinity);
+  const inside = rasterise(grid, polys);
+  for (const poly of polys) {
+    const n = poly.length, ax = new Float64Array(n), ay = new Float64Array(n), vx = new Float64Array(n), vy = new Float64Array(n), ll = new Float64Array(n);
+    for (let e = 0; e < n; e++) {
+      const a = poly[e], b = poly[(e + 1) % n];
+      ax[e] = a[0]; ay[e] = a[1]; vx[e] = b[0] - a[0]; vy[e] = b[1] - a[1]; ll[e] = vx[e] * vx[e] + vy[e] * vy[e] || 1;
+    }
+    for (let j = 0; j < ny; j++) {
+      const y = y0 + j * h;
+      for (let i = 0; i < nx; i++) {
+        const x = x0 + i * h;
+        let best = Infinity;
+        for (let e = 0; e < n; e++) {
+          const px = x - ax[e], py = y - ay[e];
+          let t = (px * vx[e] + py * vy[e]) / ll[e];
+          t = t < 0 ? 0 : t > 1 ? 1 : t;
+          const dx = px - t * vx[e], dy = py - t * vy[e], d = dx * dx + dy * dy;
+          if (d < best) best = d;
+        }
+        const k = j * nx + i;
+        if (best < F[k] * F[k] || F[k] === Infinity) F[k] = Math.sqrt(best);
+      }
+    }
+  }
+  for (let k = 0; k < F.length; k++) if (inside[k]) F[k] = -F[k];
+  return F;
+}
+
+/** Light 3×3 box blur (twice): removes the grid staircase from a distance field. */
+function smoothField(F, grid) {
+  const { nx, ny } = grid;
+  let a = F, b = new Float64Array(F.length);
+  for (let pass = 0; pass < 2; pass++) {
+    for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
+      let sum = 0, c = 0;
+      for (let dj = -1; dj <= 1; dj++) for (let di = -1; di <= 1; di++) {
+        const ii = i + di, jj = j + dj;
+        if (ii < 0 || jj < 0 || ii >= nx || jj >= ny) continue;
+        sum += a[jj * nx + ii]; c++;
+      }
+      b[j * nx + i] = sum / c;
+    }
+    [a, b] = [b, a];
+  }
+  return a;
+}
+
+/** Marching squares with linear interpolation: closed loops where field F = level. */
+function contourField(F, grid, level) {
+  const { x0, y0, h, nx, ny } = grid, edges = [];
+  const P = (i1, j1, i2, j2) => {
+    const a = F[j1 * nx + i1] - level, b = F[j2 * nx + i2] - level, t = a / (a - b);
+    return [x0 + (i1 + (i2 - i1) * t) * h, y0 + (j1 + (j2 - j1) * t) * h];
+  };
+  const patterns = [[], [[3, 0]], [[0, 1]], [[3, 1]], [[1, 2]], [[3, 2], [0, 1]], [[0, 2]], [[3, 2]],
+    [[2, 3]], [[0, 2]], [[0, 3], [1, 2]], [[1, 2]], [[1, 3]], [[0, 1]], [[0, 3]], []];
+  for (let j = 0; j < ny - 1; j++) {
+    for (let i = 0; i < nx - 1; i++) {
+      const code = (F[j * nx + i] < level) | (F[j * nx + i + 1] < level) << 1 | (F[(j + 1) * nx + i + 1] < level) << 2 | (F[(j + 1) * nx + i] < level) << 3;
+      if (code === 0 || code === 15) continue;
+      const pt = e => e === 0 ? P(i, j, i + 1, j) : e === 1 ? P(i + 1, j, i + 1, j + 1) : e === 2 ? P(i, j + 1, i + 1, j + 1) : P(i, j, i, j + 1);
+      for (const [e1, e2] of patterns[code]) edges.push([pt(e1), pt(e2)]);
+    }
+  }
+  return joinSegments(edges);
+}
+
+/** Bilinear sample of a grid field at (x, y). */
+function sampleField(F, grid, x, y) {
+  const { x0, y0, h, nx, ny } = grid;
+  const fi = Math.max(0, Math.min(nx - 1.001, (x - x0) / h)), fj = Math.max(0, Math.min(ny - 1.001, (y - y0) / h));
+  const i = Math.floor(fi), j = Math.floor(fj), u = fi - i, v = fj - j;
+  return F[j * nx + i] * (1 - u) * (1 - v) + F[j * nx + i + 1] * u * (1 - v) + F[(j + 1) * nx + i] * (1 - u) * v + F[(j + 1) * nx + i + 1] * u * v;
+}
+
+const loopLength = loop => loop.reduce((s, p, i) => s + Math.hypot(loop[(i + 1) % loop.length][0] - p[0], loop[(i + 1) % loop.length][1] - p[1]), 0);
+
+/** Track and verge layout around the live ponds (#7). */
+function trackSettings() {
+  const s = state.site.inputs;
+  const ids = ['trackInnerVerge', 'trackWidth', 'trackOuterVerge', 'trackCrossfall', 'trackOuterSlope', 'trackMinRadius'];
+  if (!ids.every(id => isNumeric(s[id]))) throw new InputError('Enter all maintenance track values.');
+  const iv = Number(s.trackInnerVerge), tw = Number(s.trackWidth), ov = Number(s.trackOuterVerge);
+  const cf = gradeToDecimal(s.trackCrossfall), m = sideSlopeRatio(s.trackOuterSlope), R = Number(s.trackMinRadius);
+  if (iv < 0 || ov < 0 || !(tw > 0) || R < 0 || !Number.isFinite(cf) || Math.abs(cf) > .5 || !(m >= 0)) {
+    throw new InputError('Track: verges and radius must be 0 or more, the width positive, the crossfall within ±50% and the outer slope valid.');
+  }
+  const tie = Math.abs(cf * tw) * m;
+  return { iv, tw, ov, cf, m, R, tie, total: iv + tw + ov + tie };
+}
+
+let trackCache = { key: '', value: null };
+
+function computeTrack(geoms) {
+  const t = trackSettings(), rims = geoms.map(g => rimSite(g));
+  const key = JSON.stringify([t, rims.map(r => r.map(p => p.map(v => Math.round(v * 1000))))]);
+  if (key === trackCache.key) return trackCache.value;
+
+  const dc = t.iv + t.tw / 2, b = bounds(rims.flat());
+  const grid = makeGrid(b.x, b.y, b.w, b.h, Math.max(t.total, dc + t.R) + 2, 400);
+  const D0 = polygonsField(grid, rims), warnings = [];
+  const N = D0.length, h = grid.h;
+  const erode = (mask, r) => { const d = distanceTransform(mask.map(v => 1 - v), grid.nx, grid.ny); return mask.map((v, i) => v && (d[i] - .5) * h >= r ? 1 : 0); };
+  const dilate = (mask, r) => { const d = distanceTransform(mask, grid.nx, grid.ny); return mask.map((v, i) => v || (d[i] - .5) * h <= r ? 1 : 0); };
+
+  // Track centreline region: everything within dc of a pond...
+  // Without smoothing the field is exact: distance to the rim minus dc.
+  let F = D0.map(v => v - dc);
+  if (t.R > 0) {
+    // ...closed (fills inward bends tighter than R) then opened (rounds outward bends to R).
+    const E = new Uint8Array(N);
+    for (let i = 0; i < N; i++) E[i] = D0[i] <= dc + t.R ? 1 : 0;
+    const opened = dilate(erode(erode(E, t.R), t.R), t.R);
+    // Only use the smoothed shape where it actually differs from the plain offset.
+    let changed = false;
+    for (let i = 0; i < N; i++) if (opened[i] !== (D0[i] <= dc ? 1 : 0)) { changed = true; break; }
+    if (!opened.some(v => v)) warnings.push('The minimum radius is too large for this pond; the track follows the rim offset without smoothing.');
+    else if (changed) F = smoothField(signedField(opened, grid), grid);
+  }
+  const L = { inner: -t.tw / 2, centre: 0, outer: t.tw / 2, verge: t.tw / 2 + t.ov, landTake: t.tw / 2 + t.ov + t.tie };
+  const contours = {};
+  for (const name in L) contours[name] = contourField(F, grid, L[name]);
+
+  let landN = 0, trackN = 0;
+  for (let i = 0; i < N; i++) { if (F[i] <= L.landTake) landN++; if (Math.abs(F[i]) <= t.tw / 2) trackN++; }
+  let minInnerVerge = Infinity;
+  for (const loop of contours.inner) for (const [x, y] of loop) minInnerVerge = Math.min(minInnerVerge, sampleField(D0, grid, x, y));
+  if (minInnerVerge < t.iv - 1.5 * h) {
+    warnings.push(minInnerVerge < 0
+      ? 'Where bends are smoothed the track crosses the pond rim: reduce the minimum radius or change the outline.'
+      : 'Where bends are smoothed the inner verge narrows to ' + fmt(Math.max(0, minInnerVerge), 'm', 1) + '.');
+  }
+  const value = {
+    settings: t, grid, field: F, contours, warnings, minInnerVerge,
+    landTakeArea: landN * h * h, trackArea: trackN * h * h,
+    centreLength: contours.centre.reduce((sum, loop) => sum + loopLength(loop), 0)
+  };
+  trackCache = { key, value };
+  return value;
+}
+
+/** Site boundary polygon in site coordinates (#8). */
+function boundaryPolygon() {
+  const s = state.site.inputs;
+  if (s.boundaryMode === 'imported') {
+    if (!state.site.boundary) throw new InputError('No boundary imported yet: tick Import polyline and use a polyline as the Site boundary.');
+    return state.site.boundary;
+  }
+  const L = Number(s.boundaryLength), W = Number(s.boundaryWidth);
+  if (!(L > 0 && W > 0)) throw new InputError('Enter a positive site boundary length and width.');
+  return [[-L / 2, -W / 2], [L / 2, -W / 2], [L / 2, W / 2], [-L / 2, W / 2]];
+}
+
+let allowedCache = { key: '', value: null };
+
+/** Allowed top-of-bank region: the boundary shrunk inward by the track offsets. */
+function allowedRegion(poly, off) {
+  const key = JSON.stringify([poly, off]);
+  if (key === allowedCache.key) return allowedCache.value;
+  const b = bounds(poly), grid = makeGrid(b.x, b.y, b.w, b.h, Math.max(b.w, b.h) * .02 + 1, 260);
+  const F = new Float64Array(grid.nx * grid.ny);
+  let n = 0;
+  for (let j = 0; j < grid.ny; j++) for (let i = 0; i < grid.nx; i++) {
+    const v = sdPolygon(grid.x0 + i * grid.h, grid.y0 + j * grid.h, poly) + off;
+    F[j * grid.nx + i] = v;
+    if (v <= 0) n++;
+  }
+  const value = { area: n * grid.h * grid.h, loops: contourField(F, grid, 0) };
+  allowedCache = { key, value };
+  return value;
+}
+
+function computeBoundary(live, track) {
+  const poly = boundaryPolygon(), off = track ? track.settings.total : 0;
+  const placed = live.filter(p => p.geometry), b = bounds(poly), step = Math.max(b.w, b.h) / 400;
+  /** Worst (largest) signed distance of any rim point beyond the allowed region; ≤ 0 fits. */
+  const overrun = rims => Math.max(...rims.flatMap(r => densify(r, step).map(([x, y]) => sdPolygon(x, y, poly) + off)));
+  const out = { poly, off, allowed: allowedRegion(poly, off) };
+  out.overrun = overrun(placed.map(p => rimSite(p.geometry)));
+  out.fits = out.overrun <= 1e-6;
+  if (track) out.landOverrun = Math.max(...track.contours.landTake.flat().map(([x, y]) => sdPolygon(x, y, poly)));
+
+  // Largest version of the active pond (same shape, centre and rotation) that fits.
+  const ap = activePond(), ag = ap.geometry, s = state.site.inputs;
+  if (!ag || !live.includes(ap)) return out;
+  const auto = live.length === 2 && live[1].autoPlace;
+  // An auto-placed Pond 2 moves as it is resized; its levels follow the move.
+  const placeAt = A => auto && ap === live[1] ? autoPlacement(live[0].geometry, { ...ag, A }, s.layoutMode, Number(s.layoutGap)) : ag.place;
+  const rimsAt = A => placed.map(p => {
+    if (p === ap) return rimSite(ag, A, placeAt(A));
+    if (auto && p === live[1]) return rimSite(p.geometry, p.geometry.A, autoPlacement({ ...ag, A }, p.geometry, s.layoutMode, Number(s.layoutGap)));
+    return rimSite(p.geometry);
+  });
+  const fitsAt = A => overrun(rimsAt(A)) <= 1e-6;
+  if (!fitsAt(ag.A * 1e-6)) {
+    const others = rimsAt(ag.A * 1e-6).filter((r, n) => placed[n] !== ap);
+    out.noRoom = others.length && overrun(others) > 1e-6 ? 'other' : 'centre';
+    return out;
+  }
+  let lo = ag.A * 1e-6, hi = ag.A;
+  if (fitsAt(hi)) { lo = hi; while (fitsAt(hi) && hi < ag.A * 1e6) { lo = hi; hi *= 2; } }
+  for (let n = 0; n < 40; n++) { const m = Math.sqrt(lo * hi); if (fitsAt(m)) lo = m; else hi = m; }
+  const cap = (a, d) => computeStorage(a, d, designParameters(ap, placeAt(a)), ag.shapeData)[ag.basis];
+  out.maxArea = lo;
+  out.maxVolume = cap(lo, ag.D);
+  // Depth needed to store this pond's volume within the largest area that fits.
+  let dHi = Math.max(1, ag.D), tries = 0;
+  while (cap(lo, dHi) < ag.V && tries++ < 28) dHi *= 1.65;
+  out.depthNeeded = cap(lo, dHi) < ag.V ? null : bisectIncreasing(d => cap(lo, d), 1e-6, dHi, ag.V);
+  return out;
+}
+
+/** Levels between the two ponds (#11). */
+function pondPairInfo(live) {
+  const [t, a] = live.map(p => p.geometry);
+  if (!t || !a) return null;
+  const outlet = realLevel(t, t.pwl ?? t.wl), twl = realLevel(a, a.wl);
+  return { outlet, outletIsPwl: t.pwl !== null, twl, drop: outlet - twl, place2: a.place };
+}
+
+/* =========================================================
+ * 7c. SuDS guidance checks (#12) — warnings only
+ *
+ * All guidance values live in this one table. confirmed: false means the
+ * value was taken from secondary sources quoting CIRIA C753 and must be
+ * checked against the manual before it is relied on; set confirmed: true
+ * (and update source) once it has been.
+ * ======================================================= */
+const SUDS_GUIDANCE = [
+  { id: 'sideSlope', label: 'Side slope', limit: 3, test: 'min', guidance: '1 in 3 or flatter',
+    source: 'C753, as quoted by RoSPA and local authority SuDS design guides', confirmed: false },
+  { id: 'freeboard', label: 'Freeboard', limit: 0.3, test: 'min', guidance: 'at least 0.3 m',
+    source: 'C753 §23.4.5, as quoted in United Utilities S104 pond guidance', confirmed: false },
+  { id: 'maxDepth', label: 'Maximum water depth (design water level to lowest point)', limit: 2.0, test: 'max', guidance: 'no more than 2.0 m',
+    source: 'Local authority SuDS guides quoting C753', confirmed: false },
+  { id: 'permanentDepth', label: 'Permanent water depth', limit: 2.0, test: 'max', guidance: 'no more than 2.0 m (0.6–1.2 m preferred)',
+    source: 'SuDS design guides quoting C753', confirmed: false },
+  { id: 'bench', label: 'Safety bench', limit: null, test: 'present', guidance: 'bench around the water edge',
+    source: 'C753 chapter 23 (figure 23.5), as referenced by United Utilities', confirmed: false },
+  { id: 'treatment', label: 'Permanent (treatment) volume', limit: null, test: 'treatment', guidance: 'at least the required treatment volume',
+    source: 'Required volume entered above (C753 chapter 23 / 26 method)', confirmed: false }
+];
+
+/** Rows of { label, design, guidance, status: ok | warn | na, source, confirmed } for one pond. */
+function sudsChecks(geom, isAttenuationPond = false) {
+  const lowest = geom.zs[0], vt = isAttenuationPond ? '' : state.site.inputs.sudsTreatmentVolume;
+  return SUDS_GUIDANCE.map(G => {
+    let value = null, design = '—', status = 'na';
+    if (G.id === 'sideSlope') { value = geom.g.m; design = geom.g.m === 0 ? 'vertical' : '1 in ' + fmt(geom.g.m, '', 2); }
+    if (G.id === 'freeboard') { value = geom.g.f; design = fmt(value, 'm'); }
+    if (G.id === 'maxDepth') { value = geom.wl - lowest; design = fmt(value, 'm'); }
+    if (G.id === 'permanentDepth' && geom.pwl !== null) { value = geom.pwl - lowest; design = fmt(value, 'm'); }
+    if (G.id === 'bench') { value = !!geom.g.bench; design = geom.g.bench ? fmt(geom.g.bench.w, 'm') + ' wide, ' + fmt(geom.g.bench.d, 'm') + ' below water' : 'none'; }
+    if (G.id === 'treatment' && isNumeric(vt) && Number(vt) > 0) {
+      design = geom.pwl === null ? 'no permanent water level' : fmt(geom.permanent, 'm³');
+      value = geom.pwl === null ? 0 : geom.permanent;
+    }
+    if (value !== null) {
+      const ok = G.test === 'min' ? value >= G.limit - 1e-9 : G.test === 'max' ? value <= G.limit + 1e-9
+        : G.test === 'present' ? value : value >= Number(vt) - 1e-9;
+      status = ok ? 'ok' : 'warn';
+    }
+    const guidance = G.id === 'treatment' && isNumeric(vt) && Number(vt) > 0 ? 'at least ' + fmt(Number(vt), 'm³') : G.guidance;
+    return { label: G.label, design, guidance, status, source: G.source, confirmed: G.confirmed };
+  });
+}
+
+function renderSuds() {
+  if (!state.features.sudsChecks) { $('sudsResults').innerHTML = ''; return; }
+  let html = '';
+  for (const pond of livePonds()) {
+    if (livePonds().length > 1) html += '<h3 style="margin:16px 0 0;font-size:13px;color:var(--muted)">' + esc(pond.name) + '</h3>';
+    if (!pond.geometry) { html += '<p class="help">No valid geometry to check.</p>'; continue; }
+    const rows = sudsChecks(pond.geometry, livePonds().length > 1 && pond === livePonds()[1]), warns = rows.filter(r => r.status === 'warn').length;
+    html += '<div class="table-wrap"><table class="data"><thead><tr><th class="left">Check</th><th>Design</th><th class="left">Guidance</th><th>Result</th></tr></thead><tbody>' +
+      rows.map(r => `<tr><td class="left">${esc(r.label)}</td><td>${esc(r.design)}</td><td class="left" title="${esc(r.source)}">${esc(r.guidance)}${r.confirmed ? '' : '<span class="badge">to confirm</span>'}</td>` +
+        `<td class="${r.status === 'ok' ? 'ok' : r.status === 'warn' ? 'warn' : ''}">${r.status === 'ok' ? 'OK' : r.status === 'warn' ? 'Warning' : 'n/a'}</td></tr>`).join('') +
+      '</tbody></table></div><p class="help">' + (warns ? warns + ' warning' + (warns > 1 ? 's' : '') : 'No warnings') + '. Hover a guidance value for its source.</p>';
+  }
+  $('sudsResults').innerHTML = html;
+}
+
+/** Everything that depends on more than one pond or on the site. */
+function computeSite() {
+  const live = livePonds(), geoms = live.map(p => p.geometry).filter(Boolean), out = { live, geoms };
+  if (state.features.secondPond) out.pair = pondPairInfo(live);
+  if (!geoms.length) return out;
+  if (state.features.track) { try { out.track = computeTrack(geoms); } catch (e) { out.trackError = e.message; } }
+  if (state.features.siteBoundary) { try { out.boundary = computeBoundary(live, out.track); } catch (e) { out.boundaryError = e.message; } }
+  return out;
 }
 
 /* =========================================================
@@ -753,10 +1748,30 @@ function solvePond(pond) {
  * ======================================================= */
 const quantityInputs = { volume: $('volume'), area: $('area'), depth: $('depth') };
 const RESULT_IDS = ['totalCapacity', 'usableCapacity', 'freeboardVolume', 'waterArea', 'bottomArea', 'topDims',
-  'bottomDims', 'sideRun', 'spillElevation', 'waterElevation', 'dryArea', 'baseRange', 'centreDepth'];
+  'bottomDims', 'sideRun', 'spillElevation', 'waterElevation', 'dryArea', 'baseRange', 'centreDepth', 'centreGround',
+  'permanentVolume', 'attenuationVolume', 'pwlLevel', 'pwlArea'];
 
-function readPondInputs(pond) {
-  for (const id of POND_INPUT_IDS) pond.inputs[id] = $(id).value;
+function readForm() {
+  activePond().inputs = { ...activePond().inputs, ...readFields(pondFields()) };
+  state.site.inputs = { ...state.site.inputs, ...readFields(siteFields()) };
+}
+
+/** Put a pond's stored values and choices back into the form. */
+function writePondToForm(pond) {
+  writeFields(pondFields(), pond.inputs);
+  document.querySelectorAll('.shape-btn').forEach(x => {
+    x.classList.toggle('active', x.dataset.shape === pond.shape);
+    x.setAttribute('aria-pressed', String(x.dataset.shape === pond.shape));
+  });
+  $('aspectWrap').hidden = pond.shape !== 'rectangle' && pond.shape !== 'natural';
+  $('naturalWrap').hidden = pond.shape !== 'natural';
+  $('customWrap').hidden = pond.shape !== 'custom';
+  $('irregularityValue').textContent = '(' + pond.inputs.naturalIrregularity + '%)';
+  document.querySelectorAll('input[name=solve]').forEach(r => { r.checked = r.value === pond.solve; });
+  document.querySelectorAll('.metric').forEach(m => m.classList.toggle('target', m.dataset.target === pond.solve));
+  for (const q in quantityInputs) quantityInputs[q].disabled = q === pond.solve;
+  drawSketch();
+  updateSlopeHint();
 }
 
 function showError(text) {
@@ -766,49 +1781,228 @@ function showError(text) {
 
 function clearResults() {
   for (const id of RESULT_IDS) $(id).textContent = '—';
+  $('stageTable').innerHTML = '';
+  stageCache = { pond: null, rows: [] };
   $('vizCaption').textContent = 'No valid geometry';
-  activePond().geometry = null;
-  draw();
 }
 
 function showResults(pond, r) {
+  const lv = z => fmt(realLevel(r, z), 'm');
   quantityInputs[pond.solve].value = Number((pond.solve === 'volume' ? r.V : pond.solve === 'area' ? r.A : r.D).toPrecision(10)).toString();
+  if (pond.linkedVolume != null) quantityInputs.volume.value = Number(pond.linkedVolume.toPrecision(10)).toString();
   $('totalCapacity').textContent = fmt(r.total, 'm³');
   $('usableCapacity').textContent = fmt(r.usable, 'm³');
   $('freeboardVolume').textContent = fmt(r.total - r.usable, 'm³');
   $('waterArea').textContent = fmt(r.wetArea, 'm²');
-  $('spillElevation').textContent = fmt(r.spill, 'm');
-  $('waterElevation').textContent = fmt(r.wl, 'm');
+  $('spillElevation').textContent = lv(r.spill);
+  $('waterElevation').textContent = lv(r.wl);
   $('dryArea').textContent = fmt(r.dryArea, 'm²');
-  $('baseRange').textContent = fmt(r.baseMin, 'm') + ' to ' + fmt(r.baseMax, 'm');
+  $('baseRange').textContent = lv(r.baseMin) + ' to ' + lv(r.baseMax);
   $('centreDepth').textContent = fmt(r.centreDepth, 'm');
+  $('centreGround').textContent = lv(0);
   $('bottomArea').textContent = fmt(r.baseArea, 'm²');
-  $('topDims').textContent = pond.shape === 'circle' ? 'Ø ' + fmt(r.dim.w, 'm') : fmt(r.dim.w, 'm') + ' × ' + fmt(r.dim.l, 'm');
+  $('topDims').textContent = pond.shape === 'circle' ? 'Ø ' + fmt(r.dim.x, 'm') : fmt(r.dim.x, 'm') + ' × ' + fmt(r.dim.y, 'm');
   $('bottomDims').textContent = 'Sloping base (see 3D)';
   $('sideRun').textContent = fmt(r.g.m * r.centreDepth, 'm') + ' at centre';
   if (pond.shape === 'custom') {
-    $('customScaleInfo').textContent = 'Top outline ' + fmt(r.A, 'm²') + ' · bounding box ' + fmt(r.dim.w, 'm') + ' × ' + fmt(r.dim.l, 'm') + ' · uniformly scaled';
+    let info = 'Top outline ' + fmt(r.A, 'm²') + ' · bounding box ' + fmt(r.dim.x, 'm') + ' × ' + fmt(r.dim.y, 'm');
+    if (pond.sketch.world) {
+      const scale = Math.sqrt(r.A / (pond.sketch.outline.area / pond.sketch.world.s ** 2));
+      info += Math.abs(scale - 1) < 1e-6 ? ' · imported size and position' : ' · scaled ×' + fmt(scale, '', 3) + ' about its centre from the imported size';
+    } else info += ' · uniformly scaled';
+    $('customScaleInfo').textContent = info;
   }
+  if (pond.shape === 'natural') {
+    $('naturalInfo').textContent = 'Tightest inward bend radius ' + (Number.isFinite(r.minBend) ? fmt(r.minBend, 'm', 1) : 'none (convex)') +
+      (pond.naturalFactor < 1 ? ' · irregularity reduced to ' + fmt(r.irregularityUsed * 100, '', 0) + '%' + ' to meet the minimum bend radius' : '') +
+      '. The same shape number always gives the same shape.';
+  }
+  if (r.pwl !== null) {
+    $('permanentVolume').textContent = fmt(r.permanent, 'm³');
+    $('attenuationVolume').textContent = fmt(r.attenuation, 'm³');
+    $('pwlLevel').textContent = lv(r.pwl);
+    $('pwlArea').textContent = fmt(r.pwlArea, 'm²');
+  }
+  renderStageTable(pond, r);
   $('vizCaption').textContent = fmt(r.usable, 'm³') + ' usable · ' + fmt(r.total, 'm³') + ' max';
 }
 
+/* ---------- Stage-storage table (#9) ---------- */
+/** Rows from the lowest point to spill: { depth, level, area, volume, note }. */
+function stageRows(r, interval) {
+  const zs = r.zs, n = zs.length, unit = r.A / n, low = zs[0];
+  const prefix = new Float64Array(n + 1);
+  for (let i = 0; i < n; i++) prefix[i + 1] = prefix[i] + zs[i];
+  const below = h => { let lo = 0, hi = n; while (lo < hi) { const m = (lo + hi) >> 1; if (zs[m] < h) lo = m + 1; else hi = m; } return lo; };
+  const levels = [];
+  for (let j = 0; ; j++) {
+    const h = low + j * interval;
+    if (h >= r.spill - 1e-9) break;
+    levels.push({ h, note: j === 0 ? 'Lowest point' : '' });
+  }
+  levels.push({ h: r.spill, note: 'Spill (lowest rim)' });
+  levels.push({ h: r.wl, note: 'Design water level' });
+  if (r.pwl !== null) levels.push({ h: r.pwl, note: 'Permanent water level' });
+  levels.sort((a, b) => a.h - b.h);
+  const rows = [];
+  for (const L of levels) {
+    const last = rows[rows.length - 1];
+    if (last && Math.abs(last.h - L.h) < 1e-6) { if (L.note) last.note = last.note ? last.note + '; ' + L.note : L.note; continue; }
+    const c = below(L.h);
+    rows.push({ h: L.h, depth: L.h - low, level: realLevel(r, L.h), area: c * unit, volume: (c * L.h - prefix[c]) * unit, note: L.note });
+  }
+  return rows;
+}
+
+let stageCache = { pond: null, rows: [] };
+
+function renderStageTable(pond, r) {
+  const table = $('stageTable');
+  if (!state.features.stageStorage) { table.innerHTML = ''; stageCache = { pond: null, rows: [] }; return; }
+  const interval = Number(state.site.inputs.stageInterval);
+  if (!(interval >= 0.005) || (r.spill - r.zs[0]) / interval > 5000) {
+    table.innerHTML = '<tr><td>Enter an interval of at least 0.005 m (and no more than 5000 rows).</td></tr>';
+    stageCache = { pond: null, rows: [] };
+    return;
+  }
+  const rows = stageRows(r, interval);
+  stageCache = { pond, rows };
+  table.innerHTML = '<thead><tr><th>Depth (m)</th><th>Level (m)</th><th>Wetted area (m²)</th><th>Volume (m³)</th><th>Note</th></tr></thead><tbody>' +
+    rows.map(x => `<tr${x.note ? ' class="mark"' : ''}><td>${x.depth.toFixed(3)}</td><td>${x.level.toFixed(3)}</td><td>${x.area.toFixed(2)}</td><td>${x.volume.toFixed(2)}</td><td>${x.note}</td></tr>`).join('') +
+    '</tbody>';
+}
+
+function stageText(sep) {
+  const head = ['Depth (m)', 'Level (m)', 'Wetted area (m2)', 'Cumulative volume (m3)', 'Note'];
+  const esc = v => sep === ',' && /[",]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
+  return [head, ...stageCache.rows.map(x => [x.depth.toFixed(3), x.level.toFixed(3), x.area.toFixed(2), x.volume.toFixed(2), x.note])]
+    .map(row => row.map(esc).join(sep)).join('\r\n') + '\r\n';
+}
+
+/** Form state that depends on other inputs (locked base gradients etc.). */
+function refreshDependentInputs() {
+  const pond = activePond(), match = !!pond.inputs.baseMatchGround, s = state.site.inputs;
+  const linked = state.features.secondPond && !!s.treatLink && state.active === 0;
+  quantityInputs.volume.disabled = pond.solve === 'volume' || linked;
+  document.querySelector('input[name=solve][value=volume]').disabled = linked;
+  $('treatPct').disabled = !s.treatLink;
+  $('layoutGap').disabled = s.layoutMode === 'manual';
+  $('boundaryRectWrap').hidden = s.boundaryMode !== 'rect';
+  $('boundaryMode').options[1].disabled = !state.site.boundary;
+  $('datumLabel').textContent = placementEditable() ? 'Datum: ground level at the site origin (0, 0)' : 'Datum: ground level at pond centre';
+  $('baseMatchHelp').hidden = !match;
+  $('baseFreeHelp').hidden = match;
+  for (const id of ['baseLong', 'baseCross']) $(id).disabled = match;
+  if (match && state.features.gradients) {
+    const g = designParameters(pond, pondPlacement(pond));
+    if (Number.isFinite(g.gl) && Number.isFinite(g.gc)) {
+      $('baseLong').value = pond.inputs.baseLong = decimalToGrade(g.gl);
+      $('baseCross').value = pond.inputs.baseCross = decimalToGrade(g.gc);
+    }
+  }
+}
+
 function update() {
-  const pond = activePond();
   showError('');
-  readPondInputs(pond);
-  $('volumeDescription').textContent = pond.inputs.volumeBasis === 'usable'
-    ? 'Capacity under horizontal freeboard level'
-    : 'Maximum capacity up to lowest rim';
-  try {
-    const result = solvePond(pond);
-    showResults(pond, result);
-    pond.geometry = result;
-    draw();
-  } catch (e) {
+  readForm();
+  // A linked treatment pond takes its volume from Pond 2, so it cannot solve for volume.
+  if (state.features.secondPond && state.site.inputs.treatLink && state.ponds[0].solve === 'volume') {
+    state.ponds[0].solve = 'area';
+    if (state.active === 0) writePondToForm(activePond());
+  }
+  const pond = activePond();
+  refreshDependentInputs();
+  if (pond.inputs.volumeBasis === 'attenuation' && !state.features.permanentWater) $('volumeBasis').value = pond.inputs.volumeBasis = 'usable';
+  $('volumeDescription').textContent = { usable: 'Capacity under horizontal freeboard level', total: 'Maximum capacity up to lowest rim',
+    attenuation: 'Storage between permanent and design water levels' }[pond.inputs.volumeBasis];
+  $('pwlLabel').textContent = pond.inputs.pwlMode === 'level' ? 'Permanent water level' : 'Depth above lowest point of pond';
+  solveAll();
+  if (pond.geometry) showResults(pond, pond.geometry);
+  else {
+    const e = pond.error || new Error('No valid geometry.');
     showError(e.message);
     if (!(e instanceof InputError) || e.clearSolved) quantityInputs[pond.solve].value = '';
     clearResults();
   }
+  refreshPlacementInputs();
+  state.siteResult = computeSite();
+  renderSite(state.siteResult);
+  renderSuds();
+  draw();
+}
+
+/** Position inputs show (and lock) the position when it comes from a drawing or the auto layout. */
+function refreshPlacementInputs() {
+  const pond = activePond(), place = pondPlacement(pond), locked = place.fixed || !!place.auto;
+  for (const id of ['placeX', 'placeY', 'placeRot']) $(id).disabled = locked;
+  if (locked) {
+    $('placeX').value = Number(place.x.toFixed(3));
+    $('placeY').value = Number(place.y.toFixed(3));
+    $('placeRot').value = Number((place.rot * 180 / Math.PI).toFixed(3));
+  }
+  $('placeHelp').textContent = place.fixed ? 'Position taken from the imported outline (site coordinates).'
+    : place.auto ? 'Placed automatically next to Pond 1 (see Site layout). Choose Manual layout to move it.'
+    : 'Position of the pond centre in the site and rotation of its length (+X) axis, anticlockwise. Ground gradients are site-wide; base gradients follow the pond\'s own axes.';
+}
+
+const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const tile = (caption, value, cls = '') => `<div class="result"><div class="caption">${caption}</div><div class="value ${cls}">${value}</div></div>`;
+
+/** Site layout results: pond pair, track, boundary. */
+function renderSite(site) {
+  if (!site || !(state.features.track || state.features.siteBoundary || state.features.secondPond)) { $('siteResults').innerHTML = ''; return; }
+  let html = '';
+  if (state.features.secondPond) {
+    html += '<h3>Treatment and attenuation ponds</h3>';
+    const notes = site.live.filter(p => !p.geometry).map(p => p.name + ': ' + (p.error ? p.error.message : 'no valid geometry'));
+    if (site.pair) {
+      const P = site.pair;
+      html += '<div class="result-grid">' +
+        tile('Treatment outlet (' + (P.outletIsPwl ? 'permanent water level' : 'design water level') + ')', fmt(P.outlet, 'm')) +
+        tile('Attenuation design water level', fmt(P.twl, 'm')) +
+        tile('Level drop between ponds', fmt(P.drop, 'm'), P.drop >= 0 ? 'status-ok' : 'status-bad') +
+        tile('Pond 2 centre (X, Y)', fmt(P.place2.x, '', 1) + ', ' + fmt(P.place2.y, '', 1)) + '</div>';
+      if (P.drop < 0) notes.push('The attenuation pond water level is above the treatment pond outlet, so water would back up into the treatment pond. Lower Pond 2 (more depth or a lower datum relationship) or raise the treatment outlet.');
+    }
+    if (notes.length) html += '<ul class="warn-list">' + notes.map(n => '<li>' + esc(n) + '</li>').join('') + '</ul>';
+  }
+  if (state.features.track) {
+    html += '<h3>Maintenance track</h3>';
+    if (site.trackError) html += '<ul class="warn-list"><li>' + esc(site.trackError) + '</li></ul>';
+    else if (site.track) {
+      const T = site.track;
+      html += '<div class="result-grid">' +
+        tile('Total land take', fmt(T.landTakeArea, 'm²')) +
+        tile('Track centreline length', fmt(T.centreLength, 'm')) +
+        tile('Track surface area', fmt(T.trackArea, 'm²')) +
+        tile('Outer slope tie-in width', fmt(T.settings.tie, 'm')) + '</div>';
+      if (T.warnings.length) html += '<ul class="warn-list">' + T.warnings.map(w => '<li>' + esc(w) + '</li>').join('') + '</ul>';
+    }
+  }
+  if (state.features.siteBoundary) {
+    html += '<h3>Site boundary</h3>';
+    if (site.boundaryError) html += '<ul class="warn-list"><li>' + esc(site.boundaryError) + '</li></ul>';
+    else if (site.boundary) {
+      const B = site.boundary, g = activePond().geometry;
+      html += '<div class="result-grid">' +
+        tile(site.live.length > 1 ? 'Ponds within allowed area' : 'Pond within allowed area', B.fits ? 'Fits' : 'Does not fit', B.fits ? 'status-ok' : 'status-bad') +
+        tile(B.fits ? 'Spare clearance (closest point)' : 'Over the allowed area by', fmt(Math.abs(B.overrun), 'm')) +
+        tile('Allowed top-of-bank area', fmt(B.allowed.area, 'm²')) +
+        (B.landOverrun !== undefined ? tile('Land take inside boundary', B.landOverrun <= .05 ? 'Yes' : 'No — over by ' + fmt(B.landOverrun, 'm'), B.landOverrun <= .05 ? 'status-ok' : 'status-bad') : '');
+      if (B.noRoom) html += '</div><ul class="warn-list"><li>' + (B.noRoom === 'other'
+        ? 'The other pond does not fit at its position, so no size of ' + esc(activePond().name) + ' fits: move or resize it.'
+        : 'The centre of ' + esc(activePond().name) + ' is outside the allowed area: move it.') + '</li></ul>';
+      else if (B.maxArea !== undefined && g) {
+        html += tile('Largest top area that fits (' + esc(activePond().name) + ')', fmt(B.maxArea, 'm²')) +
+          tile((B.maxArea >= g.A ? 'Spare' : 'Missing') + ' top area', fmt(Math.abs(B.maxArea - g.A), 'm²'), B.maxArea >= g.A ? 'status-ok' : 'status-bad') +
+          tile('Max. volume at ' + fmt(g.D, 'm') + ' depth', fmt(B.maxVolume, 'm³')) +
+          tile((B.maxVolume >= g.V ? 'Spare' : 'Missing') + ' volume', fmt(Math.abs(B.maxVolume - g.V), 'm³'), B.maxVolume >= g.V ? 'status-ok' : 'status-bad') +
+          tile('Depth needed for ' + fmt(g.V, 'm³') + ' in the largest area', B.depthNeeded === null ? 'Not reachable' : fmt(B.depthNeeded, 'm')) + '</div>' +
+          '<p class="help">Largest area: the same shape scaled about its centre at its current position and rotation' + (site.live.length > 1 ? ', with the other pond in place' : '') + '. Volumes use the pond\'s volume basis.</p>';
+      } else html += '</div>';
+    }
+  }
+  $('siteResults').innerHTML = html;
 }
 
 function updateSlopeHint() {
@@ -816,6 +2010,15 @@ function updateSlopeHint() {
   $('slopeHint').textContent = Number.isFinite(m)
     ? (m === 0 ? 'Vertical sides' : '1V:' + fmt(m, 'H', 3) + ' → ' + fmt(100 / m, '%', 2) + ' grade. Slope is measured from closest rim point.')
     : 'Enter a positive grade or switch to side ratio.';
+}
+
+function applySlopeFormatLabels() {
+  const percent = state.slopeFormat === 'percent';
+  $('slopeFormat').value = state.slopeFormat;
+  $('slopeLabel').textContent = percent ? 'Side slope (vertical grade)' : 'Side slope (1V:xH)';
+  $('slopeUnit').textContent = percent ? '%' : '1 in x';
+  document.querySelectorAll('.gradient-unit').forEach(x => { x.textContent = percent ? '%' : '1 in x'; });
+  updateSlopeHint();
 }
 
 /* ---------- Optional feature tick boxes ---------- */
@@ -833,9 +2036,36 @@ function saveFeatures() {
 function applyFeatures() {
   document.querySelectorAll('[data-feature]').forEach(cb => { cb.checked = !!state.features[cb.dataset.feature]; });
   document.querySelectorAll('[data-feature-panel]').forEach(el => { el.hidden = !state.features[el.dataset.featurePanel]; });
+  document.querySelectorAll('[data-feature-option]').forEach(el => {
+    el.hidden = el.disabled = !state.features[el.dataset.featureOption];
+  });
+  document.querySelectorAll('[data-feature-any]').forEach(el => {
+    el.hidden = !el.dataset.featureAny.split(' ').some(f => state.features[f]);
+  });
+  if (state.features.secondPond && state.ponds.length < 2) state.ponds.push(createPond('Pond 2'));
+  if (!state.features.secondPond) state.active = 0;
+  refreshTabs();
+  // A natural-shaped pond falls back to a circle while the feature is off.
+  if (!state.features.naturalShapes) {
+    for (const p of state.ponds) if (p.shape === 'natural') { p.shape = 'circle'; p.cache.key = ''; }
+  }
+  writePondToForm(activePond());
 }
 
+function refreshTabs() {
+  document.querySelectorAll('.pond-tab').forEach(t => t.classList.toggle('active', Number(t.dataset.pondIndex) === state.active));
+}
+
+document.querySelectorAll('.pond-tab').forEach(tab => tab.addEventListener('click', () => {
+  readForm();
+  state.active = Number(tab.dataset.pondIndex);
+  refreshTabs();
+  writePondToForm(activePond());
+  update();
+}));
+
 document.querySelectorAll('[data-feature]').forEach(cb => cb.addEventListener('change', () => {
+  readForm();
   state.features[cb.dataset.feature] = cb.checked;
   saveFeatures();
   applyFeatures();
@@ -843,7 +2073,30 @@ document.querySelectorAll('[data-feature]').forEach(cb => cb.addEventListener('c
 }));
 
 /* ---------- Form events ---------- */
-for (const q in quantityInputs) quantityInputs[q].addEventListener('input', () => { if (q !== activePond().solve) update(); });
+// One listener for every data-pond / data-site field. Text and number fields
+// update on 'input'; selects and tick boxes on 'change'.
+function onFieldEvent(e) {
+  const el = e.target;
+  if (!el.matches('[data-pond], [data-site]')) return;
+  const isChoice = el.tagName === 'SELECT' || el.type === 'checkbox';
+  if ((e.type === 'change') !== isChoice) return;
+  if (el.id in quantityInputs && el.id === activePond().solve) return;
+  if (el.id === 'slope') updateSlopeHint();
+  if (el.id === 'volumeBasis') {
+    // Keep the same geometry: show the volume on the new basis.
+    const pond = activePond(), geom = pond.geometry;
+    if (pond.solve !== 'volume' && geom) {
+      const basis = el.value === 'attenuation' && geom.pwl === null ? 'usable' : el.value;
+      quantityInputs.volume.value = Number(geom[basis].toPrecision(10));
+    }
+  }
+  if (el.id === 'baseMatchGround' && !el.checked) {
+    // Unticking keeps the matched values as a starting point (already in the inputs).
+  }
+  update();
+}
+document.querySelector('.controls').addEventListener('input', onFieldEvent);
+document.querySelector('.controls').addEventListener('change', onFieldEvent);
 
 document.querySelectorAll('input[name=solve]').forEach(el => el.addEventListener('change', () => {
   const pond = activePond();
@@ -857,47 +2110,126 @@ document.querySelectorAll('.shape-btn').forEach(btn => btn.addEventListener('cli
   const pond = activePond();
   pond.shape = btn.dataset.shape;
   pond.cache.key = '';
-  document.querySelectorAll('.shape-btn').forEach(x => {
-    x.classList.toggle('active', x === btn);
-    x.setAttribute('aria-pressed', String(x === btn));
-  });
-  $('aspectWrap').hidden = pond.shape !== 'rectangle';
-  $('customWrap').hidden = pond.shape !== 'custom';
-  drawSketch();
+  writePondToForm(pond);
   update();
 }));
 
-for (const id of ['aspect', 'freeboard', 'groundLong', 'groundCross', 'baseLong', 'baseCross']) $(id).addEventListener('input', update);
-
-$('volumeBasis').addEventListener('change', () => {
-  const pond = activePond(), geom = pond.geometry;
-  if (pond.solve !== 'volume' && geom) {
-    quantityInputs.volume.value = Number(($('volumeBasis').value === 'usable' ? geom.usable : geom.total).toPrecision(10));
-  }
+$('naturalIrregularity').addEventListener('input', () => { $('irregularityValue').textContent = '(' + $('naturalIrregularity').value + '%)'; });
+$('newNatural').addEventListener('click', () => {
+  $('naturalSeed').value = Math.floor(Math.random() * 100000);
   update();
 });
 
 $('slopeFormat').addEventListener('change', () => {
-  // Convert every slope/gradient value so the geometry is unchanged.
-  for (const id of ['slope', 'groundLong', 'groundCross', 'baseLong', 'baseCross']) {
-    const n = Number($(id).value);
-    $(id).value = n === 0 ? '0' : Number((100 / n).toPrecision(12)).toString();
-  }
+  // Convert every slope/gradient value (all ponds and site) so the geometry is unchanged.
+  readForm();
+  const convert = v => { const n = Number(v); return n === 0 ? '0' : Number((100 / n).toPrecision(12)).toString(); };
+  const gradeIds = [...document.querySelectorAll('[data-grade]')].map(el => el.id);
+  for (const p of state.ponds) for (const id of gradeIds) if (id in p.inputs && isNumeric(p.inputs[id])) p.inputs[id] = convert(p.inputs[id]);
+  for (const id of gradeIds) if (id in state.site.inputs && isNumeric(state.site.inputs[id])) state.site.inputs[id] = convert(state.site.inputs[id]);
   state.slopeFormat = $('slopeFormat').value;
-  const percent = state.slopeFormat === 'percent';
-  $('slopeLabel').textContent = percent ? 'Side slope (vertical grade)' : 'Side slope (1V:xH)';
-  $('slopeUnit').textContent = percent ? '%' : '1 in x';
-  document.querySelectorAll('.gradient-unit').forEach(x => { x.textContent = percent ? '%' : '1 in x'; });
-  updateSlopeHint();
+  writeFields(siteFields(), state.site.inputs);
+  writePondToForm(activePond());
+  applySlopeFormatLabels();
   update();
 });
 
-$('slope').addEventListener('input', () => { updateSlopeHint(); update(); });
 $('waterToggle').addEventListener('change', draw);
+
+$('stageCsv').addEventListener('click', () => {
+  if (!stageCache.rows.length) return;
+  downloadText(stageText(','), 'Stage_Storage_' + stageCache.pond.name.replace(/\W+/g, '_') + '.csv', 'text/csv');
+});
+$('stageCopy').addEventListener('click', async () => {
+  if (!stageCache.rows.length) return;
+  const text = stageText('\t');
+  try { await navigator.clipboard.writeText(text); }
+  catch (e) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    ta.remove();
+  }
+  $('stageCopy').textContent = 'Copied';
+  setTimeout(() => { $('stageCopy').textContent = 'Copy table'; }, 1500);
+});
+
+/* ---------- Save / load project (#3) ---------- */
+function projectData() {
+  readForm();
+  return {
+    app: 'pond-geometry-calculator',
+    version: PROJECT_VERSION,
+    saved: new Date().toISOString(),
+    features: { ...state.features },
+    slopeFormat: state.slopeFormat,
+    site: { inputs: { ...state.site.inputs }, worldOrigin: state.site.worldOrigin, boundary: state.site.boundary },
+    ponds: state.ponds.map(p => ({
+      name: p.name, shape: p.shape, solve: p.solve, inputs: { ...p.inputs },
+      sketch: { points: p.sketch.points, closed: p.sketch.closed, world: p.sketch.world }
+    })),
+    active: state.active
+  };
+}
+
+/** Bring older project files up to the current version. */
+function migrateProject(data) {
+  if (!data || data.app !== 'pond-geometry-calculator') throw Error('This is not a pond calculator project file.');
+  if (!Number.isInteger(data.version) || data.version < 1) throw Error('Unknown project file version.');
+  if (data.version > PROJECT_VERSION) throw Error('This project was saved by a newer version of the calculator.');
+  // Future versions: upgrade data.version step by step here.
+  return data;
+}
+
+function loadProjectData(raw) {
+  const data = migrateProject(raw);
+  state.features = { ...FEATURE_DEFAULTS };
+  for (const key in FEATURE_DEFAULTS) if (typeof data.features?.[key] === 'boolean') state.features[key] = data.features[key];
+  state.slopeFormat = data.slopeFormat === 'percent' ? 'percent' : 'ratio';
+  state.site = { inputs: { ...DEFAULT_SITE_INPUTS, ...(data.site?.inputs || {}) }, worldOrigin: data.site?.worldOrigin || null,
+    boundary: Array.isArray(data.site?.boundary) ? data.site.boundary.map(q => [Number(q[0]), Number(q[1])]) : null };
+  state.ponds = (data.ponds || []).map((p, n) => {
+    const pond = createPond(p.name || 'Pond ' + (n + 1));
+    pond.shape = p.shape || 'circle';
+    pond.solve = ['volume', 'area', 'depth'].includes(p.solve) ? p.solve : 'volume';
+    pond.inputs = { ...DEFAULT_POND_INPUTS, ...(p.inputs || {}) };
+    if (p.sketch) {
+      pond.sketch.points = (p.sketch.points || []).map(q => [Number(q[0]), Number(q[1])]);
+      pond.sketch.closed = !!p.sketch.closed;
+      pond.sketch.world = p.sketch.world || null;
+      pond.sketch.outline = analyseOutline(pond.sketch.points, pond.sketch.closed);
+    }
+    return pond;
+  });
+  if (!state.ponds.length) state.ponds = [createPond('Pond 1')];
+  state.active = Math.min(Math.max(0, data.active | 0), state.ponds.length - 1);
+  saveFeatures();
+  applySlopeFormatLabels();
+  writeFields(siteFields(), state.site.inputs);
+  applyFeatures();
+  update();
+}
+
+$('saveProject').addEventListener('click', () => {
+  downloadText(JSON.stringify(projectData(), null, 2), 'pond-project.json', 'application/json');
+});
+$('loadProject').addEventListener('click', () => $('loadFile').click());
+$('loadFile').addEventListener('change', async () => {
+  const file = $('loadFile').files[0];
+  $('loadFile').value = '';
+  if (!file) return;
+  try {
+    loadProjectData(JSON.parse(await file.text()));
+  } catch (e) {
+    showError('Could not load project: ' + e.message);
+  }
+});
 
 /* =========================================================
  * 9. Custom outline sketch editor
- * Sketch coordinates define plan SHAPE only, not metres.
+ * Sketch coordinates define plan SHAPE only, not metres (unless imported).
  * ======================================================= */
 const sketch = $('drawCanvas'), sketchCtx = sketch.getContext('2d');
 let dragVertex = -1;
@@ -926,9 +2258,10 @@ function drawSketch() {
     sketchCtx.strokeStyle = closed ? '#5cdbbf' : '#67b8f9';
     sketchCtx.lineWidth = 3;
     sketchCtx.stroke();
+    const small = points.length > 80;
     points.forEach((p, i) => {
       sketchCtx.beginPath();
-      sketchCtx.arc(p[0], p[1], i === 0 ? 7 : 5, 0, Math.PI * 2);
+      sketchCtx.arc(p[0], p[1], i === 0 ? 7 : small ? 2.5 : 5, 0, Math.PI * 2);
       sketchCtx.fillStyle = i === 0 ? '#f5cf8d' : '#91ccf5';
       sketchCtx.fill();
     });
@@ -972,8 +2305,216 @@ sketch.addEventListener('pointermove', e => {
 for (const ev of ['pointerup', 'pointercancel', 'lostpointercapture']) sketch.addEventListener(ev, () => { dragVertex = -1; });
 
 $('undoPoint').addEventListener('click', () => { const s = activePond().sketch; s.closed = false; s.points.pop(); sketchChanged(); });
-$('clearPolygon').addEventListener('click', () => { const s = activePond().sketch; s.points = []; s.closed = false; sketchChanged(); });
+$('clearPolygon').addEventListener('click', () => { const s = activePond().sketch; s.points = []; s.closed = false; s.world = null; sketchChanged(); });
 $('closePolygon').addEventListener('click', () => { const s = activePond().sketch; if (s.points.length >= 3) { s.closed = true; sketchChanged(); } });
+
+/** Chaikin corner cutting: each click rounds the corners and doubles the points. */
+$('smoothPolygon').addEventListener('click', () => {
+  const s = activePond().sketch;
+  if (!s.closed || s.points.length < 3) { showError('Close the outline before smoothing it.'); return; }
+  if (s.points.length > 400) { showError('This outline is already smooth (over 400 points).'); return; }
+  const out = [];
+  s.points.forEach((p, i) => {
+    const q = s.points[(i + 1) % s.points.length];
+    out.push([.75 * p[0] + .25 * q[0], .75 * p[1] + .25 * q[1]], [.25 * p[0] + .75 * q[0], .25 * p[1] + .75 * q[1]]);
+  });
+  s.points = out;
+  sketchChanged();
+});
+
+/* =========================================================
+ * 9b. Import closed polylines (DXF / CSV)
+ * ======================================================= */
+/** Points along a DXF bulge arc from p1 to p2 (excluding both ends). */
+function bulgePoints(p1, p2, bulge) {
+  if (Math.abs(bulge) < 1e-9) return [];
+  const theta = 4 * Math.atan(bulge), dx = p2[0] - p1[0], dy = p2[1] - p1[1], c = Math.hypot(dx, dy);
+  if (c < 1e-12) return [];
+  const d = c / 2 / Math.tan(theta / 2);                 // signed distance from chord midpoint to centre
+  const cx = (p1[0] + p2[0]) / 2 - dy / c * d, cy = (p1[1] + p2[1]) / 2 + dx / c * d;
+  const r = Math.hypot(p1[0] - cx, p1[1] - cy), a1 = Math.atan2(p1[1] - cy, p1[0] - cx);
+  const n = Math.max(2, Math.ceil(Math.abs(theta) / (Math.PI / 18)));   // 10° steps
+  const out = [];
+  for (let j = 1; j < n; j++) out.push([cx + r * Math.cos(a1 + theta * j / n), cy + r * Math.sin(a1 + theta * j / n)]);
+  return out;
+}
+
+/** Turn raw vertices (with bulges) into a cleaned polygon candidate. */
+function polylineCandidate(name, verts, flaggedClosed) {
+  let pts = [];
+  verts.forEach((v, i) => {
+    if (!Number.isFinite(v.x) || !Number.isFinite(v.y)) return;
+    pts.push([v.x, v.y]);
+    const next = verts[i + 1] || (flaggedClosed ? verts[0] : null);
+    if (next && v.b) pts.push(...bulgePoints([v.x, v.y], [next.x, next.y], v.b));
+  });
+  pts = pts.filter((p, i) => i === 0 || Math.hypot(p[0] - pts[i - 1][0], p[1] - pts[i - 1][1]) > 1e-9);
+  let closed = flaggedClosed;
+  if (pts.length > 2 && Math.hypot(pts[0][0] - pts[pts.length - 1][0], pts[0][1] - pts[pts.length - 1][1]) < 1e-6) { pts.pop(); closed = true; }
+  // Very dense outlines are thinned to keep the calculation responsive.
+  if (pts.length > 600) { const step = Math.ceil(pts.length / 600); pts = pts.filter((p, i) => i % step === 0); }
+  const cand = { name, points: pts, closed, area: pts.length >= 3 ? polygonArea(pts) : 0, problem: '' };
+  if (!closed) cand.problem = 'open polyline';
+  else if (pts.length < 3) cand.problem = 'fewer than 3 points';
+  else if (selfIntersects(pts)) cand.problem = 'crosses itself';
+  else if (cand.area <= 0) cand.problem = 'zero area';
+  return cand;
+}
+
+/** Closed polyline candidates from ASCII DXF text (ENTITIES section only). */
+function parseDxf(text) {
+  const lines = text.split(/\r\n|\r|\n/), pairs = [];
+  for (let i = 0; i + 1 < lines.length; i += 2) pairs.push([parseInt(lines[i], 10), lines[i + 1].trim()]);
+  const out = [];
+  let i = 0, inEntities = false, count = 0;
+  while (i < pairs.length) {
+    const [code, value] = pairs[i];
+    if (code === 0 && value === 'SECTION') { inEntities = pairs[i + 1]?.[1] === 'ENTITIES'; i += 2; continue; }
+    if (code === 0 && value === 'ENDSEC') { inEntities = false; i++; continue; }
+    if (!inEntities || code !== 0 || (value !== 'LWPOLYLINE' && value !== 'POLYLINE')) { i++; continue; }
+    const e = { layer: '0', flags: 0, verts: [] };
+    i++;
+    if (value === 'LWPOLYLINE') {
+      for (; i < pairs.length && pairs[i][0] !== 0; i++) {
+        const [c, v] = pairs[i], last = e.verts[e.verts.length - 1];
+        if (c === 8) e.layer = v;
+        else if (c === 70) e.flags = parseInt(v, 10);
+        else if (c === 10) e.verts.push({ x: Number(v), y: NaN, b: 0 });
+        else if (c === 20 && last) last.y = Number(v);
+        else if (c === 42 && last) last.b = Number(v);
+      }
+    } else {
+      for (; i < pairs.length && pairs[i][0] !== 0; i++) {
+        if (pairs[i][0] === 8) e.layer = pairs[i][1];
+        else if (pairs[i][0] === 70) e.flags = parseInt(pairs[i][1], 10);
+      }
+      while (i < pairs.length && pairs[i][0] === 0 && pairs[i][1] === 'VERTEX') {
+        const v = { x: NaN, y: NaN, b: 0, f: 0 };
+        for (i++; i < pairs.length && pairs[i][0] !== 0; i++) {
+          const [c, val] = pairs[i];
+          if (c === 10) v.x = Number(val); else if (c === 20) v.y = Number(val);
+          else if (c === 42) v.b = Number(val); else if (c === 70) v.f = parseInt(val, 10);
+        }
+        if (!(v.f & (16 | 128))) e.verts.push(v);   // skip spline frame and mesh face records
+      }
+      if (pairs[i]?.[1] === 'SEQEND') i++;
+      if (e.flags & (16 | 64)) continue;               // polygon / polyface meshes
+    }
+    count++;
+    out.push(polylineCandidate(`${value} ${count} · layer ${e.layer}`, e.verts, !!(e.flags & 1)));
+  }
+  return out;
+}
+
+/** One closed polygon from pasted "X, Y" lines (any separator; text lines ignored). */
+function parseCsv(text) {
+  const verts = [];
+  for (const line of text.split(/\r?\n/)) {
+    const nums = line.trim().split(/[\s,;]+/).map(Number);
+    if (nums.length >= 2 && nums.slice(0, 2).every(Number.isFinite)) verts.push({ x: nums[0], y: nums[1], b: 0 });
+  }
+  return [polylineCandidate('Pasted coordinates', verts, true)];
+}
+
+let importCandidates = [];
+
+function showCandidates(cands, source) {
+  importCandidates = cands;
+  const usable = cands.filter(c => !c.problem);
+  $('importList').innerHTML = cands.length ? cands.map((c, n) => `<label class="import-item${c.problem ? ' bad' : ''}">` +
+    `<input type="radio" name="importPick" value="${n}"${c.problem ? ' disabled' : ''}${c === usable[0] ? ' checked' : ''}>` +
+    `<span>${c.name.replace(/[<&]/g, ch => ch === '<' ? '&lt;' : '&amp;')} · ${c.points.length} points` +
+    (c.problem ? ` · <strong>skipped: ${c.problem}</strong>` : ` · ${fmt(c.area, 'm²')}`) + '</span></label>').join('') : '';
+  $('importUse').disabled = !usable.length;
+  $('importMsg').textContent = !cands.length ? 'No LWPOLYLINE or POLYLINE entities found in ' + source + '.'
+    : !usable.length ? 'No usable closed polylines: each must be closed and must not cross itself.'
+    : usable.length > 1 ? usable.length + ' closed polylines found: pick one.' : '';
+}
+
+/** Is any outline tied to drawing coordinates? Then DXF export uses them too. */
+function worldInUse() {
+  return livePonds().some(p => p.shape === 'custom' && p.sketch.world && p.sketch.outline) ||
+    (state.features.siteBoundary && state.site.inputs.boundaryMode === 'imported' && !!state.site.boundary);
+}
+
+/** Drawing coordinates → site coordinates (sets the drawing origin on first use). */
+function worldToSite(points) {
+  if (!state.site.worldOrigin || !worldInUse()) {
+    const b = bounds(points);
+    state.site.worldOrigin = [Math.round(b.x + b.w / 2), Math.round(b.y + b.h / 2)];
+  }
+  const o = state.site.worldOrigin;
+  return points.map(p => [p[0] - o[0], p[1] - o[1]]);
+}
+
+/** Fit site-coordinate points onto the sketch canvas, keeping the link back to the site. */
+function siteToSketch(site) {
+  const b = bounds(site), cx = b.x + b.w / 2, cy = b.y + b.h / 2, s = Math.min(680 / b.w, 350 / b.h);
+  return { points: site.map(p => [360 + (p[0] - cx) * s, 195 - (p[1] - cy) * s]), world: { cx, cy, s } };
+}
+
+
+/** Make a site-coordinate polygon the active pond's outline. */
+function setPondOutline(pond, sitePoints, area) {
+  const fit = siteToSketch(sitePoints);
+  pond.shape = 'custom';
+  pond.sketch = { points: fit.points, closed: true, outline: null, world: fit.world };
+  pond.sketch.outline = analyseOutline(pond.sketch.points, true);
+  pond.cache.key = '';
+  pond.inputs.area = Number(area.toPrecision(10)).toString();
+  if (pond.solve === 'area') pond.solve = 'volume';
+  writePondToForm(pond);
+}
+
+function useImport() {
+  const pick = document.querySelector('input[name=importPick]:checked'), cand = pick && importCandidates[Number(pick.value)];
+  if (!cand) return;
+  readForm();
+  if ($('importTarget').value === 'pond') {
+    const pond = activePond();
+    setPondOutline(pond, worldToSite(cand.points), cand.area);
+    $('importMsg').textContent = 'Imported as the outline of ' + pond.name + ' (' + fmt(cand.area, 'm²') + '). Its area is entered under Known quantities; changing the area scales the outline about its centre. DXF export keeps the drawing coordinates.';
+  } else {
+    importToBoundary(cand);
+  }
+  update();
+}
+
+$('importDxfBtn').addEventListener('click', () => $('importDxfFile').click());
+$('importDxfFile').addEventListener('change', async () => {
+  const file = $('importDxfFile').files[0];
+  $('importDxfFile').value = '';
+  if (!file) return;
+  $('importFileName').textContent = file.name;
+  const text = await file.text();
+  if (text.startsWith('AutoCAD Binary DXF')) { showCandidates([], file.name); $('importMsg').textContent = 'Binary DXF is not supported: save the drawing as an ASCII DXF.'; return; }
+  showCandidates(parseDxf(text), file.name);
+});
+$('importCsvBtn').addEventListener('click', () => showCandidates(parseCsv($('importCsv').value), 'the pasted text'));
+$('importUse').addEventListener('click', useImport);
+function importToBoundary(cand) {
+  state.site.boundary = worldToSite(cand.points);
+  state.site.inputs.boundaryMode = 'imported';
+  $('boundaryMode').options[1].disabled = false;
+  $('boundaryMode').value = 'imported';
+  if (!state.features.siteBoundary) {
+    state.features.siteBoundary = true;
+    saveFeatures();
+    applyFeatures();
+  }
+  $('importMsg').textContent = 'Imported as the site boundary (' + fmt(cand.area, 'm²') + '). Site coordinates are relative to the drawing point ' +
+    state.site.worldOrigin.join(', ') + '; DXF export adds it back.';
+}
+
+$('useAllowedArea').addEventListener('click', () => {
+  const B = state.siteResult?.boundary;
+  if (!B || !B.allowed.loops.length) { showError('No allowed area: check the site boundary and track offsets.'); return; }
+  let loop = B.allowed.loops.reduce((a, b) => polygonArea(b) > polygonArea(a) ? b : a);
+  if (loop.length > 400) { const step = Math.ceil(loop.length / 400); loop = loop.filter((p, i) => i % step === 0); }
+  readForm();
+  setPondOutline(activePond(), loop, polygonArea(loop));
+  update();
+});
 
 /* =========================================================
  * 10. 3D preview (offline 2D-canvas renderer)
@@ -1018,6 +2559,25 @@ function strokeLine(ps, color, width = 1, dash = []) {
   ctx.restore();
 }
 
+const SURFACE_COLOURS = { base: '#527c82', side: '#97714f', bench: '#b9a36b', ramp: '#9a958b', ground: '#4b6655' };
+
+/** Site ground level (relative to the datum) at site point (x, y). */
+function siteGroundZ(x, y) {
+  const G = siteGround();
+  return G.gx * x + G.gy * y;
+}
+
+/** Which live pond (if any) covers site point (x, y), and its surface there (site levels). */
+function surfaceInSite(geoms, x, y) {
+  for (const g of geoms) {
+    const [lx, ly] = rotate(x - g.place.x, y - g.place.y, -g.place.rot), k = Math.sqrt(g.A), u = lx / k, v = ly / k;
+    if (!g.shapeData.inside(u, v)) continue;
+    const surf = surfaceAt({ x: u, y: v, ...g.shapeData.nearest(u, v) }, k, g.centreDepth, g.g, g.ext);
+    return { geom: g, kind: surf.kind, z: surf.z + g.z0 };
+  }
+  return null;
+}
+
 function draw() {
   const rect = canvas.getBoundingClientRect();
   if (!rect.width || !rect.height) return;
@@ -1025,61 +2585,99 @@ function draw() {
   if (canvas.width !== cw || canvas.height !== ch) { canvas.width = cw; canvas.height = ch; }
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.clearRect(0, 0, rect.width, rect.height);
-  const geometry = activePond().geometry;
-  if (!geometry) return;
+  const geoms = livePonds().map(p => p.geometry).filter(Boolean);
+  if (!geoms.length) return;
+  const site = state.siteResult || {}, track = site.track, boundary = site.boundary;
 
-  const { A, D, centreDepth, g, dim, shapeData, wl, spill } = geometry, k = Math.sqrt(A), w = dim.w, l = dim.l;
-  const maxDimension = Math.max(w, l, D * 1.5, .1);
+  // Scene extent: ponds, land take and boundary.
+  let pts = geoms.flatMap(g => rimSite(g));
+  const content = bounds(pts);
+  if (track) pts = pts.concat(track.contours.landTake.flat());
+  if (boundary) pts = pts.concat(boundary.poly);
+  const b = bounds(pts), pad = Math.max(b.w, b.h) * .12 + .5;
+  const X0 = b.x - pad, Y0 = b.y - pad, W = b.w + 2 * pad, H = b.h + 2 * pad, sx = b.x + b.w / 2, sy = b.y + b.h / 2;
+  const maxDepth = Math.max(...geoms.map(g => g.centreDepth + Math.abs(g.z0)));
+  const maxDimension = Math.max(b.w, b.h, Math.max(content.w, content.h) * 1.3, maxDepth * 1.5, .1);
   const scale = Math.min(rect.width * .72, rect.height * .62) / maxDimension * view.zoom, cx = rect.width * .5, cy = rect.height * .52;
-  const proj = (x, y, z) => project([x, y, z], scale, cx, cy);
-  const groundZ = (x, y) => g.gl * x + g.gc * y;
+  const zc = siteGroundZ(sx, sy);
+  const proj = (x, y, z) => project([x - sx, y - sy, z - zc], scale, cx, cy);
 
-  // Tiles over the pond plus a margin of surrounding ground, painted back to front.
-  const tiles = [], edge = Math.max(w, l) * .24, gw = w + 2 * edge, gLen = l + 2 * edge;
-  const nx = 54, ny = Math.max(20, Math.round(54 * gLen / gw)), dx = gw / nx, dy = gLen / ny;
-  const showWater = $('waterToggle').checked;
+  // Tiles painted back to front.
+  const tiles = [], showWater = $('waterToggle').checked;
+  const nx = Math.max(20, Math.round(70 * W / Math.max(W, H))), ny = Math.max(20, Math.round(70 * H / Math.max(W, H))), dx = W / nx, dy = H / ny;
+  const t2 = track ? track.settings.tw / 2 : 0;
   for (let j = 0; j < ny; j++) {
     for (let i = 0; i < nx; i++) {
-      const x = -gw / 2 + (i + .5) * dx, y = -gLen / 2 + (j + .5) * dy, xn = x / k, yn = y / k;
-      const inPond = shapeData.inside(xn, yn);
-      const surf = inPond ? surfaceAt({ x: xn, y: yn, ...shapeData.nearest(xn, yn) }, k, centreDepth, g) : null;
-      const z = inPond ? surf.z : groundZ(x, y);
+      const x = X0 + (i + .5) * dx, y = Y0 + (j + .5) * dy;
+      const hit = surfaceInSite(geoms, x, y);
       const corners = [[x - dx / 2, y - dy / 2], [x + dx / 2, y - dy / 2], [x + dx / 2, y + dy / 2], [x - dx / 2, y + dy / 2]];
-      const groundTile = corners.map(q => proj(q[0], q[1], inPond ? z : groundZ(q[0], q[1])));
-      const mean = groundTile.reduce((s, q) => s + q.depth, 0) / 4;
-      const isBase = inPond && surf.base >= surf.side && surf.base < surf.ground;
-      tiles.push({ ps: groundTile, mean, col: inPond ? (isBase ? '#527c82' : '#97714f') : '#344d47', water: false });
-      if (inPond && showWater && z < wl) {
-        const ps = corners.map(q => proj(q[0], q[1], wl));
-        tiles.push({ ps, mean: ps.reduce((s, q) => s + q.depth, 0) / 4, col: '#48b9ef', water: true });
+      const ps = corners.map(q => proj(q[0], q[1], hit ? hit.z : siteGroundZ(q[0], q[1])));
+      const mean = ps.reduce((sum, q) => sum + q.depth, 0) / 4;
+      let col = hit ? SURFACE_COLOURS[hit.kind] : '#344d47';
+      if (!hit && track) {
+        const d = sampleField(track.field, track.grid, x, y);
+        if (Math.abs(d) <= t2) col = '#7b8187';
+        else if (d >= -t2 - track.settings.iv && d <= t2 + track.settings.ov) col = '#41604c';
+      }
+      if (!hit && boundary && sdPolygon(x, y, boundary.poly) > 0) col = '#2c3f3c';
+      tiles.push({ ps, mean, col, water: false });
+      if (hit && showWater) {
+        const g = hit.geom;
+        for (const [level, colour] of [[g.pwl, '#2a74a8'], [g.wl, '#48b9ef']]) {
+          if (level === null || hit.z >= level + g.z0) continue;
+          const wp = corners.map(q => proj(q[0], q[1], level + g.z0));
+          tiles.push({ ps: wp, mean: wp.reduce((sum, q) => sum + q.depth, 0) / 4, col: colour, water: true });
+        }
       }
     }
   }
-  tiles.sort((a, b) => a.mean - b.mean);
+  tiles.sort((p, q) => p.mean - q.mean);
   for (const t of tiles) fillPolygon(t.ps, t.col, null, t.water ? .72 : 1);
 
-  // Rim at actual sloping-ground levels.
-  const rim = shapeData.vertices.map(v => proj(v[0] * k, v[1] * k, groundZ(v[0] * k, v[1] * k)));
-  strokeLine([...rim, rim[0]], '#d0e6aa', 2.7);
+  const outline = (poly, colour, width, dash = []) => {
+    if (poly.length < 2) return;
+    const ps = poly.map(([x, y]) => proj(x, y, siteGroundZ(x, y)));
+    strokeLine([...ps, ps[0]], colour, width, dash);
+  };
+  if (boundary) outline(densify(boundary.poly, Math.max(W, H) / 60), '#f5cf8d', 2, [7, 5]);
+  if (track) for (const name of ['inner', 'outer']) for (const loop of track.contours[name]) outline(loop, '#c9cdd2', 1.2);
+  for (const g of geoms) outline(rimSite(g), '#d0e6aa', 2.7);
 
-  // Spill and water level markers beside the pond.
-  const mx = w * .67 + edge * .3, my = -l * .46;
-  const a = proj(mx, my, spill), b = proj(mx, my, wl), c = proj(mx, my, -centreDepth);
-  strokeLine([a, c], '#eaf1f8', 1.25, [5, 4]);
-  strokeLine([{ x: a.x - 6, y: a.y }, { x: a.x + 6, y: a.y }], '#f1db9a', 2);
-  strokeLine([{ x: b.x - 7, y: b.y }, { x: b.x + 7, y: b.y }], '#49bfff', 2.5);
+  // Level markers beside the active pond; pond labels when there are two.
+  const ag = activePond().geometry;
   ctx.save();
   ctx.font = '11px system-ui';
   ctx.fillStyle = '#eaf1f8';
-  ctx.fillText('Spill', a.x + 9, a.y);
-  ctx.fillText('Water', b.x + 9, b.y);
+  if (ag && geoms.includes(ag)) {
+    const [mx, my] = toSite(ag, ag.dim.x * .5 + Math.max(ag.dim.x, ag.dim.y) * .12, -ag.dim.y * .46);
+    const at = z => proj(mx, my, z + ag.z0);
+    const a = at(ag.spill), w = at(ag.wl), c = at(-ag.centreDepth);
+    strokeLine([a, c], '#eaf1f8', 1.25, [5, 4]);
+    strokeLine([{ x: a.x - 6, y: a.y }, { x: a.x + 6, y: a.y }], '#f1db9a', 2);
+    strokeLine([{ x: w.x - 7, y: w.y }, { x: w.x + 7, y: w.y }], '#49bfff', 2.5);
+    ctx.fillText('Spill', a.x + 9, a.y - 3);
+    ctx.fillText('Water', w.x + 9, w.y + 10);
+    if (ag.pwl !== null) {
+      const pp = at(ag.pwl);
+      strokeLine([{ x: pp.x - 7, y: pp.y }, { x: pp.x + 7, y: pp.y }], '#2a74a8', 2.5);
+      ctx.fillText('PWL', pp.x + 9, pp.y + 12);
+    }
+  }
+  if (geoms.length > 1) {
+    ctx.font = 'bold 12px system-ui';
+    livePonds().forEach(p => {
+      if (!p.geometry) return;
+      const q = proj(p.geometry.place.x, p.geometry.place.y, p.geometry.z0 + .2);
+      ctx.fillText(p.name, q.x - 18, q.y);
+    });
+  }
   ctx.restore();
 
-  // Axis arrows.
-  const ox = -w * .60, oy = -l * .60;
-  const origin = proj(ox, oy, groundZ(ox, oy));
-  const xArrow = proj(ox + w * .15, oy, groundZ(ox + w * .15, oy));
-  const yArrow = proj(ox, oy + l * .15, groundZ(ox, oy + l * .15));
+  // Axis arrows (site axes).
+  const ox = X0 + W * .04, oy = Y0 + H * .04, len = Math.max(W, H) * .1;
+  const origin = proj(ox, oy, siteGroundZ(ox, oy));
+  const xArrow = proj(ox + len, oy, siteGroundZ(ox + len, oy));
+  const yArrow = proj(ox, oy + len, siteGroundZ(ox, oy + len));
   strokeLine([origin, xArrow], '#ffb18e', 2);
   strokeLine([origin, yArrow], '#91c2ff', 2);
   ctx.save();
@@ -1113,12 +2711,15 @@ $('resetView').addEventListener('click', () => { Object.assign(view, VIEW_DEFAUL
 
 /* =========================================================
  * 11. DXF export (AutoCAD R12, metres)
- * XY origin is the centre of the top footprint bounding box; Z = 0 is the
- * centre ground datum. Toe and waterline are sampled contours.
+ * XY: site frame (pond centre at 0,0) plus the drawing origin when an
+ * outline was imported. Z: real levels (datum + relative level).
  * ======================================================= */
-/** Closed contours of the water edge ('water') or base-to-side toe ('toe'). */
-function sampledContours(kind, geom) {
-  const { A, centreDepth, g, shapeData, dim, wl } = geom, k = Math.sqrt(A), w = dim.w, l = dim.l;
+/**
+ * Closed contours (pond-local metres) of the cells where classify(surface)
+ * is true. Each contour vertex gets the level zAt(x, y, surface).
+ */
+function sampledContours(geom, classify, zAt) {
+  const { A, centreDepth, g, shapeData, dim, ext } = geom, k = Math.sqrt(A), w = dim.x, l = dim.y;
   const nx = 118, ny = Math.max(28, Math.min(220, Math.round(nx * l / w))), dx = w / nx, dy = l / ny;
   // A narrow exterior margin so clipped boundaries form closed contours.
   const margin = Math.max(dx, dy) * 1.4, xmin = -w / 2 - margin, ymin = -l / 2 - margin;
@@ -1129,8 +2730,7 @@ function sampledContours(kind, geom) {
     for (let i = 0; i <= gx; i++) {
       const u = (xmin + i * sx) / k, v = (ymin + j * sy) / k;
       if (!shapeData.inside(u, v)) continue;
-      const q = surfaceAt({ x: u, y: v, ...shapeData.nearest(u, v) }, k, centreDepth, g);
-      inside[at(i, j)] = kind === 'water' ? (q.z < wl ? 1 : 0) : (q.base >= q.side && q.base < q.ground ? 1 : 0);
+      inside[at(i, j)] = classify(surfaceAt({ x: u, y: v, ...shapeData.nearest(u, v) }, k, centreDepth, g, ext)) ? 1 : 0;
     }
   }
 
@@ -1148,8 +2748,14 @@ function sampledContours(kind, geom) {
       for (const [e1, e2] of patterns[code]) edges.push([edgePoint(i, j, e1), edgePoint(i, j, e2)]);
     }
   }
+  return joinSegments(edges).map(chain => chain.map(([x, y]) => {
+    const u = x / k, v = y / k;
+    return [x, y, zAt(x, y, surfaceAt({ x: u, y: v, ...shapeData.nearest(u, v) }, k, centreDepth, g, ext))];
+  }));
+}
 
-  // Join segments into closed chains.
+/** Join line segments [[a, b], ...] into closed chains of points. */
+function joinSegments(edges) {
   const nodes = new Map(), links = [];
   const key = p => Math.round(p[0] * 1e7) + ',' + Math.round(p[1] * 1e7);
   for (const [a, b] of edges) {
@@ -1175,16 +2781,25 @@ function sampledContours(kind, geom) {
       chain.push(node);
       if (chain.length > links.length + 2) break;
     }
-    if (chain.length >= 4) {
-      const closed = chain[0] === chain[chain.length - 1];
-      if (closed) chain.pop();
-      const xyz = chain.map(id => {
-        const [x, y] = nodes.get(id).p;
-        return [x, y, kind === 'water' ? wl : (-centreDepth + g.bl * x + g.bc * y)];
-      });
-      if (closed && xyz.length >= 3) out.push(xyz);
+    if (chain.length >= 4 && chain[0] === chain[chain.length - 1]) {
+      chain.pop();
+      if (chain.length >= 3) out.push(chain.map(id => nodes.get(id).p));
     }
   }
+  return out;
+}
+
+const DXF_COLOURS = { TOP_RIM: 3, BASE_TOE_APPROX: 2, WATERLINE_APPROX: 5, PERMANENT_WATERLINE_APPROX: 4, BENCH_APPROX: 30, ACCESS_RAMP_APPROX: 8 };
+
+/** Polylines of one pond, pond-local XY and local Z: [[layerSuffix, vertices], ...]. */
+function pondPolylines(geom) {
+  const { A, shapeData, g, centreDepth, wl } = geom, k = Math.sqrt(A);
+  const out = [['TOP_RIM', shapeData.vertices.map(([u, v]) => [u * k, v * k, g.gl * u * k + g.gc * v * k])]];
+  for (const c of sampledContours(geom, s => s.kind === 'base', (x, y) => -centreDepth + g.bl * x + g.bc * y)) out.push(['BASE_TOE_APPROX', c]);
+  for (const c of sampledContours(geom, s => s.z < wl, () => wl)) out.push(['WATERLINE_APPROX', c]);
+  if (geom.pwl !== null) for (const c of sampledContours(geom, s => s.z < geom.pwl, () => geom.pwl)) out.push(['PERMANENT_WATERLINE_APPROX', c]);
+  if (geom.ext.benchZ !== undefined) for (const c of sampledContours(geom, s => s.kind === 'bench', () => geom.ext.benchZ)) out.push(['BENCH_APPROX', c]);
+  if (geom.ext.ramp) for (const c of sampledContours(geom, s => s.kind === 'ramp', (x, y, s) => s.z)) out.push(['ACCESS_RAMP_APPROX', c]);
   return out;
 }
 
@@ -1195,28 +2810,47 @@ function dxfPolyline(layer, vertices) {
   return txt + `0\nSEQEND\n8\n${layer}\n`;
 }
 
+/** Build the DXF text from [[layer, colour, [[x, y, z], ...]], ...] in drawing coordinates. */
+function buildDxf(polylines) {
+  const layers = new Map();
+  for (const [name, colour] of polylines) layers.set(name, colour);
+  let txt = '0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1009\n0\nENDSEC\n0\nSECTION\n2\nTABLES\n0\nTABLE\n2\nLAYER\n70\n' + layers.size + '\n';
+  for (const [name, colour] of layers) txt += `0\nLAYER\n2\n${name}\n70\n0\n62\n${colour}\n6\nCONTINUOUS\n`;
+  txt += '0\nENDTAB\n0\nENDSEC\n0\nSECTION\n2\nENTITIES\n';
+  for (const [layer, , vs] of polylines) txt += dxfPolyline(layer, vs);
+  return txt + '0\nENDSEC\n0\nEOF\n';
+}
+
+/** All exportable polylines, in drawing XY and real Z. */
+function exportPolylines() {
+  const out = [], two = state.features.secondPond, datum = Number(state.site.inputs.datum);
+  livePonds().forEach((pond, n) => {
+    const geom = pond.geometry;
+    if (!geom) return;
+    const prefix = two ? 'POND' + (n + 1) + '_' : 'POND_';
+    for (const [suffix, vs] of pondPolylines(geom)) {
+      out.push([prefix + suffix, DXF_COLOURS[suffix] || 7, vs.map(([x, y, z]) => [...toWorld(...toSite(geom, x, y)), realLevel(geom, z)])]);
+    }
+  });
+  const site = state.siteResult || {}, siteLine = (layer, colour, loop, dz) =>
+    out.push([layer, colour, loop.map(([x, y]) => [...toWorld(x, y), datum + siteGroundZ(x, y) + dz])]);
+  if (site.track) {
+    // Track at top-of-bank (ground) level on its inner edge, falling by the crossfall to the outer edge.
+    const T = site.track, drop = T.settings.cf * T.settings.tw;
+    for (const [name, layer, colour, dz] of [['inner', 'TRACK_INNER_EDGE', 8, 0], ['centre', 'TRACK_CENTRELINE', 6, -drop / 2],
+      ['outer', 'TRACK_OUTER_EDGE', 8, -drop], ['verge', 'VERGE_OUTER_EDGE', 94, -drop], ['landTake', 'LAND_TAKE_EDGE', 1, 0]]) {
+      for (const loop of T.contours[name]) siteLine(layer, colour, loop, dz);
+    }
+  }
+  if (site.boundary) siteLine('SITE_BOUNDARY', 1, densify(site.boundary.poly, 5), 0);
+  return out;
+}
+
 function exportDXF() {
-  const geom = activePond().geometry;
-  if (!geom) { showError('Calculate a valid pond before exporting DXF.'); return; }
+  if (!livePonds().some(p => p.geometry)) { showError('Calculate a valid pond before exporting DXF.'); return; }
   try {
-    const { A, shapeData, g } = geom, k = Math.sqrt(A);
-    const rim = shapeData.vertices.map(([u, v]) => [u * k, v * k, g.gl * u * k + g.gc * v * k]);
-    const layers = [['POND_TOP_RIM', 3], ['POND_BASE_TOE_APPROX', 2], ['POND_WATERLINE_APPROX', 5]];
-    let txt = '0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1009\n0\nENDSEC\n0\nSECTION\n2\nTABLES\n0\nTABLE\n2\nLAYER\n70\n3\n';
-    for (const [name, color] of layers) txt += `0\nLAYER\n2\n${name}\n70\n0\n62\n${color}\n6\nCONTINUOUS\n`;
-    txt += '0\nENDTAB\n0\nENDSEC\n0\nSECTION\n2\nENTITIES\n';
-    txt += dxfPolyline('POND_TOP_RIM', rim);
-    for (const c of sampledContours('toe', geom)) txt += dxfPolyline('POND_BASE_TOE_APPROX', c);
-    for (const c of sampledContours('water', geom)) txt += dxfPolyline('POND_WATERLINE_APPROX', c);
-    txt += '0\nENDSEC\n0\nEOF\n';
-    const url = URL.createObjectURL(new Blob([txt], { type: 'application/dxf' }));
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'Pond_Contours_Local_Metres.dxf';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 3000);
+    const name = state.site.worldOrigin && worldInUse() ? 'Pond_Drawing_Coordinates.dxf' : 'Pond_Local_Metres.dxf';
+    downloadText(buildDxf(exportPolylines()), name, 'application/dxf');
   } catch (e) {
     showError('DXF export failed: ' + e.message);
   }
@@ -1230,8 +2864,7 @@ state.slopeFormat = $('slopeFormat').value;
 loadFeatures();
 applyFeatures();
 new ResizeObserver(draw).observe($('viz'));
-drawSketch();
-updateSlopeHint();
+writePondToForm(activePond());
 update();
 })();
 </script>
