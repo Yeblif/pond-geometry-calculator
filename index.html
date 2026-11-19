@@ -517,8 +517,8 @@ table.data td.left, table.data th.left { text-align: left; white-space: normal; 
   <h3>Permanent water level</h3>
   <p class="help">The outlet invert of a wet pond. Water below it is the permanent (treatment) volume; storage between it and the design water level is the attenuation volume.</p>
   <div class="row">
-    <div class="field"><label for="pwlMode">Set by</label><select id="pwlMode" data-pond><option value="depth">Depth above lowest base point</option><option value="level">Level</option></select></div>
-    <div class="field"><label for="pwlValue" id="pwlLabel">Depth above lowest base point</label><div class="input-shell"><input id="pwlValue" data-pond type="number" step="any" value="1"><span class="unit">m</span></div></div>
+    <div class="field"><label for="pwlMode">Set by</label><select id="pwlMode" data-pond><option value="depth">Depth above lowest point of pond</option><option value="level">Level</option></select></div>
+    <div class="field"><label for="pwlValue" id="pwlLabel">Depth above lowest point of pond</label><div class="input-shell"><input id="pwlValue" data-pond type="number" step="any" value="1"><span class="unit">m</span></div></div>
   </div>
 </div>
 
@@ -1135,10 +1135,7 @@ function pondLevels(A, D, g, shapeData) {
   const spill = lowestRimLevel(g, shapeData, A), wl = spill - g.f;
   const baseLevels = shapeData.vertices.map(p => -centreDepth + (g.bl * p[0] + g.bc * p[1]) * k);
   const baseMin = Math.min(...baseLevels), baseMax = Math.max(...baseLevels);
-  let pwl = null;
-  if (g.pwl) pwl = g.pwl.mode === 'level' ? g.pwl.value - Number(state.site.inputs.datum) - g.z0 : baseMin + g.pwl.value;
   const ext = {};
-  if (g.bench) { ext.benchZ = (pwl ?? wl) - g.bench.d; ext.benchW = g.bench.w; }
   if (g.ramp) {
     const r = rampStart(shapeData, g.ramp.bearing);
     if (r) {
@@ -1146,6 +1143,17 @@ function pondLevels(A, D, g, shapeData) {
       ext.ramp = { x0, y0, nx: r.nx, ny: r.ny, hw: g.ramp.w / 2, z0: g.gl * x0 + g.gc * y0, grad: g.ramp.grad };
     }
   }
+  let pwl = null;
+  if (g.pwl && g.pwl.mode === 'level') pwl = g.pwl.value - Number(state.site.inputs.datum) - g.z0;
+  else if (g.pwl) {
+    // Depth is measured from the lowest point of the excavated surface (side
+    // slopes and ramp included), not from the base plane under the rim. The
+    // bench is left out: it is placed relative to this level and only raises the sides.
+    let lowest = Infinity;
+    for (const p of shapeData.samples) lowest = Math.min(lowest, surfaceAt(p, k, centreDepth, g, ext).z);
+    pwl = lowest + g.pwl.value;
+  }
+  if (g.bench) { ext.benchZ = (pwl ?? wl) - g.bench.d; ext.benchW = g.bench.w; }
   return { centreDepth, k, spill, wl, pwl, baseMin, baseMax, ext };
 }
 
@@ -1894,7 +1902,7 @@ function update() {
   if (pond.inputs.volumeBasis === 'attenuation' && !state.features.permanentWater) $('volumeBasis').value = pond.inputs.volumeBasis = 'usable';
   $('volumeDescription').textContent = { usable: 'Capacity under horizontal freeboard level', total: 'Maximum capacity up to lowest rim',
     attenuation: 'Storage between permanent and design water levels' }[pond.inputs.volumeBasis];
-  $('pwlLabel').textContent = pond.inputs.pwlMode === 'level' ? 'Permanent water level' : 'Depth above lowest base point';
+  $('pwlLabel').textContent = pond.inputs.pwlMode === 'level' ? 'Permanent water level' : 'Depth above lowest point of pond';
   solveAll();
   if (pond.geometry) showResults(pond, pond.geometry);
   else {
