@@ -39,6 +39,7 @@ body {
   min-height: 650px;
 }
 .controls {
+  min-width: 0;
   overflow: auto;
   padding: 28px 28px 38px;
   border-right: 1px solid var(--line);
@@ -312,6 +313,7 @@ table.data td.left, table.data th.left { text-align: left; white-space: normal; 
   .legend { left: 16px; right: 16px; }
 }
 @media (max-width: 480px) {
+  .row3 { grid-template-columns: 1fr 1fr; }
   .metric { grid-template-columns: 22px 1fr 128px; gap: 5px; }
   .controls { padding: 16px; }
   .metric .input-shell input { padding: 9px 6px; }
