@@ -1324,11 +1324,22 @@ function solveAll() {
     }
     try { pond.geometry = solvePond(pond); } catch (e) { pond.error = e; }
   };
+  const fromDrawing = ponds[1] && ponds[1].shape === 'custom' && ponds[1].sketch.world && ponds[1].sketch.outline;
+  const auto = ponds.length === 2 && s.layoutMode !== 'manual' && !fromDrawing;
+  const gapOk = isNumeric(s.layoutGap) && Number(s.layoutGap) >= 0;
+  if (auto && gapOk) {
+    // Provisional position from the footprints at their entered (or last solved)
+    // areas, so Pond 2's levels are first checked near where it will end up.
+    try {
+      const guess = p => { const A = Number(p.inputs.area); return A > 0 ? { A, shapeData: unitShape(p), place: pondPlacement(p) } : null; };
+      const g1 = guess(ponds[0]), g2 = guess(ponds[1]);
+      if (g1 && g2) ponds[1].autoPlace = autoPlacement(g1, g2, s.layoutMode, Number(s.layoutGap));
+    } catch (e) { /* invalid shape: the solve below reports it */ }
+  }
   for (const n of link ? [1, 0] : ponds.map((_, n) => n)) solveOne(n);
 
-  const fromDrawing = ponds[1] && ponds[1].shape === 'custom' && ponds[1].sketch.world && ponds[1].sketch.outline;
-  if (ponds.length !== 2 || s.layoutMode === 'manual' || fromDrawing) return;
-  if (!isNumeric(s.layoutGap) || Number(s.layoutGap) < 0) { ponds[1].geometry = null; ponds[1].error = new InputError('Enter a gap of 0 m or more between the ponds.'); return; }
+  if (!auto) return;
+  if (!gapOk) { ponds[1].geometry = null; ponds[1].error = new InputError('Enter a gap of 0 m or more between the ponds.'); return; }
   for (let pass = 0; pass < 8; pass++) {
     if (!ponds[0].geometry || !ponds[1].geometry) return;
     const place = autoPlacement(ponds[0].geometry, ponds[1].geometry, s.layoutMode, Number(s.layoutGap)), prev = ponds[1].autoPlace;
@@ -1626,8 +1637,10 @@ function computeBoundary(live, track) {
   const ap = activePond(), ag = ap.geometry, s = state.site.inputs;
   if (!ag || !live.includes(ap)) return out;
   const auto = live.length === 2 && live[1].autoPlace;
+  // An auto-placed Pond 2 moves as it is resized; its levels follow the move.
+  const placeAt = A => auto && ap === live[1] ? autoPlacement(live[0].geometry, { ...ag, A }, s.layoutMode, Number(s.layoutGap)) : ag.place;
   const rimsAt = A => placed.map(p => {
-    if (p === ap) return rimSite(ag, A, auto && p === live[1] ? autoPlacement(live[0].geometry, { ...ag, A }, s.layoutMode, Number(s.layoutGap)) : ag.place);
+    if (p === ap) return rimSite(ag, A, placeAt(A));
     if (auto && p === live[1]) return rimSite(p.geometry, p.geometry.A, autoPlacement({ ...ag, A }, p.geometry, s.layoutMode, Number(s.layoutGap)));
     return rimSite(p.geometry);
   });
@@ -1640,7 +1653,7 @@ function computeBoundary(live, track) {
   let lo = ag.A * 1e-6, hi = ag.A;
   if (fitsAt(hi)) { lo = hi; while (fitsAt(hi) && hi < ag.A * 1e6) { lo = hi; hi *= 2; } }
   for (let n = 0; n < 40; n++) { const m = Math.sqrt(lo * hi); if (fitsAt(m)) lo = m; else hi = m; }
-  const cap = (a, d) => computeStorage(a, d, ag.g, ag.shapeData)[ag.basis];
+  const cap = (a, d) => computeStorage(a, d, designParameters(ap, placeAt(a)), ag.shapeData)[ag.basis];
   out.maxArea = lo;
   out.maxVolume = cap(lo, ag.D);
   // Depth needed to store this pond's volume within the largest area that fits.
