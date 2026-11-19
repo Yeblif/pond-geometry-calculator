@@ -1293,26 +1293,41 @@ const toWorld = (x, y) => {
   return o && worldInUse() ? [o[0] + x, o[1] + y] : [x, y];
 };
 
-/** Solve every live pond (attenuation first when the treatment volume is linked), then lay them out. */
+/**
+ * Solve every live pond (attenuation first when the treatment volume is
+ * linked), then lay them out. Auto layout and the linked volume depend on
+ * each other (Pond 2's position follows Pond 1's size; moving Pond 2 on
+ * sloping ground can change its volume, which sets Pond 1's), so the
+ * layout and both solutions are repeated until the position settles.
+ */
 function solveAll() {
   const ponds = livePonds(), s = state.site.inputs;
   const link = ponds.length === 2 && !!s.treatLink;
   for (const p of state.ponds) { p.geometry = null; p.error = null; p.linkedVolume = null; p.autoPlace = null; }
-  const order = link ? [1, 0] : ponds.map((_, n) => n);
-  for (const n of order) {
+
+  const solveOne = n => {
     const pond = ponds[n];
+    pond.geometry = null; pond.error = null; pond.linkedVolume = null;
     if (n === 0 && link) {
       const att = ponds[1].geometry;
-      if (!att) { pond.error = new Error('Pond 2 (attenuation) has no valid solution, so the linked treatment volume is unknown.'); continue; }
-      if (!isNumeric(s.treatPct) || Number(s.treatPct) <= 0) { pond.error = new InputError('Enter a positive treatment volume percentage.'); continue; }
+      if (!att) { pond.error = new Error('Pond 2 (attenuation) has no valid solution, so the linked treatment volume is unknown.'); return; }
+      if (!isNumeric(s.treatPct) || Number(s.treatPct) <= 0) { pond.error = new InputError('Enter a positive treatment volume percentage.'); return; }
       pond.linkedVolume = att[att.basis] * Number(s.treatPct) / 100;
     }
     try { pond.geometry = solvePond(pond); } catch (e) { pond.error = e; }
-  }
-  if (ponds.length === 2 && s.layoutMode !== 'manual' && ponds[0].geometry && ponds[1].geometry && !pondPlacement(ponds[1]).fixed) {
-    if (!isNumeric(s.layoutGap) || Number(s.layoutGap) < 0) { ponds[1].geometry = null; ponds[1].error = new InputError('Enter a gap of 0 m or more between the ponds.'); return; }
-    ponds[1].autoPlace = autoPlacement(ponds[0].geometry, ponds[1].geometry, s.layoutMode, Number(s.layoutGap));
-    try { ponds[1].geometry = solvePond(ponds[1]); } catch (e) { ponds[1].geometry = null; ponds[1].error = e; }
+  };
+  for (const n of link ? [1, 0] : ponds.map((_, n) => n)) solveOne(n);
+
+  const fromDrawing = ponds[1] && ponds[1].shape === 'custom' && ponds[1].sketch.world && ponds[1].sketch.outline;
+  if (ponds.length !== 2 || s.layoutMode === 'manual' || fromDrawing) return;
+  if (!isNumeric(s.layoutGap) || Number(s.layoutGap) < 0) { ponds[1].geometry = null; ponds[1].error = new InputError('Enter a gap of 0 m or more between the ponds.'); return; }
+  for (let pass = 0; pass < 8; pass++) {
+    if (!ponds[0].geometry || !ponds[1].geometry) return;
+    const place = autoPlacement(ponds[0].geometry, ponds[1].geometry, s.layoutMode, Number(s.layoutGap)), prev = ponds[1].autoPlace;
+    if (prev && Math.hypot(place.x - prev.x, place.y - prev.y) < 1e-6 && Math.abs(place.rot - prev.rot) < 1e-9) return;
+    ponds[1].autoPlace = place;
+    solveOne(1);
+    if (link) solveOne(0);
   }
 }
 
