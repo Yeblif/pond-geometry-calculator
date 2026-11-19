@@ -112,7 +112,7 @@ h2 {
 /* =========================================================
    Plan shape and sketch
    ========================================================= */
-.shape-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 9px; }
+.shape-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(78px, 1fr)); gap: 9px; }
 .shape-btn {
   background: var(--card);
   border: 1px solid var(--line);
@@ -223,6 +223,22 @@ table.data th { position: sticky; top: 0; background: #17293b; color: var(--mute
 table.data th:last-child, table.data td:last-child { text-align: left; }
 table.data tr.mark td { background: #173e43; }
 .result-grid + .result-grid, .result-grid[data-feature-panel] { margin-bottom: 10px; }
+textarea {
+  width: 100%;
+  min-height: 82px;
+  padding: 10px 12px;
+  background: #0e1b2b;
+  color: white;
+  border: 1px solid #365069;
+  border-radius: 9px;
+  font: 12px/1.4 ui-monospace, Consolas, monospace;
+  resize: vertical;
+}
+input[type=range] { width: 100%; accent-color: var(--accent); }
+.import-list { display: grid; gap: 6px; margin-top: 12px; }
+.import-item { display: flex; gap: 9px; align-items: center; padding: 8px 10px; border: 1px solid var(--line); border-radius: 9px; background: var(--card); font-size: 12px; }
+.import-item.bad { opacity: .6; }
+.import-item input { accent-color: var(--accent); }
 .footer-note { font-size: 11px; color: #829bb0; margin-top: 24px; line-height: 1.6; }
 
 /* =========================================================
@@ -307,6 +323,8 @@ table.data tr.mark td { background: #173e43; }
     <label class="feature-chip"><input type="checkbox" id="featPermanentWater" data-feature="permanentWater"> Permanent water level</label>
     <label class="feature-chip"><input type="checkbox" id="featBenchRamp" data-feature="benchRamp"> Safety bench &amp; access ramp</label>
     <label class="feature-chip"><input type="checkbox" id="featStageStorage" data-feature="stageStorage"> Stage-storage table</label>
+    <label class="feature-chip"><input type="checkbox" id="featNatural" data-feature="naturalShapes"> Natural shapes &amp; smoothing</label>
+    <label class="feature-chip"><input type="checkbox" id="featImport" data-feature="importOutline"> Import polyline (DXF / CSV)</label>
   </div>
 </div>
 
@@ -317,6 +335,7 @@ table.data tr.mark td { background: #173e43; }
   <button type="button" class="shape-btn" data-shape="square" aria-pressed="false"><svg viewBox="0 0 44 32" fill="none"><path d="M11 5H33V27H11Z" stroke="currentColor" stroke-width="2"/><path d="M16 10H28V22H16Z" stroke="currentColor" opacity=".55"/></svg>Square</button>
   <button type="button" class="shape-btn" data-shape="rectangle" aria-pressed="false"><svg viewBox="0 0 44 32" fill="none"><path d="M3 7H41V25H3Z" stroke="currentColor" stroke-width="2"/><path d="M11 11H33V21H11Z" stroke="currentColor" opacity=".55"/></svg>Rectangle</button>
   <button type="button" class="shape-btn" data-shape="custom" aria-pressed="false"><svg viewBox="0 0 44 32" fill="none"><path d="M4 10L16 3L38 7L33 23L19 29L7 21Z" stroke="currentColor" stroke-width="2"/><path d="M12 12L18 10L29 12L26 20L19 22L13 18Z" stroke="currentColor" opacity=".55"/></svg>Custom</button>
+  <button type="button" class="shape-btn" data-shape="natural" data-feature-panel="naturalShapes" aria-pressed="false" hidden><svg viewBox="0 0 44 32" fill="none"><path d="M6 15C5 8 13 4 20 6C26 8 30 3 36 7C42 11 38 18 36 22C33 28 25 26 20 28C13 30 7 22 6 15Z" stroke="currentColor" stroke-width="2"/><path d="M14 15C14 12 18 11 21 12C24 13 27 11 29 14C31 17 28 19 25 20C21 21 15 19 14 15Z" stroke="currentColor" opacity=".55"/></svg>Natural</button>
 </div>
 
 <div id="customWrap" hidden style="margin-top:14px">
@@ -326,6 +345,7 @@ table.data tr.mark td { background: #173e43; }
     <button class="tool" type="button" id="undoPoint">Undo point</button>
     <button class="tool" type="button" id="closePolygon">Close outline</button>
     <button class="tool" type="button" id="clearPolygon">Clear</button>
+    <button class="tool" type="button" id="smoothPolygon" data-feature-panel="naturalShapes" hidden title="Round off corners (each click doubles the points)">Smooth outline</button>
   </div>
   <p class="help">Click points around the rim, then click <strong>Close outline</strong> (or the first point). Drag vertices to adjust. Up on the sketch is +Y. The sketch defines proportions, not metres: the outline is automatically scaled to your specified area or capacity.</p>
   <p class="help" id="customScaleInfo">Draw at least three points to begin.</p>
@@ -336,6 +356,34 @@ table.data tr.mark td { background: #173e43; }
     <label for="aspect">Length (X) : width (Y) ratio</label>
     <div class="input-shell"><input id="aspect" data-pond type="number" min="1" max="20" step="0.1" value="1.5"><span class="unit">: 1</span></div>
   </div>
+</div>
+
+<div id="naturalWrap" hidden style="margin-top:14px">
+  <div class="field">
+    <label for="naturalIrregularity">Irregularity <span id="irregularityValue"></span></label>
+    <input id="naturalIrregularity" data-pond type="range" min="0" max="100" step="1" value="40">
+  </div>
+  <div class="row" style="margin-top:12px">
+    <div class="field"><label for="naturalSeed">Shape number (seed)</label><div class="input-shell"><input id="naturalSeed" data-pond type="number" min="0" step="1" value="1"></div></div>
+    <div class="field"><label for="naturalMinBend">Minimum inward bend radius</label><div class="input-shell"><input id="naturalMinBend" data-pond type="number" min="0" step="any" value="3"><span class="unit">m</span></div></div>
+  </div>
+  <div class="btn-row" style="margin-top:10px"><button class="tool" type="button" id="newNatural">New shape</button></div>
+  <p class="help" id="naturalInfo">An ellipse (length : width ratio above) with smooth random variation. 0 irregularity is a plain ellipse; the same shape number always gives the same shape.</p>
+</div>
+
+<!-- Feature: import a closed polyline -->
+<div class="feature-panel" data-feature-panel="importOutline" hidden>
+  <h3>Import a closed polyline</h3>
+  <p class="help">Reads closed LWPOLYLINE and POLYLINE entities from an ASCII DXF (drawing units taken as metres; arcs are split into short straight segments), or X,Y coordinates pasted one pair per line.</p>
+  <div class="btn-row"><button class="tool" type="button" id="importDxfBtn">Choose DXF…</button><input type="file" id="importDxfFile" accept=".dxf" hidden><span class="help" id="importFileName" style="margin:0"></span></div>
+  <div class="field" style="margin-top:12px"><label for="importCsv">Or paste coordinates (X, Y per line)</label><textarea id="importCsv" placeholder="452100.0, 168200.5&#10;452130.2, 168205.0&#10;452128.7, 168231.9"></textarea></div>
+  <div class="btn-row" style="margin-top:8px"><button class="tool" type="button" id="importCsvBtn">Read coordinates</button></div>
+  <div class="import-list" id="importList"></div>
+  <div class="row" style="margin-top:12px">
+    <div class="field"><label for="importTarget">Use as</label><select id="importTarget"><option value="pond">Pond outline (active pond)</option></select></div>
+    <div class="field"><label>&nbsp;</label><button class="tool" type="button" id="importUse" disabled>Use selected</button></div>
+  </div>
+  <p class="help" id="importMsg"></p>
 </div>
 
 <!-- ======================= 02 Slopes ======================= -->
@@ -562,7 +610,7 @@ function downloadText(text, filename, type) {
  * level. Each pond has its own LOCAL frame (origin at the centre of its top
  * footprint, +X along its length) placed in the site by { x, y, rot }.
  * ======================================================= */
-const FEATURE_DEFAULTS = { gradients: false, permanentWater: false, benchRamp: false, stageStorage: false };
+const FEATURE_DEFAULTS = { gradients: false, permanentWater: false, benchRamp: false, stageStorage: false, naturalShapes: false, importOutline: false };
 const FEATURE_STORAGE_KEY = 'pondCalc.features';
 const PROJECT_VERSION = 1;
 
@@ -586,13 +634,14 @@ const DEFAULT_SITE_INPUTS = readFields(siteFields());
 function createPond(name) {
   return {
     name,
-    shape: 'circle',     // circle | square | rectangle | custom
+    shape: 'circle',     // circle | square | rectangle | custom | natural
     solve: 'volume',     // which quantity is calculated: volume | area | depth
     inputs: { ...DEFAULT_POND_INPUTS },
     // Custom outline in sketch pixels. world = { cx, cy, s } when the outline
     // came from a drawing: site X = cx + (px - 360) / s, Y = cy - (py - 195) / s.
     sketch: { points: [], closed: false, outline: null, world: null },
     cache: { key: '', shape: null },   // sampled unit-area footprint
+    naturalFactor: 1,                  // irregularity reduction applied to meet the minimum bend radius
     geometry: null                     // last valid solution (3D view, DXF, tables)
   };
 }
@@ -665,6 +714,57 @@ function analyseOutline(points, closed) {
  * inside the footprint carry their distance to the nearest rim point, which
  * drives the side slope.
  * ======================================================= */
+/** Small seeded random number generator (mulberry32), so a seed always gives the same shape. */
+function seededRandom(seed) {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6D2B79F5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/** Scale to 1 m² and centre on the bounding box. */
+function normaliseUnit(points) {
+  const k = 1 / Math.sqrt(polygonArea(points)), b = bounds(points);
+  return points.map(p => [(p[0] - b.x - b.w / 2) * k, (p[1] - b.y - b.h / 2) * k]);
+}
+
+/**
+ * Natural shape: an ellipse (ratio = length : width) whose radius is varied by
+ * a few smooth random harmonics. Radial, so it can never cross itself.
+ */
+function naturalVertices(ratio, irregularity, seed) {
+  const rnd = seededRandom(seed);
+  const harmonics = [2, 3, 4, 5, 6, 7].map(h => ({ h, a: (rnd() * 2 - 1) / h, phase: rnd() * 2 * Math.PI }));
+  const pts = [], n = 144;
+  for (let i = 0; i < n; i++) {
+    const t = 2 * Math.PI * i / n, ellipse = 1 / Math.sqrt((Math.cos(t) / ratio) ** 2 + Math.sin(t) ** 2);
+    let f = 1;
+    for (const H of harmonics) f += irregularity * .55 * H.a * Math.cos(H.h * t + H.phase);
+    f = Math.max(.3, f);
+    pts.push([ellipse * f * Math.cos(t), ellipse * f * Math.sin(t)]);
+  }
+  return normaliseUnit(pts);
+}
+
+/** Smallest radius of the inward-curving (concave) bends of a polygon; Infinity if convex. */
+function minConcaveRadius(vs) {
+  let signed = 0;
+  for (let i = 0; i < vs.length; i++) { const a = vs[i], b = vs[(i + 1) % vs.length]; signed += a[0] * b[1] - b[0] * a[1]; }
+  let best = Infinity;
+  for (let i = 0; i < vs.length; i++) {
+    const a = vs[(i - 1 + vs.length) % vs.length], b = vs[i], c = vs[(i + 1) % vs.length];
+    const cross = (b[0] - a[0]) * (c[1] - b[1]) - (b[1] - a[1]) * (c[0] - b[0]);
+    if (cross * signed >= 0) continue;   // convex or straight
+    const r = Math.hypot(b[0] - a[0], b[1] - a[1]) * Math.hypot(c[0] - b[0], c[1] - b[1]) * Math.hypot(c[0] - a[0], c[1] - a[1]) / (2 * Math.abs(cross));
+    best = Math.min(best, r);
+  }
+  return best;
+}
+
 /** Unit-area vertices of a polygonal shape (circle handled analytically). */
 function unitVertices(pond) {
   const type = pond.shape;
@@ -681,13 +781,19 @@ function unitVertices(pond) {
     // Sketch pixels run downwards; flip so that up on the sketch is +Y.
     return pond.sketch.points.map(p => [(p[0] - b.x - b.w / 2) * k, -(p[1] - b.y - b.h / 2) * k]);
   }
+  if (type === 'natural') {
+    const i = pond.inputs;
+    return naturalVertices(Number(i.aspect), Number(i.naturalIrregularity) / 100 * pond.naturalFactor, Number(i.naturalSeed));
+  }
   const ratio = type === 'square' ? 1 : Number(pond.inputs.aspect), X = Math.sqrt(ratio), Y = 1 / X;
   return [[-X / 2, -Y / 2], [X / 2, -Y / 2], [X / 2, Y / 2], [-X / 2, Y / 2]];
 }
 
 function shapeKey(pond) {
   const t = pond.shape;
-  return t + '|' + (t === 'rectangle' ? Number(pond.inputs.aspect) : '') + '|' +
+  const i = pond.inputs;
+  return t + '|' + (t === 'rectangle' || t === 'natural' ? Number(i.aspect) : '') + '|' +
+    (t === 'natural' ? [i.naturalIrregularity, i.naturalSeed, pond.naturalFactor].join(',') : '') + '|' +
     (t === 'custom' ? pond.sketch.points.map(p => p.join(',')).join('|') : '');
 }
 
@@ -823,8 +929,11 @@ function validatePond(pond, g) {
     throw new InputError('Enter a positive ramp width, a ramp gradient between 1 in 1 and level (not 0), and a position in degrees.');
   }
   if (pond.shape === 'custom' && !pond.sketch.outline) throw new InputError('Draw and close a non-self-intersecting custom outline first.');
-  if (pond.shape === 'rectangle' && (!isNumeric(i.aspect) || Number(i.aspect) < 1 || Number(i.aspect) > 20)) {
-    throw new InputError('Rectangle length:width ratio must be between 1 and 20.');
+  if ((pond.shape === 'rectangle' || pond.shape === 'natural') && (!isNumeric(i.aspect) || Number(i.aspect) < 1 || Number(i.aspect) > 20)) {
+    throw new InputError('Length:width ratio must be between 1 and 20.');
+  }
+  if (pond.shape === 'natural' && (!isNumeric(i.naturalSeed) || !isNumeric(i.naturalMinBend) || Number(i.naturalMinBend) < 0)) {
+    throw new InputError('Enter a shape number and a minimum bend radius of 0 or more.');
   }
   const known = ['volume', 'area', 'depth'].filter(q => q !== pond.solve);
   if (known.some(q => !isNumeric(i[q]) || Number(i[q]) <= 0)) throw new InputError('Enter positive values for both known quantities.', true);
@@ -980,8 +1089,26 @@ function bisectIncreasing(fn, lo, hi, target) {
 /* =========================================================
  * 7. Solver
  * ======================================================= */
-/** Solve the pond for its calculated quantity. Throws InputError / Error. */
+/**
+ * Solve the pond. Natural shapes are re-solved with less irregularity until
+ * their tightest inward bend meets the minimum radius (in metres, so it can
+ * only be checked once the size is known).
+ */
 function solvePond(pond) {
+  pond.naturalFactor = 1;
+  if (pond.shape !== 'natural') return solvePondOnce(pond);
+  const minBend = Number(pond.inputs.naturalMinBend), irregularity = Number(pond.inputs.naturalIrregularity) / 100;
+  for (let attempt = 0; ; attempt++) {
+    const r = solvePondOnce(pond);
+    r.minBend = minConcaveRadius(r.shapeData.vertices) * Math.sqrt(r.A);
+    r.irregularityUsed = irregularity * pond.naturalFactor;
+    if (r.minBend >= minBend || r.irregularityUsed < .005 || attempt >= 25) return r;
+    pond.naturalFactor *= .85;
+  }
+}
+
+/** Solve the pond for its calculated quantity. Throws InputError / Error. */
+function solvePondOnce(pond) {
   const place = pondPlacement(pond), g = designParameters(pond, place);
   validatePond(pond, g);
   const shapeData = unitShape(pond), i = pond.inputs;
@@ -1029,7 +1156,7 @@ const toSite = (geom, x, y) => {
 /** Site point → drawing coordinates (adds the imported drawing origin, if any). */
 const toWorld = (x, y) => {
   const o = state.site.worldOrigin;
-  return o ? [o[0] + x, o[1] + y] : [x, y];
+  return o && worldInUse() ? [o[0] + x, o[1] + y] : [x, y];
 };
 
 /* =========================================================
@@ -1052,8 +1179,10 @@ function writePondToForm(pond) {
     x.classList.toggle('active', x.dataset.shape === pond.shape);
     x.setAttribute('aria-pressed', String(x.dataset.shape === pond.shape));
   });
-  $('aspectWrap').hidden = pond.shape !== 'rectangle';
+  $('aspectWrap').hidden = pond.shape !== 'rectangle' && pond.shape !== 'natural';
+  $('naturalWrap').hidden = pond.shape !== 'natural';
   $('customWrap').hidden = pond.shape !== 'custom';
+  $('irregularityValue').textContent = '(' + pond.inputs.naturalIrregularity + '%)';
   document.querySelectorAll('input[name=solve]').forEach(r => { r.checked = r.value === pond.solve; });
   document.querySelectorAll('.metric').forEach(m => m.classList.toggle('target', m.dataset.target === pond.solve));
   for (const q in quantityInputs) quantityInputs[q].disabled = q === pond.solve;
@@ -1099,6 +1228,11 @@ function showResults(pond, r) {
       info += Math.abs(scale - 1) < 1e-6 ? ' · imported size and position' : ' · scaled ×' + fmt(scale, '', 3) + ' about its centre from the imported size';
     } else info += ' · uniformly scaled';
     $('customScaleInfo').textContent = info;
+  }
+  if (pond.shape === 'natural') {
+    $('naturalInfo').textContent = 'Tightest inward bend radius ' + (Number.isFinite(r.minBend) ? fmt(r.minBend, 'm', 1) : 'none (convex)') +
+      (pond.naturalFactor < 1 ? ' · irregularity reduced to ' + fmt(r.irregularityUsed * 100, '', 0) + '%' + ' to meet the minimum bend radius' : '') +
+      '. The same shape number always gives the same shape.';
   }
   if (r.pwl !== null) {
     $('permanentVolume').textContent = fmt(r.permanent, 'm³');
@@ -1232,6 +1366,11 @@ function applyFeatures() {
   document.querySelectorAll('[data-feature-option]').forEach(el => {
     el.hidden = el.disabled = !state.features[el.dataset.featureOption];
   });
+  // A natural-shaped pond falls back to a circle while the feature is off.
+  if (!state.features.naturalShapes) {
+    for (const p of state.ponds) if (p.shape === 'natural') { p.shape = 'circle'; p.cache.key = ''; }
+    writePondToForm(activePond());
+  }
 }
 
 document.querySelectorAll('[data-feature]').forEach(cb => cb.addEventListener('change', () => {
@@ -1282,6 +1421,12 @@ document.querySelectorAll('.shape-btn').forEach(btn => btn.addEventListener('cli
   writePondToForm(pond);
   update();
 }));
+
+$('naturalIrregularity').addEventListener('input', () => { $('irregularityValue').textContent = '(' + $('naturalIrregularity').value + '%)'; });
+$('newNatural').addEventListener('click', () => {
+  $('naturalSeed').value = Math.floor(Math.random() * 100000);
+  update();
+});
 
 $('slopeFormat').addEventListener('change', () => {
   // Convert every slope/gradient value (all ponds and site) so the geometry is unchanged.
@@ -1470,6 +1615,180 @@ for (const ev of ['pointerup', 'pointercancel', 'lostpointercapture']) sketch.ad
 $('undoPoint').addEventListener('click', () => { const s = activePond().sketch; s.closed = false; s.points.pop(); sketchChanged(); });
 $('clearPolygon').addEventListener('click', () => { const s = activePond().sketch; s.points = []; s.closed = false; s.world = null; sketchChanged(); });
 $('closePolygon').addEventListener('click', () => { const s = activePond().sketch; if (s.points.length >= 3) { s.closed = true; sketchChanged(); } });
+
+/** Chaikin corner cutting: each click rounds the corners and doubles the points. */
+$('smoothPolygon').addEventListener('click', () => {
+  const s = activePond().sketch;
+  if (!s.closed || s.points.length < 3) { showError('Close the outline before smoothing it.'); return; }
+  if (s.points.length > 400) { showError('This outline is already smooth (over 400 points).'); return; }
+  const out = [];
+  s.points.forEach((p, i) => {
+    const q = s.points[(i + 1) % s.points.length];
+    out.push([.75 * p[0] + .25 * q[0], .75 * p[1] + .25 * q[1]], [.25 * p[0] + .75 * q[0], .25 * p[1] + .75 * q[1]]);
+  });
+  s.points = out;
+  sketchChanged();
+});
+
+/* =========================================================
+ * 9b. Import closed polylines (DXF / CSV)
+ * ======================================================= */
+/** Points along a DXF bulge arc from p1 to p2 (excluding both ends). */
+function bulgePoints(p1, p2, bulge) {
+  if (Math.abs(bulge) < 1e-9) return [];
+  const theta = 4 * Math.atan(bulge), dx = p2[0] - p1[0], dy = p2[1] - p1[1], c = Math.hypot(dx, dy);
+  if (c < 1e-12) return [];
+  const d = c / 2 / Math.tan(theta / 2);                 // signed distance from chord midpoint to centre
+  const cx = (p1[0] + p2[0]) / 2 - dy / c * d, cy = (p1[1] + p2[1]) / 2 + dx / c * d;
+  const r = Math.hypot(p1[0] - cx, p1[1] - cy), a1 = Math.atan2(p1[1] - cy, p1[0] - cx);
+  const n = Math.max(2, Math.ceil(Math.abs(theta) / (Math.PI / 18)));   // 10° steps
+  const out = [];
+  for (let j = 1; j < n; j++) out.push([cx + r * Math.cos(a1 + theta * j / n), cy + r * Math.sin(a1 + theta * j / n)]);
+  return out;
+}
+
+/** Turn raw vertices (with bulges) into a cleaned polygon candidate. */
+function polylineCandidate(name, verts, flaggedClosed) {
+  let pts = [];
+  verts.forEach((v, i) => {
+    if (!Number.isFinite(v.x) || !Number.isFinite(v.y)) return;
+    pts.push([v.x, v.y]);
+    const next = verts[i + 1] || (flaggedClosed ? verts[0] : null);
+    if (next && v.b) pts.push(...bulgePoints([v.x, v.y], [next.x, next.y], v.b));
+  });
+  pts = pts.filter((p, i) => i === 0 || Math.hypot(p[0] - pts[i - 1][0], p[1] - pts[i - 1][1]) > 1e-9);
+  let closed = flaggedClosed;
+  if (pts.length > 2 && Math.hypot(pts[0][0] - pts[pts.length - 1][0], pts[0][1] - pts[pts.length - 1][1]) < 1e-6) { pts.pop(); closed = true; }
+  // Very dense outlines are thinned to keep the calculation responsive.
+  if (pts.length > 600) { const step = Math.ceil(pts.length / 600); pts = pts.filter((p, i) => i % step === 0); }
+  const cand = { name, points: pts, closed, area: pts.length >= 3 ? polygonArea(pts) : 0, problem: '' };
+  if (!closed) cand.problem = 'open polyline';
+  else if (pts.length < 3) cand.problem = 'fewer than 3 points';
+  else if (selfIntersects(pts)) cand.problem = 'crosses itself';
+  else if (cand.area <= 0) cand.problem = 'zero area';
+  return cand;
+}
+
+/** Closed polyline candidates from ASCII DXF text (ENTITIES section only). */
+function parseDxf(text) {
+  const lines = text.split(/\r\n|\r|\n/), pairs = [];
+  for (let i = 0; i + 1 < lines.length; i += 2) pairs.push([parseInt(lines[i], 10), lines[i + 1].trim()]);
+  const out = [];
+  let i = 0, inEntities = false, count = 0;
+  while (i < pairs.length) {
+    const [code, value] = pairs[i];
+    if (code === 0 && value === 'SECTION') { inEntities = pairs[i + 1]?.[1] === 'ENTITIES'; i += 2; continue; }
+    if (code === 0 && value === 'ENDSEC') { inEntities = false; i++; continue; }
+    if (!inEntities || code !== 0 || (value !== 'LWPOLYLINE' && value !== 'POLYLINE')) { i++; continue; }
+    const e = { layer: '0', flags: 0, verts: [] };
+    i++;
+    if (value === 'LWPOLYLINE') {
+      for (; i < pairs.length && pairs[i][0] !== 0; i++) {
+        const [c, v] = pairs[i], last = e.verts[e.verts.length - 1];
+        if (c === 8) e.layer = v;
+        else if (c === 70) e.flags = parseInt(v, 10);
+        else if (c === 10) e.verts.push({ x: Number(v), y: NaN, b: 0 });
+        else if (c === 20 && last) last.y = Number(v);
+        else if (c === 42 && last) last.b = Number(v);
+      }
+    } else {
+      for (; i < pairs.length && pairs[i][0] !== 0; i++) {
+        if (pairs[i][0] === 8) e.layer = pairs[i][1];
+        else if (pairs[i][0] === 70) e.flags = parseInt(pairs[i][1], 10);
+      }
+      while (i < pairs.length && pairs[i][0] === 0 && pairs[i][1] === 'VERTEX') {
+        const v = { x: NaN, y: NaN, b: 0, f: 0 };
+        for (i++; i < pairs.length && pairs[i][0] !== 0; i++) {
+          const [c, val] = pairs[i];
+          if (c === 10) v.x = Number(val); else if (c === 20) v.y = Number(val);
+          else if (c === 42) v.b = Number(val); else if (c === 70) v.f = parseInt(val, 10);
+        }
+        if (!(v.f & (16 | 128))) e.verts.push(v);   // skip spline frame and mesh face records
+      }
+      if (pairs[i]?.[1] === 'SEQEND') i++;
+      if (e.flags & (16 | 64)) continue;               // polygon / polyface meshes
+    }
+    count++;
+    out.push(polylineCandidate(`${value} ${count} · layer ${e.layer}`, e.verts, !!(e.flags & 1)));
+  }
+  return out;
+}
+
+/** One closed polygon from pasted "X, Y" lines (any separator; text lines ignored). */
+function parseCsv(text) {
+  const verts = [];
+  for (const line of text.split(/\r?\n/)) {
+    const nums = line.trim().split(/[\s,;]+/).map(Number);
+    if (nums.length >= 2 && nums.slice(0, 2).every(Number.isFinite)) verts.push({ x: nums[0], y: nums[1], b: 0 });
+  }
+  return [polylineCandidate('Pasted coordinates', verts, true)];
+}
+
+let importCandidates = [];
+
+function showCandidates(cands, source) {
+  importCandidates = cands;
+  const usable = cands.filter(c => !c.problem);
+  $('importList').innerHTML = cands.length ? cands.map((c, n) => `<label class="import-item${c.problem ? ' bad' : ''}">` +
+    `<input type="radio" name="importPick" value="${n}"${c.problem ? ' disabled' : ''}${c === usable[0] ? ' checked' : ''}>` +
+    `<span>${c.name.replace(/[<&]/g, ch => ch === '<' ? '&lt;' : '&amp;')} · ${c.points.length} points` +
+    (c.problem ? ` · <strong>skipped: ${c.problem}</strong>` : ` · ${fmt(c.area, 'm²')}`) + '</span></label>').join('') : '';
+  $('importUse').disabled = !usable.length;
+  $('importMsg').textContent = !cands.length ? 'No LWPOLYLINE or POLYLINE entities found in ' + source + '.'
+    : !usable.length ? 'No usable closed polylines: each must be closed and must not cross itself.'
+    : usable.length > 1 ? usable.length + ' closed polylines found: pick one.' : '';
+}
+
+/** Is any outline tied to drawing coordinates? Then DXF export uses them too. */
+function worldInUse() {
+  return state.ponds.some(p => p.shape === 'custom' && p.sketch.world && p.sketch.outline) || !!state.site.boundaryImported;
+}
+
+/** Fit drawing-coordinate points onto the sketch canvas, keeping the link back to the drawing. */
+function worldToSketch(points) {
+  if (!state.site.worldOrigin || !worldInUse()) {
+    const b = bounds(points);
+    state.site.worldOrigin = [b.x + b.w / 2, b.y + b.h / 2];
+  }
+  const o = state.site.worldOrigin, site = points.map(p => [p[0] - o[0], p[1] - o[1]]), b = bounds(site);
+  const cx = b.x + b.w / 2, cy = b.y + b.h / 2, s = Math.min(680 / b.w, 350 / b.h);
+  return { points: site.map(p => [360 + (p[0] - cx) * s, 195 - (p[1] - cy) * s]), world: { cx, cy, s }, site };
+}
+
+function useImport() {
+  const pick = document.querySelector('input[name=importPick]:checked'), cand = pick && importCandidates[Number(pick.value)];
+  if (!cand) return;
+  readForm();
+  if ($('importTarget').value === 'pond') {
+    const pond = activePond(), fit = worldToSketch(cand.points);
+    pond.shape = 'custom';
+    pond.sketch = { points: fit.points, closed: true, outline: null, world: fit.world };
+    pond.sketch.outline = analyseOutline(pond.sketch.points, true);
+    pond.cache.key = '';
+    pond.inputs.area = Number(cand.area.toPrecision(10)).toString();
+    if (pond.solve === 'area') pond.solve = 'volume';
+    writePondToForm(pond);
+    $('importMsg').textContent = 'Imported as the outline of ' + pond.name + ' (' + fmt(cand.area, 'm²') + '). Its area is entered under Known quantities; changing the area scales the outline about its centre. DXF export keeps the drawing coordinates.';
+  } else {
+    importToBoundary(cand);
+  }
+  update();
+}
+
+$('importDxfBtn').addEventListener('click', () => $('importDxfFile').click());
+$('importDxfFile').addEventListener('change', async () => {
+  const file = $('importDxfFile').files[0];
+  $('importDxfFile').value = '';
+  if (!file) return;
+  $('importFileName').textContent = file.name;
+  const text = await file.text();
+  if (text.startsWith('AutoCAD Binary DXF')) { showCandidates([], file.name); $('importMsg').textContent = 'Binary DXF is not supported: save the drawing as an ASCII DXF.'; return; }
+  showCandidates(parseDxf(text), file.name);
+});
+$('importCsvBtn').addEventListener('click', () => showCandidates(parseCsv($('importCsv').value), 'the pasted text'));
+$('importUse').addEventListener('click', useImport);
+/** Replaced by the site-boundary feature. */
+let importToBoundary = () => {};
 
 /* =========================================================
  * 10. 3D preview (offline 2D-canvas renderer)
@@ -1745,7 +2064,7 @@ function exportPolylines() {
 function exportDXF() {
   if (!activePond().geometry) { showError('Calculate a valid pond before exporting DXF.'); return; }
   try {
-    const name = state.site.worldOrigin ? 'Pond_World_Coordinates.dxf' : 'Pond_Local_Metres.dxf';
+    const name = state.site.worldOrigin && worldInUse() ? 'Pond_Drawing_Coordinates.dxf' : 'Pond_Local_Metres.dxf';
     downloadText(buildDxf(exportPolylines()), name, 'application/dxf');
   } catch (e) {
     showError('DXF export failed: ' + e.message);
