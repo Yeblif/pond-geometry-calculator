@@ -259,6 +259,10 @@ input[type=range] { width: 100%; accent-color: var(--accent); }
 .status-ok { color: var(--accent); }
 .status-bad { color: var(--danger); }
 .warn-list { margin: 8px 0 0; padding-left: 18px; color: #f3d39a; font-size: 12px; }
+.badge { display: inline-block; padding: 1px 6px; border-radius: 99px; font-size: 10px; border: 1px solid #8a6d2f; color: #f3d39a; margin-left: 4px; }
+table.data td.ok { color: var(--accent); }
+table.data td.warn { color: #f3d39a; }
+table.data td.left, table.data th.left { text-align: left; white-space: normal; }
 .footer-note { font-size: 11px; color: #829bb0; margin-top: 24px; line-height: 1.6; }
 
 /* =========================================================
@@ -348,6 +352,7 @@ input[type=range] { width: 100%; accent-color: var(--accent); }
     <label class="feature-chip"><input type="checkbox" id="featTrack" data-feature="track"> Maintenance track &amp; verges</label>
     <label class="feature-chip"><input type="checkbox" id="featBoundary" data-feature="siteBoundary"> Site boundary check</label>
     <label class="feature-chip"><input type="checkbox" id="featSecondPond" data-feature="secondPond"> Treatment + attenuation ponds</label>
+    <label class="feature-chip"><input type="checkbox" id="featSuds" data-feature="sudsChecks"> SuDS guidance checks</label>
   </div>
 </div>
 
@@ -618,6 +623,16 @@ input[type=range] { width: 100%; accent-color: var(--accent); }
 
 <div class="site-results" id="siteResults" data-feature-any="track siteBoundary secondPond" hidden></div>
 
+<!-- Feature: SuDS guidance checks -->
+<div class="feature-panel" data-feature-panel="sudsChecks" hidden style="margin-top:24px">
+  <h3>SuDS guidance checks</h3>
+  <p class="help">Warnings only, against common UK pond guidance (CIRIA C753 The SuDS Manual). Values marked <span class="badge">to confirm</span> came from secondary sources and must be checked against C753 and the adopting authority's requirements.</p>
+  <div class="row">
+    <div class="field"><label for="sudsTreatmentVolume">Required treatment volume (optional)</label><div class="input-shell"><input id="sudsTreatmentVolume" data-site type="number" min="0" step="any" value="" placeholder="blank = skip"><span class="unit">m³</span></div></div>
+  </div>
+  <div id="sudsResults"></div>
+</div>
+
 <label class="toggle"><input type="checkbox" id="waterToggle" checked> Show horizontal design water surface</label>
 <p class="help">Export DXF saves the top rim, estimated base toe and design waterline as AutoCAD 3D polylines on separate layers, at real levels (datum + relative level), in metres. XY is local with the pond centre at 0,0, unless the outline was imported from a drawing, in which case the original coordinates are kept. Toe and waterline contours are sampled approximations, not setting-out geometry.</p>
 <p class="footer-note">Model: a planar ground (rim) surface and planar base with independent X/Y grades. Depth is the minimum vertical ground-to-base separation anywhere in the top footprint; the actual centre excavation depth is adjusted to maintain that minimum. Sides drop from their closest top-rim point at the specified inward slope, meeting the base where possible. The pond cannot store water above its <strong>lowest rim point</strong>; freeboard is below that controlling spill elevation. Maximum storage is not an earthworks excavation quantity. Numerical grid integration and rendered meshes are approximate; finite sampling can affect narrow shapes and steep slopes. Flat zero-gradient results correspond to a conventional level-rim pond. No outfall, berm/retaining-wall design, ground-condition, hydraulic routing, sediment or operational storage allowance is included. <strong>Concept sizing only; verify detailed levels, stability, and volumes in CAD.</strong></p>
@@ -701,7 +716,7 @@ function downloadText(text, filename, type) {
  * footprint, +X along its length) placed in the site by { x, y, rot }.
  * ======================================================= */
 const FEATURE_DEFAULTS = { gradients: false, permanentWater: false, benchRamp: false, stageStorage: false, naturalShapes: false, importOutline: false,
-  track: false, siteBoundary: false, secondPond: false };
+  track: false, siteBoundary: false, secondPond: false, sudsChecks: false };
 const FEATURE_STORAGE_KEY = 'pondCalc.features';
 const PROJECT_VERSION = 1;
 
@@ -1618,6 +1633,68 @@ function pondPairInfo(live) {
   return { outlet, outletIsPwl: t.pwl !== null, twl, drop: outlet - twl, place2: a.place };
 }
 
+/* =========================================================
+ * 7c. SuDS guidance checks (#12) — warnings only
+ *
+ * All guidance values live in this one table. confirmed: false means the
+ * value was taken from secondary sources quoting CIRIA C753 and must be
+ * checked against the manual before it is relied on; set confirmed: true
+ * (and update source) once it has been.
+ * ======================================================= */
+const SUDS_GUIDANCE = [
+  { id: 'sideSlope', label: 'Side slope', limit: 3, test: 'min', guidance: '1 in 3 or flatter',
+    source: 'C753, as quoted by RoSPA and local authority SuDS design guides', confirmed: false },
+  { id: 'freeboard', label: 'Freeboard', limit: 0.3, test: 'min', guidance: 'at least 0.3 m',
+    source: 'C753 §23.4.5, as quoted in United Utilities S104 pond guidance', confirmed: false },
+  { id: 'maxDepth', label: 'Maximum water depth (design water level to lowest point)', limit: 2.0, test: 'max', guidance: 'no more than 2.0 m',
+    source: 'Local authority SuDS guides quoting C753', confirmed: false },
+  { id: 'permanentDepth', label: 'Permanent water depth', limit: 2.0, test: 'max', guidance: 'no more than 2.0 m (0.6–1.2 m preferred)',
+    source: 'SuDS design guides quoting C753', confirmed: false },
+  { id: 'bench', label: 'Safety bench', limit: null, test: 'present', guidance: 'bench around the water edge',
+    source: 'C753 chapter 23 (figure 23.5), as referenced by United Utilities', confirmed: false },
+  { id: 'treatment', label: 'Permanent (treatment) volume', limit: null, test: 'treatment', guidance: 'at least the required treatment volume',
+    source: 'Required volume entered above (C753 chapter 23 / 26 method)', confirmed: false }
+];
+
+/** Rows of { label, design, guidance, status: ok | warn | na, source, confirmed } for one pond. */
+function sudsChecks(geom, isAttenuationPond = false) {
+  const lowest = geom.zs[0], vt = isAttenuationPond ? '' : state.site.inputs.sudsTreatmentVolume;
+  return SUDS_GUIDANCE.map(G => {
+    let value = null, design = '—', status = 'na';
+    if (G.id === 'sideSlope') { value = geom.g.m; design = geom.g.m === 0 ? 'vertical' : '1 in ' + fmt(geom.g.m, '', 2); }
+    if (G.id === 'freeboard') { value = geom.g.f; design = fmt(value, 'm'); }
+    if (G.id === 'maxDepth') { value = geom.wl - lowest; design = fmt(value, 'm'); }
+    if (G.id === 'permanentDepth' && geom.pwl !== null) { value = geom.pwl - lowest; design = fmt(value, 'm'); }
+    if (G.id === 'bench') { value = !!geom.g.bench; design = geom.g.bench ? fmt(geom.g.bench.w, 'm') + ' wide, ' + fmt(geom.g.bench.d, 'm') + ' below water' : 'none'; }
+    if (G.id === 'treatment' && isNumeric(vt) && Number(vt) > 0) {
+      design = geom.pwl === null ? 'no permanent water level' : fmt(geom.permanent, 'm³');
+      value = geom.pwl === null ? 0 : geom.permanent;
+    }
+    if (value !== null) {
+      const ok = G.test === 'min' ? value >= G.limit - 1e-9 : G.test === 'max' ? value <= G.limit + 1e-9
+        : G.test === 'present' ? value : value >= Number(vt) - 1e-9;
+      status = ok ? 'ok' : 'warn';
+    }
+    const guidance = G.id === 'treatment' && isNumeric(vt) && Number(vt) > 0 ? 'at least ' + fmt(Number(vt), 'm³') : G.guidance;
+    return { label: G.label, design, guidance, status, source: G.source, confirmed: G.confirmed };
+  });
+}
+
+function renderSuds() {
+  if (!state.features.sudsChecks) { $('sudsResults').innerHTML = ''; return; }
+  let html = '';
+  for (const pond of livePonds()) {
+    if (livePonds().length > 1) html += '<h3 style="margin:16px 0 0;font-size:13px;color:var(--muted)">' + esc(pond.name) + '</h3>';
+    if (!pond.geometry) { html += '<p class="help">No valid geometry to check.</p>'; continue; }
+    const rows = sudsChecks(pond.geometry, livePonds().length > 1 && pond === livePonds()[1]), warns = rows.filter(r => r.status === 'warn').length;
+    html += '<div class="table-wrap"><table class="data"><thead><tr><th class="left">Check</th><th>Design</th><th class="left">Guidance</th><th>Result</th></tr></thead><tbody>' +
+      rows.map(r => `<tr><td class="left">${esc(r.label)}</td><td>${esc(r.design)}</td><td class="left" title="${esc(r.source)}">${esc(r.guidance)}${r.confirmed ? '' : '<span class="badge">to confirm</span>'}</td>` +
+        `<td class="${r.status === 'ok' ? 'ok' : r.status === 'warn' ? 'warn' : ''}">${r.status === 'ok' ? 'OK' : r.status === 'warn' ? 'Warning' : 'n/a'}</td></tr>`).join('') +
+      '</tbody></table></div><p class="help">' + (warns ? warns + ' warning' + (warns > 1 ? 's' : '') : 'No warnings') + '. Hover a guidance value for its source.</p>';
+  }
+  $('sudsResults').innerHTML = html;
+}
+
 /** Everything that depends on more than one pond or on the site. */
 function computeSite() {
   const live = livePonds(), geoms = live.map(p => p.geometry).filter(Boolean), out = { live, geoms };
@@ -1812,6 +1889,7 @@ function update() {
   refreshPlacementInputs();
   state.siteResult = computeSite();
   renderSite(state.siteResult);
+  renderSuds();
   draw();
 }
 
